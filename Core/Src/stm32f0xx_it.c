@@ -22,6 +22,7 @@
 #include "stm32f0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -126,7 +127,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
+	SchedulerSysTickIntHandler();
   /* USER CODE END SysTick_IRQn 0 */
 
   /* USER CODE BEGIN SysTick_IRQn 1 */
@@ -142,6 +143,19 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles ADC interrupt.
+  */
+void ADC1_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_IRQn 0 */
+  ADC_Task_IRQHandler();
+  /* USER CODE END ADC1_IRQn 0 */
+  /* USER CODE BEGIN ADC1_IRQn 1 */
+
+  /* USER CODE END ADC1_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM6 global interrupt.
   */
 void TIM6_IRQHandler(void)
@@ -153,6 +167,34 @@ void TIM6_IRQHandler(void)
   /* USER CODE BEGIN TIM6_IRQn 1 */
 
   /* USER CODE END TIM6_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+  RF_TX_IRQHandler();
+  /* USER CODE END USART1_IRQn 0 */
+  /* USER CODE BEGIN USART1_IRQn 1 */
+  RF_RX_IRQHandler();
+  /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART3 to USART6 global interrupts.
+  */
+void USART3_6_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART3_6_IRQn 0 */
+  RS232_TX_IRQHandler();
+  H_BRIDGE_TX_IRQHandler();
+  /* USER CODE END USART3_6_IRQn 0 */
+  /* USER CODE BEGIN USART3_6_IRQn 1 */
+  RS232_RX_IRQHandler();
+  H_BRIDGE_RX_IRQHandler();
+  /* USER CODE END USART3_6_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
