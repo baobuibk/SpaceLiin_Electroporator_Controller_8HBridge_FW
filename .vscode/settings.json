@@ -20,6 +20,9 @@
         "board.h": "c",
         "stm32f0xx_hal.h": "c",
         "stdarg.h": "c",
-        "stm32f0xx_ll_usart.h": "c"
+        "stm32f0xx_ll_usart.h": "c",
+        "stm32f0xx_ll_gpio.h": "c",
+        "pwm.h": "c",
+        "pid.h": "c"
     }
 }

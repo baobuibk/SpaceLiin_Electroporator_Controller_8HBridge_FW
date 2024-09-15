@@ -175,10 +175,10 @@ void TIM6_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-  RF_TX_IRQHandler();
+  
   /* USER CODE END USART1_IRQn 0 */
   /* USER CODE BEGIN USART1_IRQn 1 */
-  RF_RX_IRQHandler();
+  
   /* USER CODE END USART1_IRQn 1 */
 }
 
@@ -188,12 +188,10 @@ void USART1_IRQHandler(void)
 void USART3_6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART3_6_IRQn 0 */
-  RS232_TX_IRQHandler();
-  H_BRIDGE_TX_IRQHandler();
+  RS232_IRQHandler();
   /* USER CODE END USART3_6_IRQn 0 */
   /* USER CODE BEGIN USART3_6_IRQn 1 */
-  RS232_RX_IRQHandler();
-  H_BRIDGE_RX_IRQHandler();
+
   /* USER CODE END USART3_6_IRQn 1 */
 }
 

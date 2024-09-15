@@ -22,7 +22,7 @@ extern uint16_t g_Feedback_Voltage[ADC_CHANNEL_COUNT];
 void ADC_Task_Init(uint32_t Sampling_Time);
 
 /* :::::::::: ADC Task ::::::::::::: */
-void ADC_Task(void);
+void ADC_Task(void*);
 
 /* :::::::::: ADC Interupt Handler ::::::::::::: */
 void ADC_Task_IRQHandler(void);

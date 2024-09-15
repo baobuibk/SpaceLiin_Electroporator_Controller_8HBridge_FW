@@ -1,9 +1,10 @@
 /*********************
  *      INCLUDES
  *********************/
-#include <stdbool.h>
-#include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+#include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -34,12 +35,16 @@ static const char * const HEX_reference = "0123456789abcdef";
  * QUEUE_Init function to manage incoming data efficiently.
  */
 void UART_Init( uart_stdio_typedef* p_uart, USART_TypeDef* _handle,
-                IRQn_Type _irqn, uint16_t _TX_buffer_size, uint16_t _RX_buffer_size)
+                IRQn_Type _irqn, char* _p_TX_buffer, char* _p_RX_buffer,
+                uint16_t _TX_size, uint16_t _RX_size)
 {
     p_uart->handle  = _handle;
     p_uart->irqn    = _irqn;
-    p_uart->TX_size = _TX_buffer_size;
-    p_uart->RX_size = _RX_buffer_size;
+    p_uart->TX_size = _TX_size;
+    p_uart->RX_size = _RX_size;
+
+    p_uart->p_TX_buffer = _p_TX_buffer;
+    p_uart->p_RX_buffer = _p_RX_buffer;
 
     p_uart->TX_write_index  = 0;
     p_uart->TX_read_index   = 0;
@@ -48,13 +53,13 @@ void UART_Init( uart_stdio_typedef* p_uart, USART_TypeDef* _handle,
 
     if(TX_BUFFER_SIZE(p_uart) != 0)
     {
-        p_uart->p_TX_buffer = (char *)malloc(TX_BUFFER_SIZE(p_uart) * sizeof(char));
+        //p_uart->p_TX_buffer = (uint8_t *)malloc(TX_BUFFER_SIZE(p_uart) * sizeof(uint8_t));
         memset((void *)p_uart->p_TX_buffer, 0, sizeof(p_uart->p_TX_buffer));
     }
 
     if(RX_BUFFER_SIZE(p_uart) != 0)
     {
-        p_uart->p_RX_buffer = (char *)malloc(RX_BUFFER_SIZE(p_uart) * sizeof(char));
+        //p_uart->p_RX_buffer = (uint8_t *)malloc(RX_BUFFER_SIZE(p_uart) * sizeof(uint8_t));
         memset((void *)p_uart->p_RX_buffer, 0, sizeof(p_uart->p_RX_buffer));
     }
 
@@ -101,10 +106,29 @@ uint16_t UART_Write(uart_stdio_typedef* p_uart, const char *pcBuf, uint16_t ui16
     //
     for(uIdx = 0; uIdx < ui16Len; uIdx++)
     {
+        //
+        // If the character to the UART is \n, then add a \r before it so that
+        // \n is translated to \n\r in the output. This is for the enter key.
+        //
+        if(pcBuf[uIdx] == '\n')
+        {
+            if(!TX_BUFFER_FULL(p_uart))
+            {
+                p_uart->p_TX_buffer[p_uart->TX_write_index] = '\r';
+                ADVANCE_TX_WRITE_INDEX(p_uart);
+            }
+            else
+            {
+                //
+                // Buffer is full - discard remaining characters and return.
+                //
+                break;
+            }
+        }
+
         if(!TX_BUFFER_FULL(p_uart))
         {
         	p_uart->p_TX_buffer[p_uart->TX_write_index] = pcBuf[uIdx];
-            //ADVANCE_TX_BUFFER_INDEX(&UART_TX_write_index);
             ADVANCE_TX_WRITE_INDEX(p_uart);
         }
         else
@@ -583,10 +607,10 @@ convert:
 //! \return Returns the character read.
 //
 //*****************************************************************************
-uint8_t UART_Get_Char(uart_stdio_typedef* p_uart)
+char UART_Get_Char(uart_stdio_typedef* p_uart)
 {
 
-    uint8_t return_char;
+    char return_char;
 
     if (RX_BUFFER_EMPTY(p_uart))
     {
@@ -633,7 +657,7 @@ uint8_t UART_is_buffer_full(volatile uint16_t *pui16Read,
     ui16Write = *pui16Write;
     ui16Read = *pui16Read;
 
-    return(UART_advance_buffer_index(&ui16Write, ui16Size) == (ui16Read - 1)) ? 1 : 0;
+    return((((ui16Write + 1) % ui16Size) == ui16Read) ? 1 : 0);
 }
 
 
@@ -714,8 +738,7 @@ uint16_t UART_get_buffer_count(volatile uint16_t *pui16Read,
 
 uint16_t UART_advance_buffer_index(volatile uint16_t* pui16Index, uint16_t ui16Size)
 {
-
-    ((*pui16Index) == ui16Size) ? ((*pui16Index) = 0) : ((*pui16Index) += 1);
+    *pui16Index = (*pui16Index + 1) % ui16Size;
 
     return(*pui16Index);
 }

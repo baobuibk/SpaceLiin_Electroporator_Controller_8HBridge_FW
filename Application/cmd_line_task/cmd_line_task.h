@@ -12,17 +12,13 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
-void CMD_Line_Task_Init(uint16_t _buffer_size);
+void CMD_Line_Task_Init();
 
 /* :::::::::: CMD Line Task ::::::::::::: */
-void CMD_Line_Task(void);
+void CMD_Line_Task(void*);
 
 /* :::::::::: IRQ Handler ::::::::::::: */
-void RS232_TX_IRQHandler(void);
-void RF_TX_IRQHandler(void);
-
-void RS232_RX_IRQHandler(void);
-void RF_RX_IRQHandler(void);
+void RS232_IRQHandler(void);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

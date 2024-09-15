@@ -100,7 +100,7 @@ void PID_Task_Init(void)
 
 /* :::::::::: PID Task ::::::::::::: */
 //TODO: Adaptive PID, Ki, or sync uart command to change Ki.
-void PID_Task(void)
+void PID_Task(void*)
 {
     switch (PID_State)
     {

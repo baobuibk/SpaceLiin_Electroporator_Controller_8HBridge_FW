@@ -21,18 +21,18 @@ struct _uart_stdio_typedef
                 char*       p_RX_buffer;
     volatile    uint16_t    RX_write_index;
     volatile    uint16_t    RX_read_index;
-    volatile    char        RX_irq_char;
+    volatile    char     RX_irq_char;
 };
 
 typedef struct _uart_stdio_typedef uart_stdio_typedef;
 
-extern char* UART_RX_buffer;
+void UART_Init( uart_stdio_typedef* p_uart, USART_TypeDef* _handle,
+                IRQn_Type _irqn, char* _p_TX_buffer, char* _p_RX_buffer,
+                uint16_t _TX_size, uint16_t _RX_size);
 
-void        UART_Init(  uart_stdio_typedef* p_uart, USART_TypeDef* _handle,
-                        IRQn_Type _irqn, uint16_t _TX_buffer_size, uint16_t _RX_buffer_size);
 uint16_t    UART_Write(uart_stdio_typedef* p_uart, const char *pcBuf, uint16_t ui16Len);
 void        UART_Printf(uart_stdio_typedef* p_uart, const char *pc_string, ...);
-uint8_t     UART_Get_Char(uart_stdio_typedef* p_uart);
+char        UART_Get_Char(uart_stdio_typedef* p_uart);
 
 uint8_t     UART_is_buffer_full(volatile uint16_t *pui16Read,
                 volatile uint16_t *pui16Write, uint16_t ui16Size);

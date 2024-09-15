@@ -1,12 +1,15 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Include~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-#include "cmd_line_task.h"
+#include "stm32f0xx_ll_gpio.h"
 
 #include "app.h"
 
+#include "cmd_line_task.h"
 #include "cmd_line.h"
+#include "pid.h"
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -25,17 +28,19 @@ struct _cmd_line_typedef
 typedef struct _cmd_line_typedef cmd_line_typedef;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 uart_stdio_typedef  RS232_UART;
-uart_stdio_typedef  RF_UART;
+char                g_RS232_UART_TX_buffer[2048];
+char                g_RS232_UART_RX_buffer[64];
 
 cmd_line_typedef    CMD_line;
+char                g_CMD_line_buffer[64];
 
 static const char * ErrorCode[5] = 
 {
-    "OK\r\n",
-    "CMDLINE_BAD_CMD\r\n",
-    "CMDLINE_TOO_MANY_ARGS\r\n",
-    "CMDLINE_TOO_FEW_ARGS\r\n",
-    "CMDLINE_INVALID_ARG\r\n" 
+    "OK\n",
+    "CMDLINE_BAD_CMD\n",
+    "CMDLINE_TOO_MANY_ARGS\n",
+    "CMDLINE_TOO_FEW_ARGS\n",
+    "CMDLINE_INVALID_ARG\n" 
 };
 
 const char SPLASH[][65] = 
@@ -78,7 +83,9 @@ static uint16_t     retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t
 
 static void         CMD_send_splash(uart_stdio_typedef* p_uart);
 
-static void         CMD_line_test(void);
+       int          CMD_debug_led_on(int argc, char *argv[]);
+
+       int          CMD_debug_led_off(int argc, char *argv[]);
 
 //*****************************************************************************
 //
@@ -116,37 +123,41 @@ static void         CMD_line_test(void);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 tCmdLineEntry g_psCmdTable[] =
 {
-    { "MARCO", CMD_line_test, "TEST" },
+    { "GPC_DEBUG_LED_ON", CMD_debug_led_on, "Turn on debug led" },
+    { "GPC_DEBUG_LED_OFF", CMD_debug_led_off, "Turn off debug led" },
 	{0,0,0}
 };
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
-void CMD_Line_Task_Init(uint16_t _buffer_size)
+void CMD_Line_Task_Init()
 {
-    UART_Init(&RS232_UART, RS232_UART_HANDLE, RS232_UART_IRQ, 64, 64);
-    //UART_Init(&RF_UART, RF_UART_HANDLE, RF_UART_IRQ, 64, 64);
 
-    if(_buffer_size != 0)
-    {
-        CMD_line.p_buffer = (char *)malloc(CMD_line.buffer_size * sizeof(char));
-        memset((void *)CMD_line.p_buffer, 0, sizeof(CMD_line.p_buffer));
-    }
+    UART_Init(  &RS232_UART, RS232_UART_HANDLE, RS232_UART_IRQ,
+                g_RS232_UART_TX_buffer, g_RS232_UART_RX_buffer,
+                sizeof(g_RS232_UART_TX_buffer), sizeof(g_RS232_UART_RX_buffer));
     
+    CMD_line.p_buffer       = g_CMD_line_buffer;
+    CMD_line.buffer_size    = 64;
     CMD_line.write_index 	= 0;
     CMD_line.read_index		= 0;
 
-    UART_Write(&RS232_UART, "GPC FIRMWARE V0.0.0 \r\n", 22);
-    UART_Write(&RS232_UART, ">", 1);
+    if(CMD_line.buffer_size != 0)
+    {
+        memset((void *)CMD_line.p_buffer, 0, sizeof(CMD_line.p_buffer));
+    }
+
+    UART_Write(&RS232_UART, "GPC FIRMWARE V1.0.0\n", 20);
+    UART_Write(&RS232_UART, "> ", 2);
     CMD_send_splash(&RS232_UART);
 }
 
 /* :::::::::: CMD Line Task ::::::::::::: */
-void CMD_Line_Task(void)
+void CMD_Line_Task(void*)
 {
     uint8_t return_value;
 
-    while((!RX_BUFFER_EMPTY(&RS232_UART)) && (!CMD_BUFFER_FULL(&CMD_line)))
+    if((!RX_BUFFER_EMPTY(&RS232_UART)) && (!CMD_BUFFER_FULL(&CMD_line)))
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
         UART_Write(&RS232_UART, &CMD_line.RX_char, 1);
@@ -155,17 +166,21 @@ void CMD_Line_Task(void)
         {
             if(!CMD_BUFFER_EMPTY(&CMD_line))
             {
+                // Add a NUL char at the end of the CMD
                 CMD_line.p_buffer[CMD_line.write_index] = 0;
                 ADVANCE_CMD_WRITE_INDEX(&CMD_line);
 
-                return_value = CmdLineProcess(CMD_line.p_buffer);
+                return_value = CmdLineProcess(&CMD_line.p_buffer[CMD_line.read_index]);
                 CMD_line.read_index = CMD_line.write_index;
 
+                UART_Write(&RS232_UART, "> ", 3);
                 UART_Printf(&RS232_UART, ErrorCode[return_value]);
                 UART_Write(&RS232_UART, "> ", 2);
             }
-            else 
-                UART_Write(&RS232_UART, "\r\n> ", 4);
+            else
+            {
+                UART_Write(&RS232_UART, "> ", 2);
+            }
         }
         else if((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127))
         {
@@ -180,13 +195,20 @@ void CMD_Line_Task(void)
     }
 }
 
-void CMD_line_test(void)
+int CMD_debug_led_on(int argc, char *argv[])
 {
-    UART_Write(&RS232_UART, "POLO\r", 5);
+    LL_GPIO_SetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
+    return CMDLINE_OK;
+}
+
+int CMD_debug_led_off(int argc, char *argv[])
+{
+    LL_GPIO_ResetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
+    return CMDLINE_OK;
 }
 
 /* :::::::::: IRQ Handler ::::::::::::: */
-void RS232_TX_IRQHandler(void)
+void RS232_IRQHandler(void)
 {
     if(LL_USART_IsActiveFlag_TXE(RS232_UART.handle) == true)
     {
@@ -201,45 +223,15 @@ void RS232_TX_IRQHandler(void)
             UART_Prime_Transmit(&RS232_UART);
         }
     }
-}
 
-void RF_TX_IRQHandler(void)
-{   
-    if(LL_USART_IsActiveFlag_TXE(RF_UART.handle) == true)
-    {
-        if(TX_BUFFER_EMPTY(&RF_UART))
-        {
-            // Buffer empty, so disable interrupts
-            LL_USART_DisableIT_TXE(RF_UART.handle);
-        }
-        else
-        {
-            // There is more data in the output buffer. Send the next byte
-            UART_Prime_Transmit(&RF_UART);
-        }
-    }
-}
-
-void RS232_RX_IRQHandler(void)
-{
     if(LL_USART_IsActiveFlag_RXNE(RS232_UART.handle) == true)
     {
-        if(!RX_BUFFER_FULL(&RS232_UART))
-        {
-            RS232_UART.RX_irq_char = LL_USART_ReceiveData8(RS232_UART.handle);
-            ADVANCE_RX_WRITE_INDEX(&RS232_UART);
-        }
-    }
-}
+        RS232_UART.RX_irq_char = LL_USART_ReceiveData8(RS232_UART.handle);
 
-void RF_RX_IRQHandler(void)
-{
-    if(LL_USART_IsActiveFlag_RXNE(RF_UART.handle) == true)
-    {
-        if(!RX_BUFFER_FULL(&RF_UART))
+        if((!RX_BUFFER_FULL(&RS232_UART)) && (RS232_UART.RX_irq_char != '\r'))
         {
-            RF_UART.RX_irq_char = LL_USART_ReceiveData8(RF_UART.handle);
-            ADVANCE_RX_WRITE_INDEX(&RF_UART);
+            RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
+            ADVANCE_RX_WRITE_INDEX(&RS232_UART);
         }
     }
 }
@@ -272,7 +264,7 @@ static uint8_t is_buffer_full(volatile uint16_t *pui16Read,
     ui16Write = *pui16Write;
     ui16Read = *pui16Read;
 
-    return(advance_buffer_index(&ui16Write, ui16Size) == (ui16Read - 1)) ? 1 : 0;
+    return((((ui16Write + 1) % ui16Size) == ui16Read) ? 1 : 0);
 }
 
 
@@ -353,8 +345,7 @@ static uint16_t get_buffer_count(volatile uint16_t *pui16Read,
 
 static uint16_t advance_buffer_index(volatile uint16_t* pui16Index, uint16_t ui16Size)
 {
-
-    ((*pui16Index) == ui16Size) ? ((*pui16Index) = 0) : ((*pui16Index) += 1);
+    *pui16Index = (*pui16Index + 1) % ui16Size;
 
     return(*pui16Index);
 }
@@ -368,10 +359,11 @@ static uint16_t retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t ui1
 
 static void CMD_send_splash(uart_stdio_typedef* p_uart)
 {
-    for(uint8_t i = 0 ; i < 21 ; i++) {
+    for(uint8_t i = 0 ; i < 21 ; i++)
+    {
 		UART_Write(p_uart, &SPLASH[i][0], 65);
 	}
-	UART_Write(p_uart, ">", 1);
+	UART_Write(p_uart, "> ", 2);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

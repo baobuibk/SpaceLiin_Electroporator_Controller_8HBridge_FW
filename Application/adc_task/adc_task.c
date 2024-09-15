@@ -34,7 +34,7 @@ void ADC_Task_Init(uint32_t Sampling_Time)
 
 /* :::::::::: ADC Task ::::::::::::: */
 //TODO: Áp dụng ring buffer và mạch lọc cho ADC.
-void ADC_Task(void)
+void ADC_Task(void*)
 {
     uint16_t ADC_Value = 0;
 
