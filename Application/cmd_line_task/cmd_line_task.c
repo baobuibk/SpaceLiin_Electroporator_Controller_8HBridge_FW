@@ -230,6 +230,15 @@ int CMD_cap_set_volt(int argc, char *argv[])
     if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
 
+    if ((atoi(argv[1]) > 50) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 25) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
     PID_300V_set_voltage    = atoi(argv[1]) * 10 - 10;
     PID_50V_set_voltage     = atoi(argv[2]) * 10 - 10;
 
@@ -243,6 +252,15 @@ int CMD_start_charge_cap(int argc, char *argv[])
 
     if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
 
     PID_is_300V_on  = atoi(argv[1]);
     PID_is_50V_on   = atoi(argv[2]);
@@ -258,6 +276,15 @@ int CMD_stop_charge_cap(int argc, char *argv[])
     if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
 
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
     PID_is_300V_on  = ~(atoi(argv[1]));
     PID_is_50V_on   = ~(atoi(argv[2]));
 
@@ -272,6 +299,15 @@ int CMD_start_discharge(int argc, char *argv[])
     if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
 
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
     g_is_Discharge_300V_On  = atoi(argv[1]);
     g_is_Discharge_50V_On   = atoi(argv[2]);
 
@@ -285,6 +321,15 @@ int CMD_stop_discharge(int argc, char *argv[])
 
     if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
 
     g_is_Discharge_300V_On  = ~(atoi(argv[1]));
     g_is_Discharge_50V_On   = ~(atoi(argv[2]));

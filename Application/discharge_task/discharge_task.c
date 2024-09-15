@@ -64,23 +64,29 @@ void Discharge_Task(void*)
         if ((g_is_Discharge_300V_On == false) || (g_Feedback_Voltage[0] = 0))
         {
             LL_GPIO_ResetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
-            Discharge_State = DISCHARGE_OFF_STATE;
+            //Discharge_State = DISCHARGE_OFF_STATE;
+        }
+        else if (g_is_Discharge_300V_On == true)
+        {
+            LL_GPIO_SetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
         }
 
         if ((g_is_Discharge_50V_On == false) || (g_Feedback_Voltage[1] = 0))
         {
             LL_GPIO_ResetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
-            Discharge_State = DISCHARGE_OFF_STATE;
+            //Discharge_State = DISCHARGE_OFF_STATE;
         }
-
-        if (g_is_Discharge_300V_On == true)
-        {
-            LL_GPIO_SetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
-        }
-
-        if (g_is_Discharge_50V_On == true)
+        else if (g_is_Discharge_50V_On == true)
         {
             LL_GPIO_SetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
+        }
+
+        if (((g_is_Discharge_300V_On == false) && (g_is_Discharge_50V_On == false)) || 
+            ((g_Feedback_Voltage[0] = 0) && (g_Feedback_Voltage[1] = 0)))
+        {
+            LL_GPIO_ResetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
+            LL_GPIO_ResetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
+            Discharge_State = DISCHARGE_OFF_STATE;
         }
 
         break;
