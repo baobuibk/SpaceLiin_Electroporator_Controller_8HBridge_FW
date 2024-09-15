@@ -94,39 +94,25 @@ void PID_Task_Init(void)
 //TODO: Adaptive PID, Ki, or sync uart command to change Ki.
 void PID_Task(void*)
 {
-    switch (PID_State)
-    {
-	case PID_OFF_STATE:
+	if (PID_is_300V_on == false)
+	{
 		PWM_Set_Duty(&Flyback_300V_Switching_PWM, 0);
+	}
+	else if (PID_is_300V_on == true)
+	{
+		PID_Compute(&Charge_300V_Cap_PID);
+		PWM_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
+	}
+
+	if (PID_is_50V_on == false)
+	{
 		PWM_Set_Duty(&Flyback_50V_Switching_PWM, 0);
-
-		if (PID_is_300V_on == true)
-		{
-			PID_State = PID_CAP_CHARGE_STATE;
-			break;
-		}
-		
-		break;
-    case PID_CAP_CHARGE_STATE:
-		if (PID_is_300V_on == false)
-		{
-			PID_State = PID_OFF_STATE;
-			break;
-		}
-
-        PID_Compute(&Charge_300V_Cap_PID);
-        PWM_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
-
+	}
+	else if (PID_is_50V_on == true)
+	{
 		PID_Compute(&Charge_50V_Cap_PID);
-        PWM_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
-        break;
-    case PID_H_BRIDGE_STATE:
-
-        break;
-
-    default:
-        break;
-    }
+		PWM_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
+	}
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

@@ -14,6 +14,7 @@
 // INCLUDE TASK //
 #include "adc_task.h"
 #include "pid_task.h"
+#include "discharge_task.h"
 #include "cmd_line_task.h"
 
 // INCLUDE LIB //

@@ -87,7 +87,9 @@ static void         CMD_send_splash(uart_stdio_typedef* p_uart);
        int          CMD_debug_led_off(int argc, char *argv[]);
        int          CMD_cap_set_volt(int argc, char *argv[]);
        int          CMD_start_charge_cap(int argc, char *argv[]);
-       int          CMD_stop_charge_cap(int argc, char *argv[]);       
+       int          CMD_stop_charge_cap(int argc, char *argv[]);
+       int          CMD_start_discharge(int argc, char *argv[]);
+       int          CMD_stop_discharge(int argc, char *argv[]);
 
 //*****************************************************************************
 //
@@ -130,6 +132,8 @@ tCmdLineEntry g_psCmdTable[] =
     { "GPC_CAP_SET_VOLT", CMD_cap_set_volt, "Charge cap to a voltage"},
     { "GPC_CAP_START", CMD_start_charge_cap, "Start charging cap"},
     { "GPC_CAP_STOP", CMD_stop_charge_cap, "Stop charging cap"},
+    { "GPC_DISCHARGE_START", CMD_start_discharge, "Start discharging cap" },
+    { "GPC_DISCHARGE_STOP", CMD_stop_discharge, "Stop discharging cap" },
 	{0,0,0}
 };
 
@@ -234,22 +238,56 @@ int CMD_cap_set_volt(int argc, char *argv[])
 
 int CMD_start_charge_cap(int argc, char *argv[])
 {
-    if (argc > 1)
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
 
-    PID_is_300V_on  = true;
-    PID_is_50V_on   = true;
+    PID_is_300V_on  = atoi(argv[1]);
+    PID_is_50V_on   = atoi(argv[2]);
 
     return CMDLINE_OK;
 }
 
 int CMD_stop_charge_cap(int argc, char *argv[])
 {
-    if (argc > 1)
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
         return CMDLINE_TOO_MANY_ARGS;
 
-    PID_is_300V_on  = false;
-    PID_is_50V_on   = false;
+    PID_is_300V_on  = ~(atoi(argv[1]));
+    PID_is_50V_on   = ~(atoi(argv[2]));
+
+    return CMDLINE_OK;
+}
+
+int CMD_start_discharge(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    g_is_Discharge_300V_On  = atoi(argv[1]);
+    g_is_Discharge_50V_On   = atoi(argv[2]);
+
+    return CMDLINE_OK;
+}
+
+int CMD_stop_discharge(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    g_is_Discharge_300V_On  = ~(atoi(argv[1]));
+    g_is_Discharge_50V_On   = ~(atoi(argv[2]));
 
     return CMDLINE_OK;
 }

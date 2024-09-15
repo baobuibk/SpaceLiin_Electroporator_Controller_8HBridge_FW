@@ -32,11 +32,15 @@
 /***********************************************/
 
 /*******************DISCHARGE*******************/
-#define CAP_DISCHARGE1_HANDLE   TIM16
-#define CAP_DISCHARGE1_CHANNEL  LL_TIM_CHANNEL_CH1
+#define DISCHARGE_300V_HANDLE   TIM16
+#define DISCHARGE_300V_CHANNEL  LL_TIM_CHANNEL_CH1
+#define DISCHARGE_300V_PORT     GPIOB
+#define DISCHARGE_300V_PIN      LL_GPIO_PIN_8
 
-#define CAP_DISCHARGE2_HANDEL   TIM1
-#define CAP_DISCHARGE2_CHANNEL  LL_TIM_CHANNEL_CH2
+#define DISCHARGE_50V_HANDEL    TIM1
+#define DISCHARGE_50V_CHANNEL   LL_TIM_CHANNEL_CH2
+#define DISCHARGE_50V_PORT      GPIOA
+#define DISCHARGE_50V_PIN       LL_GPIO_PIN_9
 /***********************************************/
 
 /*********************OVP***********************/
