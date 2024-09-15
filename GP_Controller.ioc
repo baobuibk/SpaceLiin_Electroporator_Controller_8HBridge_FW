@@ -71,7 +71,6 @@ NVIC.SysTick_IRQn=true\:3\:0\:false\:false\:true\:false\:true\:false
 NVIC.TIM6_IRQn=true\:3\:0\:false\:false\:true\:false\:true\:true
 NVIC.TimeBase=TIM6_IRQn
 NVIC.TimeBaseIP=TIM6
-NVIC.USART1_IRQn=true\:3\:0\:true\:false\:true\:true\:true\:true
 NVIC.USART3_6_IRQn=true\:3\:0\:true\:false\:true\:true\:true\:true
 PA0.Mode=Asynchronous
 PA0.Signal=USART4_TX
