@@ -84,8 +84,10 @@ static uint16_t     retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t
 static void         CMD_send_splash(uart_stdio_typedef* p_uart);
 
        int          CMD_debug_led_on(int argc, char *argv[]);
-
        int          CMD_debug_led_off(int argc, char *argv[]);
+       int          CMD_cap_set_volt(int argc, char *argv[]);
+       int          CMD_start_charge_cap(int argc, char *argv[]);
+       int          CMD_stop_charge_cap(int argc, char *argv[]);       
 
 //*****************************************************************************
 //
@@ -125,6 +127,9 @@ tCmdLineEntry g_psCmdTable[] =
 {
     { "GPC_DEBUG_LED_ON", CMD_debug_led_on, "Turn on debug led" },
     { "GPC_DEBUG_LED_OFF", CMD_debug_led_off, "Turn off debug led" },
+    { "GPC_CAP_SET_VOLT", CMD_cap_set_volt, "Charge cap to a voltage"},
+    { "GPC_CAP_START", CMD_start_charge_cap, "Start charging cap"},
+    { "GPC_CAP_STOP", CMD_stop_charge_cap, "Stop charging cap"},
 	{0,0,0}
 };
 
@@ -197,13 +202,55 @@ void CMD_Line_Task(void*)
 
 int CMD_debug_led_on(int argc, char *argv[])
 {
+    if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
     LL_GPIO_SetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
     return CMDLINE_OK;
 }
 
 int CMD_debug_led_off(int argc, char *argv[])
 {
+    if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
     LL_GPIO_ResetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
+    return CMDLINE_OK;
+}
+
+int CMD_cap_set_volt(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    PID_300V_set_voltage    = atoi(argv[1]) * 10 - 10;
+    PID_50V_set_voltage     = atoi(argv[2]) * 10 - 10;
+
+    return CMDLINE_OK;
+}
+
+int CMD_start_charge_cap(int argc, char *argv[])
+{
+    if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    PID_is_300V_on  = true;
+    PID_is_50V_on   = true;
+
+    return CMDLINE_OK;
+}
+
+int CMD_stop_charge_cap(int argc, char *argv[])
+{
+    if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    PID_is_300V_on  = false;
+    PID_is_50V_on   = false;
+
     return CMDLINE_OK;
 }
 

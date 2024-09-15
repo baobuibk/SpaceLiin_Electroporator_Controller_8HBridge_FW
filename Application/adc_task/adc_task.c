@@ -30,6 +30,8 @@ void ADC_Task_Init(uint32_t Sampling_Time)
 
     LL_ADC_EnableIT_EOC(ADC_FEEDBACK_HANDLE);
     LL_ADC_EnableIT_EOS(ADC_FEEDBACK_HANDLE);
+
+    LL_ADC_REG_StartConversion(ADC_FEEDBACK_HANDLE);
 }
 
 /* :::::::::: ADC Task ::::::::::::: */
