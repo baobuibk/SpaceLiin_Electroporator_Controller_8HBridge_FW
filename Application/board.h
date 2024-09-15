@@ -54,8 +54,8 @@
 #define RF_UART_HANDLE          USART1
 #define RF_UART_IRQ             USART1_IRQn
 
-#define H_BRIDGE_UART_HANDLE    USART3
-#define H_BRIDGE_UART_IRQ       USART3_6_IRQn
+#define GPC_UART_HANDLE         USART3
+#define GPC_BRIDGE_UART_IRQ     USART3_6_IRQn
 /***********************************************/
 
 /**********************SPI**********************/
