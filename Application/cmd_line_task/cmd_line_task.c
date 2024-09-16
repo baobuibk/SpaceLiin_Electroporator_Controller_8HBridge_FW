@@ -171,6 +171,7 @@ void CMD_Line_Task(void*)
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
         UART_Write(&RS232_UART, &CMD_line.RX_char, 1);
+        time_out --;
 
         if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
         {
@@ -207,7 +208,6 @@ void CMD_Line_Task(void*)
                 CMD_line.read_index = CMD_line.write_index;
             }
         }
-        time_out --;
     }
 }
 

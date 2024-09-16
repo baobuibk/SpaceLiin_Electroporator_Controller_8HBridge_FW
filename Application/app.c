@@ -31,7 +31,7 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                     {
                             &CMD_Line_Task,
                             (void *) 0,
-                            10,                         //call every 1ms
+                            5,                         //call every 1ms
                             0,                          //count from start
                             true                        //is active
                     },
@@ -43,6 +43,8 @@ void App_Main(void)
     // can run scheduler tick max @ 100us.
     SchedulerInit(10000);
 
+    ADC_Task_Init(LL_ADC_SAMPLINGTIME_7CYCLES_5);
+    PID_Task_Init();
     CMD_Line_Task_Init();
 
     while (1)
