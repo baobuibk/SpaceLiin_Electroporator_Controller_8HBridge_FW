@@ -4,6 +4,8 @@
 
 #include "app.h"
 
+#include "stm32f0xx_ll_gpio.h"
+
 #include "pid_task.h"
 
 #include "pid.h"
@@ -88,6 +90,9 @@ void PID_Task_Init(void)
 
 	PWM_Set_Freq(&Flyback_50V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_50V_Switching_PWM);
+
+	LL_GPIO_SetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
+	LL_GPIO_SetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
 }
 
 /* :::::::::: PID Task ::::::::::::: */

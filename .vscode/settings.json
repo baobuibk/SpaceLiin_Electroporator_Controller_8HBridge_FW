@@ -24,6 +24,7 @@
         "stm32f0xx_ll_gpio.h": "c",
         "pwm.h": "c",
         "pid.h": "c",
-        "discharge_task.h": "c"
+        "discharge_task.h": "c",
+        "stdlib.h": "c"
     }
 }
