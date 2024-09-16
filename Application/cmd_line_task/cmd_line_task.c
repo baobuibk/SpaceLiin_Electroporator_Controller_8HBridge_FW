@@ -165,13 +165,13 @@ void CMD_Line_Task_Init()
 void CMD_Line_Task(void*)
 {
     uint8_t return_value;
-    //uint8_t time_out = 50;
+    uint8_t time_out = 50;
 
-    if(!RX_BUFFER_EMPTY(&RS232_UART))
+    while((!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0))
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
         UART_Write(&RS232_UART, &CMD_line.RX_char, 1);
-        //time_out --;
+        time_out--;
 
         if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
         {
@@ -203,12 +203,11 @@ void CMD_Line_Task(void*)
             CMD_line.p_buffer[CMD_line.write_index] = CMD_line.RX_char;
             ADVANCE_CMD_WRITE_INDEX(&CMD_line);
 
-            /*
             if (CMD_BUFFER_FULL(&CMD_line))
             {
+                UART_Write(&RS232_UART, "CMD too long!\n", 14);
                 CMD_line.read_index = CMD_line.write_index;
             }
-            */
         }
     }
 }
@@ -294,8 +293,8 @@ int CMD_stop_charge_cap(int argc, char *argv[])
         return CMDLINE_INVALID_ARG;
     }
 
-    PID_is_300V_on  = ~(atoi(argv[1]));
-    PID_is_50V_on   = ~(atoi(argv[2]));
+    PID_is_300V_on  = (atoi(argv[1]) ? 0 : 1);
+    PID_is_50V_on   = (atoi(argv[2]) ? 0 : 1);
 
     return CMDLINE_OK;
 }
@@ -340,8 +339,8 @@ int CMD_stop_discharge(int argc, char *argv[])
         return CMDLINE_INVALID_ARG;
     }
 
-    g_is_Discharge_300V_On  = ~(atoi(argv[1]));
-    g_is_Discharge_50V_On   = ~(atoi(argv[2]));
+    g_is_Discharge_300V_On  = (atoi(argv[1]) ? 0 : 1);
+    g_is_Discharge_50V_On   = (atoi(argv[2]) ? 0 : 1);
 
     return CMDLINE_OK;
 }

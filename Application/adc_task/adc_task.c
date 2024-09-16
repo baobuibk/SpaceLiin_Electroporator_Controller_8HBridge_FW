@@ -11,6 +11,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static uint8_t  ADC_channel_index = 0;
+static uint16_t ADC_Value[ADC_CHANNEL_COUNT] = {0};
 
 static bool is_ADC_read_completed       = false;
 static bool is_ADC_sequence_completed   = false;
@@ -38,16 +39,9 @@ void ADC_Task_Init(uint32_t Sampling_Time)
 //TODO: Áp dụng ring buffer và mạch lọc cho ADC.
 void ADC_Task(void*)
 {
-    uint16_t ADC_Value = 0;
-
-    if ((is_ADC_read_completed == true) && (ADC_channel_index <= ADC_CHANNEL_COUNT))
+    if ((is_ADC_read_completed == true) && (ADC_channel_index < ADC_CHANNEL_COUNT))
     {
-        ADC_Value = LL_ADC_REG_ReadConversionData12(ADC_FEEDBACK_HANDLE);
-        g_Feedback_Voltage[ADC_channel_index] = 
-            __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, ADC_Value, LL_ADC_RESOLUTION_12B);
-
         is_ADC_read_completed = false;
-        ADC_channel_index += 1;
 
         LL_ADC_REG_StartConversion(ADC_FEEDBACK_HANDLE);
     }
@@ -67,6 +61,12 @@ void ADC_Task_IRQHandler(void)
     {
         is_ADC_read_completed = true;
         LL_ADC_ClearFlag_EOC(ADC_FEEDBACK_HANDLE);
+
+        ADC_Value[ADC_channel_index] = LL_ADC_REG_ReadConversionData12(ADC_FEEDBACK_HANDLE);
+        g_Feedback_Voltage[ADC_channel_index] = 
+            __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, ADC_Value[ADC_channel_index], LL_ADC_RESOLUTION_12B);
+
+        ADC_channel_index += 1;
     }
     else if(LL_ADC_IsActiveFlag_EOS(ADC_FEEDBACK_HANDLE) == true)
     {
