@@ -10,7 +10,7 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                     {
                             &ADC_Task,
                             (void *) 0,
-                            62,                         //call every 300us
+                            62,                         //call every 248us
                             0,			                //count from start
                             true		                //is active
                     },
