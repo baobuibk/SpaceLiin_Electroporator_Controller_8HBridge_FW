@@ -165,23 +165,18 @@ void CMD_Line_Task_Init()
 void CMD_Line_Task(void*)
 {
     uint8_t cmd_return, time_out;
-    //bool backspace_condition = false;
-    //uint8_t time_out = 50;
-
-    //while((!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0))
+    
     for(time_out = 50; (!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0); time_out--)
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
         
-        if((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127))
+        if(((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127)))
         {
-            if ((!CMD_BUFFER_EMPTY(&CMD_line)))
-            {
-                RETREAT_CMD_WRITE_INDEX(&CMD_line);
-                UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
+            if (CMD_BUFFER_EMPTY(&CMD_line))
                 break;
-            }
 
+            RETREAT_CMD_WRITE_INDEX(&CMD_line);
+            UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
             break;
         }
 
