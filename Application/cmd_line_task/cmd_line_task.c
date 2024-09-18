@@ -84,8 +84,12 @@ static uint16_t     retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t
 static void         CMD_send_splash(uart_stdio_typedef* p_uart);
 
        int          CMD_debug_led_on(int argc, char *argv[]);
-
        int          CMD_debug_led_off(int argc, char *argv[]);
+       int          CMD_cap_set_volt(int argc, char *argv[]);
+       int          CMD_start_charge_cap(int argc, char *argv[]);
+       int          CMD_stop_charge_cap(int argc, char *argv[]);
+       int          CMD_start_discharge(int argc, char *argv[]);
+       int          CMD_stop_discharge(int argc, char *argv[]);
 
 //*****************************************************************************
 //
@@ -125,6 +129,11 @@ tCmdLineEntry g_psCmdTable[] =
 {
     { "GPC_DEBUG_LED_ON", CMD_debug_led_on, "Turn on debug led" },
     { "GPC_DEBUG_LED_OFF", CMD_debug_led_off, "Turn off debug led" },
+    { "GPC_CAP_SET_VOLT", CMD_cap_set_volt, "Charge cap to a voltage"},
+    { "GPC_CAP_START", CMD_start_charge_cap, "Start charging cap"},
+    { "GPC_CAP_STOP", CMD_stop_charge_cap, "Stop charging cap"},
+    { "GPC_DISCHARGE_START", CMD_start_discharge, "Start discharging cap" },
+    { "GPC_DISCHARGE_STOP", CMD_stop_discharge, "Stop discharging cap" },
 	{0,0,0}
 };
 
@@ -147,8 +156,8 @@ void CMD_Line_Task_Init()
         memset((void *)CMD_line.p_buffer, 0, sizeof(CMD_line.p_buffer));
     }
 
-    UART_Write(&RS232_UART, "GPC FIRMWARE V1.0.0\n", 20);
-    UART_Write(&RS232_UART, "> ", 2);
+    UART_Send_String(&RS232_UART, "GPC FIRMWARE V1.0.0\n");
+    UART_Send_String(&RS232_UART, "> ");
     CMD_send_splash(&RS232_UART);
 }
 
@@ -156,11 +165,13 @@ void CMD_Line_Task_Init()
 void CMD_Line_Task(void*)
 {
     uint8_t return_value;
+    uint8_t time_out = 50;
 
-    if((!RX_BUFFER_EMPTY(&RS232_UART)) && (!CMD_BUFFER_FULL(&CMD_line)))
+    while((!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0))
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
-        UART_Write(&RS232_UART, &CMD_line.RX_char, 1);
+        UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
+        time_out--;
 
         if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
         {
@@ -173,13 +184,13 @@ void CMD_Line_Task(void*)
                 return_value = CmdLineProcess(&CMD_line.p_buffer[CMD_line.read_index]);
                 CMD_line.read_index = CMD_line.write_index;
 
-                UART_Write(&RS232_UART, "> ", 3);
+                UART_Send_String(&RS232_UART, "> ");
                 UART_Printf(&RS232_UART, ErrorCode[return_value]);
-                UART_Write(&RS232_UART, "> ", 2);
+                UART_Send_String(&RS232_UART, "> ");
             }
             else
             {
-                UART_Write(&RS232_UART, "> ", 2);
+                UART_Send_String(&RS232_UART, "> ");
             }
         }
         else if((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127))
@@ -191,19 +202,146 @@ void CMD_Line_Task(void*)
         {
             CMD_line.p_buffer[CMD_line.write_index] = CMD_line.RX_char;
             ADVANCE_CMD_WRITE_INDEX(&CMD_line);
+
+            if (CMD_BUFFER_FULL(&CMD_line))
+            {
+                UART_Send_String(&RS232_UART, "CMD too long!\n");
+                CMD_line.read_index = CMD_line.write_index;
+            }
         }
     }
 }
 
 int CMD_debug_led_on(int argc, char *argv[])
 {
+    if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
     LL_GPIO_SetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
     return CMDLINE_OK;
 }
 
 int CMD_debug_led_off(int argc, char *argv[])
 {
+    if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
     LL_GPIO_ResetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
+    return CMDLINE_OK;
+}
+
+int CMD_cap_set_volt(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 50) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 25) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
+    PID_300V_set_voltage    = atoi(argv[1]) * 10 - 10;
+    PID_50V_set_voltage     = atoi(argv[2]) * 10 - 10;
+
+    return CMDLINE_OK;
+}
+
+int CMD_start_charge_cap(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
+    PID_is_300V_on  = atoi(argv[1]);
+    PID_is_50V_on   = atoi(argv[2]);
+
+    return CMDLINE_OK;
+}
+
+int CMD_stop_charge_cap(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
+    PID_is_300V_on  = (atoi(argv[1]) ? 0 : 1);
+    PID_is_50V_on   = (atoi(argv[2]) ? 0 : 1);
+
+    return CMDLINE_OK;
+}
+
+int CMD_start_discharge(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
+    g_is_Discharge_300V_On  = atoi(argv[1]);
+    g_is_Discharge_50V_On   = atoi(argv[2]);
+
+    return CMDLINE_OK;
+}
+
+int CMD_stop_discharge(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+
+    if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
+    {
+        return CMDLINE_INVALID_ARG;
+    }
+
+    g_is_Discharge_300V_On  = (atoi(argv[1]) ? 0 : 1);
+    g_is_Discharge_50V_On   = (atoi(argv[2]) ? 0 : 1);
+
     return CMDLINE_OK;
 }
 
@@ -228,10 +366,21 @@ void RS232_IRQHandler(void)
     {
         RS232_UART.RX_irq_char = LL_USART_ReceiveData8(RS232_UART.handle);
 
-        if((!RX_BUFFER_FULL(&RS232_UART)) && (RS232_UART.RX_irq_char != '\r'))
+        // NOTE: On win 10, default PUTTY when hit enter only send back '\r',
+        // while on default HERCULES when hit enter send '\r\n' in that order.
+        // The code bellow is modified so that it can work on PUTTY and HERCULES.
+        if((!RX_BUFFER_FULL(&RS232_UART)) && (RS232_UART.RX_irq_char != '\n'))
         {
-            RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
-            ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            if (RS232_UART.RX_irq_char == '\r')
+            {
+                RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = '\n';
+                ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            }
+            else
+            {
+                RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
+                ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            }
         }
     }
 }
@@ -361,9 +510,9 @@ static void CMD_send_splash(uart_stdio_typedef* p_uart)
 {
     for(uint8_t i = 0 ; i < 21 ; i++)
     {
-		UART_Write(p_uart, &SPLASH[i][0], 65);
+		UART_Send_String(p_uart, &SPLASH[i][0]);
 	}
-	UART_Write(p_uart, "> ", 2);
+	UART_Send_String(p_uart, "> ");
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
