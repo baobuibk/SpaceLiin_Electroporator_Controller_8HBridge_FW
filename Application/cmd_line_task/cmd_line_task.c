@@ -164,14 +164,28 @@ void CMD_Line_Task_Init()
 /* :::::::::: CMD Line Task ::::::::::::: */
 void CMD_Line_Task(void*)
 {
-    uint8_t return_value;
-    uint8_t time_out = 50;
+    uint8_t cmd_return, time_out;
+    //bool backspace_condition = false;
+    //uint8_t time_out = 50;
 
-    while((!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0))
+    //while((!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0))
+    for(time_out = 50; (!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0); time_out--)
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
+        
+        if((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127))
+        {
+            if ((!CMD_BUFFER_EMPTY(&CMD_line)))
+            {
+                RETREAT_CMD_WRITE_INDEX(&CMD_line);
+                UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
+                break;
+            }
+
+            break;
+        }
+
         UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
-        time_out--;
 
         if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
         {
@@ -181,22 +195,17 @@ void CMD_Line_Task(void*)
                 CMD_line.p_buffer[CMD_line.write_index] = 0;
                 ADVANCE_CMD_WRITE_INDEX(&CMD_line);
 
-                return_value = CmdLineProcess(&CMD_line.p_buffer[CMD_line.read_index]);
+                cmd_return = CmdLineProcess(&CMD_line.p_buffer[CMD_line.read_index]);
                 CMD_line.read_index = CMD_line.write_index;
 
                 UART_Send_String(&RS232_UART, "> ");
-                UART_Printf(&RS232_UART, ErrorCode[return_value]);
+                UART_Printf(&RS232_UART, ErrorCode[cmd_return]);
                 UART_Send_String(&RS232_UART, "> ");
             }
             else
             {
                 UART_Send_String(&RS232_UART, "> ");
             }
-        }
-        else if((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127))
-        {
-            if(!CMD_BUFFER_EMPTY(&CMD_line))
-                RETREAT_CMD_WRITE_INDEX(&CMD_line);
         }
         else
         {
@@ -205,8 +214,11 @@ void CMD_Line_Task(void*)
 
             if (CMD_BUFFER_FULL(&CMD_line))
             {
-                UART_Send_String(&RS232_UART, "CMD too long!\n");
-                CMD_line.read_index = CMD_line.write_index;
+                // SDKLFJSDFKS
+                // > CMD too long!
+                // > 
+                UART_Send_String(&RS232_UART, "\n> CMD too long!\n> ");
+                CMD_line.write_index = CMD_line.read_index;
             }
         }
     }
