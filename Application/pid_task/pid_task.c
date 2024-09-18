@@ -77,7 +77,7 @@ void PID_Task_Init(void)
 	PID_Init(&Charge_300V_Cap_PID);
 
 	PWM_Init(	&Flyback_300V_Switching_PWM, FLYBACK_SW1_HANDLE, FLYBACK_SW1_CHANNEL,
-				LL_TIM_OCMODE_PWM1, LL_TIM_OCPOLARITY_LOW);
+				LL_TIM_OCMODE_PWM1, LL_TIM_OCPOLARITY_HIGH);
 
 	PWM_Set_Freq(&Flyback_300V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_300V_Switching_PWM);
@@ -86,7 +86,7 @@ void PID_Task_Init(void)
 	PID_Init(&Charge_50V_Cap_PID);
 
 	PWM_Init(	&Flyback_50V_Switching_PWM, FLYBACK_SW2_HANDLE, FLYBACK_SW2_CHANNEL,
-				LL_TIM_OCMODE_PWM1, LL_TIM_OCPOLARITY_LOW);
+				LL_TIM_OCMODE_PWM1, LL_TIM_OCPOLARITY_HIGH);
 
 	PWM_Set_Freq(&Flyback_50V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_50V_Switching_PWM);

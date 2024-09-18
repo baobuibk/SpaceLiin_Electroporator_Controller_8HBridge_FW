@@ -156,8 +156,8 @@ void CMD_Line_Task_Init()
         memset((void *)CMD_line.p_buffer, 0, sizeof(CMD_line.p_buffer));
     }
 
-    UART_Write(&RS232_UART, "GPC FIRMWARE V1.0.0\n", 20);
-    UART_Write(&RS232_UART, "> ", 2);
+    UART_Send_String(&RS232_UART, "GPC FIRMWARE V1.0.0\n");
+    UART_Send_String(&RS232_UART, "> ");
     CMD_send_splash(&RS232_UART);
 }
 
@@ -170,7 +170,7 @@ void CMD_Line_Task(void*)
     while((!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0))
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
-        UART_Write(&RS232_UART, &CMD_line.RX_char, 1);
+        UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
         time_out--;
 
         if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
@@ -184,13 +184,13 @@ void CMD_Line_Task(void*)
                 return_value = CmdLineProcess(&CMD_line.p_buffer[CMD_line.read_index]);
                 CMD_line.read_index = CMD_line.write_index;
 
-                UART_Write(&RS232_UART, "> ", 2);
+                UART_Send_String(&RS232_UART, "> ");
                 UART_Printf(&RS232_UART, ErrorCode[return_value]);
-                UART_Write(&RS232_UART, "> ", 2);
+                UART_Send_String(&RS232_UART, "> ");
             }
             else
             {
-                UART_Write(&RS232_UART, "> ", 2);
+                UART_Send_String(&RS232_UART, "> ");
             }
         }
         else if((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127))
@@ -205,7 +205,7 @@ void CMD_Line_Task(void*)
 
             if (CMD_BUFFER_FULL(&CMD_line))
             {
-                UART_Write(&RS232_UART, "CMD too long!\n", 14);
+                UART_Send_String(&RS232_UART, "CMD too long!\n");
                 CMD_line.read_index = CMD_line.write_index;
             }
         }
@@ -366,10 +366,21 @@ void RS232_IRQHandler(void)
     {
         RS232_UART.RX_irq_char = LL_USART_ReceiveData8(RS232_UART.handle);
 
-        if((!RX_BUFFER_FULL(&RS232_UART)) && (RS232_UART.RX_irq_char != '\r'))
+        // NOTE: On win 10, default PUTTY when hit enter only send back '\r',
+        // while on default HERCULES when hit enter send '\r\n' in that order.
+        // The code bellow is modified so that it can work on PUTTY and HERCULES.
+        if((!RX_BUFFER_FULL(&RS232_UART)) && (RS232_UART.RX_irq_char != '\n'))
         {
-            RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
-            ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            if (RS232_UART.RX_irq_char == '\r')
+            {
+                RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = '\n';
+                ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            }
+            else
+            {
+                RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
+                ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            }
         }
     }
 }
@@ -499,9 +510,9 @@ static void CMD_send_splash(uart_stdio_typedef* p_uart)
 {
     for(uint8_t i = 0 ; i < 21 ; i++)
     {
-		UART_Write(p_uart, &SPLASH[i][0], 65);
+		UART_Send_String(p_uart, &SPLASH[i][0]);
 	}
-	UART_Write(p_uart, "> ", 2);
+	UART_Send_String(p_uart, "> ");
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
