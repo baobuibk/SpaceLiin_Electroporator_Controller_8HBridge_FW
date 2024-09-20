@@ -1,15 +1,14 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Include~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#include <string.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
-#include "stm32f0xx_ll_gpio.h"
+#include "cmd_line_task.h"
+#include "command.h"
 
 #include "app.h"
 
-#include "cmd_line_task.h"
 #include "cmd_line.h"
 #include "pid.h"
+#include "fsp.h"
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -31,16 +30,21 @@ uart_stdio_typedef  RS232_UART;
 char                g_RS232_UART_TX_buffer[2048];
 char                g_RS232_UART_RX_buffer[64];
 
+uart_stdio_typedef  GPP_UART;
+char                g_GPP_UART_TX_buffer[64];
+char                g_GPP_UART_RX_buffer[64];
+
 cmd_line_typedef    CMD_line;
 char                g_CMD_line_buffer[64];
 
-static const char * ErrorCode[5] = 
+static const char * ErrorCode[6] = 
 {
     "OK\n",
     "CMDLINE_BAD_CMD\n",
     "CMDLINE_TOO_MANY_ARGS\n",
     "CMDLINE_TOO_FEW_ARGS\n",
-    "CMDLINE_INVALID_ARG\n" 
+    "CMDLINE_INVALID_ARG\n",
+    "CMDLINE_INVALID_CMD\n",
 };
 
 const char SPLASH[][65] = 
@@ -83,14 +87,6 @@ static uint16_t     retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t
 
 static void         CMD_send_splash(uart_stdio_typedef* p_uart);
 
-       int          CMD_debug_led_on(int argc, char *argv[]);
-       int          CMD_debug_led_off(int argc, char *argv[]);
-       int          CMD_cap_set_volt(int argc, char *argv[]);
-       int          CMD_start_charge_cap(int argc, char *argv[]);
-       int          CMD_stop_charge_cap(int argc, char *argv[]);
-       int          CMD_start_discharge(int argc, char *argv[]);
-       int          CMD_stop_discharge(int argc, char *argv[]);
-
 //*****************************************************************************
 //
 // Macros to determine number of free and used bytes in the receive buffer.
@@ -125,18 +121,6 @@ static void         CMD_send_splash(uart_stdio_typedef* p_uart);
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-tCmdLineEntry g_psCmdTable[] =
-{
-    { "GPC_DEBUG_LED_ON", CMD_debug_led_on, "Turn on debug led" },
-    { "GPC_DEBUG_LED_OFF", CMD_debug_led_off, "Turn off debug led" },
-    { "GPC_CAP_SET_VOLT", CMD_cap_set_volt, "Charge cap to a voltage"},
-    { "GPC_CAP_START", CMD_start_charge_cap, "Start charging cap"},
-    { "GPC_CAP_STOP", CMD_stop_charge_cap, "Stop charging cap"},
-    { "GPC_DISCHARGE_START", CMD_start_discharge, "Start discharging cap" },
-    { "GPC_DISCHARGE_STOP", CMD_stop_discharge, "Stop discharging cap" },
-	{0,0,0}
-};
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
 void CMD_Line_Task_Init()
@@ -145,6 +129,10 @@ void CMD_Line_Task_Init()
     UART_Init(  &RS232_UART, RS232_UART_HANDLE, RS232_UART_IRQ,
                 g_RS232_UART_TX_buffer, g_RS232_UART_RX_buffer,
                 sizeof(g_RS232_UART_TX_buffer), sizeof(g_RS232_UART_RX_buffer));
+
+    UART_Init(  &GPP_UART, GPP_UART_HANDLE, GPP_UART_IRQ,
+                g_GPP_UART_TX_buffer, g_GPP_UART_RX_buffer,
+                sizeof(g_GPP_UART_TX_buffer), sizeof(g_GPP_UART_RX_buffer));
     
     CMD_line.p_buffer       = g_CMD_line_buffer;
     CMD_line.buffer_size    = 64;
@@ -158,14 +146,16 @@ void CMD_Line_Task_Init()
 
     UART_Send_String(&RS232_UART, "GPC FIRMWARE V1.0.0\n");
     UART_Send_String(&RS232_UART, "> ");
-    CMD_send_splash(&RS232_UART);
+    //CMD_send_splash(&RS232_UART);
+
+    fsp_init(FSP_ADR_GPC);
 }
 
 /* :::::::::: CMD Line Task ::::::::::::: */
 void CMD_Line_Task(void*)
 {
     uint8_t cmd_return, time_out;
-    
+
     for(time_out = 50; (!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0); time_out--)
     {
         CMD_line.RX_char = UART_Get_Char(&RS232_UART);
@@ -219,139 +209,6 @@ void CMD_Line_Task(void*)
     }
 }
 
-int CMD_debug_led_on(int argc, char *argv[])
-{
-    if (argc > 1)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    LL_GPIO_SetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
-    return CMDLINE_OK;
-}
-
-int CMD_debug_led_off(int argc, char *argv[])
-{
-    if (argc > 1)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    LL_GPIO_ResetOutputPin(DEBUG_LED_PORT, DEBUG_LED_PIN);
-    return CMDLINE_OK;
-}
-
-int CMD_cap_set_volt(int argc, char *argv[])
-{
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-
-    if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    if ((atoi(argv[1]) > 50) || (atoi(argv[1]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-    else if ((atoi(argv[2]) > 25) || (atoi(argv[2]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-
-    PID_300V_set_voltage    = atoi(argv[1]) * 10 - 10;
-    PID_50V_set_voltage     = atoi(argv[2]) * 10 - 10;
-
-    return CMDLINE_OK;
-}
-
-int CMD_start_charge_cap(int argc, char *argv[])
-{
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-
-    if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-
-    PID_is_300V_on  = atoi(argv[1]);
-    PID_is_50V_on   = atoi(argv[2]);
-
-    return CMDLINE_OK;
-}
-
-int CMD_stop_charge_cap(int argc, char *argv[])
-{
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-
-    if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-
-    PID_is_300V_on  = (atoi(argv[1]) ? 0 : 1);
-    PID_is_50V_on   = (atoi(argv[2]) ? 0 : 1);
-
-    return CMDLINE_OK;
-}
-
-int CMD_start_discharge(int argc, char *argv[])
-{
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-
-    if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-
-    g_is_Discharge_300V_On  = atoi(argv[1]);
-    g_is_Discharge_50V_On   = atoi(argv[2]);
-
-    return CMDLINE_OK;
-}
-
-int CMD_stop_discharge(int argc, char *argv[])
-{
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-
-    if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    if ((atoi(argv[1]) > 1) || (atoi(argv[1]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-    else if ((atoi(argv[2]) > 1) || (atoi(argv[2]) < 0))
-    {
-        return CMDLINE_INVALID_ARG;
-    }
-
-    g_is_Discharge_300V_On  = (atoi(argv[1]) ? 0 : 1);
-    g_is_Discharge_50V_On   = (atoi(argv[2]) ? 0 : 1);
-
-    return CMDLINE_OK;
-}
-
 /* :::::::::: IRQ Handler ::::::::::::: */
 void RS232_IRQHandler(void)
 {
@@ -387,6 +244,45 @@ void RS232_IRQHandler(void)
             {
                 RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
                 ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            }
+        }
+    }
+}
+
+void GPP_UART_IRQHandler(void)
+{
+    if(LL_USART_IsActiveFlag_TXE(GPP_UART.handle) == true)
+    {
+        if(TX_BUFFER_EMPTY(&GPP_UART))
+        {
+            // Buffer empty, so disable interrupts
+            LL_USART_DisableIT_TXE(GPP_UART.handle);
+        }
+        else
+        {
+            // There is more data in the output buffer. Send the next byte
+            UART_Prime_Transmit(&GPP_UART);
+        }
+    }
+
+    if(LL_USART_IsActiveFlag_RXNE(GPP_UART.handle) == true)
+    {
+        GPP_UART.RX_irq_char = LL_USART_ReceiveData8(GPP_UART.handle);
+
+        // NOTE: On win 10, default PUTTY when hit enter only send back '\r',
+        // while on default HERCULES when hit enter send '\r\n' in that order.
+        // The code bellow is modified so that it can work on PUTTY and HERCULES.
+        if((!RX_BUFFER_FULL(&GPP_UART)) && (GPP_UART.RX_irq_char != '\n'))
+        {
+            if (GPP_UART.RX_irq_char == '\r')
+            {
+                GPP_UART.p_RX_buffer[GPP_UART.RX_write_index] = '\n';
+                ADVANCE_RX_WRITE_INDEX(&GPP_UART);
+            }
+            else
+            {
+                GPP_UART.p_RX_buffer[GPP_UART.RX_write_index] = GPP_UART.RX_irq_char;
+                ADVANCE_RX_WRITE_INDEX(&GPP_UART);
             }
         }
     }

@@ -25,6 +25,7 @@
         "pwm.h": "c",
         "pid.h": "c",
         "discharge_task.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "fsp.h": "c"
     }
 }
