@@ -107,6 +107,8 @@ int GPC_CAP_RELEASE(int argc, char *argv[])
 
     g_is_Discharge_300V_On  = receive_argm[0];
     g_is_Discharge_50V_On   = receive_argm[1];
+
+    return CMDLINE_OK;
 }
 
 int GPC_PULSE_COUNT(int argc, char *argv[])

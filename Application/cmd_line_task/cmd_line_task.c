@@ -21,7 +21,6 @@ struct _cmd_line_typedef
                 char*       p_buffer;
 
     volatile    uint16_t    write_index;
-    volatile    uint16_t    read_index;
     volatile    char        RX_char;
 };
 typedef struct _cmd_line_typedef cmd_line_typedef;
@@ -72,53 +71,7 @@ const char SPLASH[][65] =
 };
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-static uint8_t      is_buffer_full(volatile uint16_t *pui16Read,
-                            volatile uint16_t *pui16Write, uint16_t ui16Size);
-
-static uint8_t      is_buffer_empty(volatile uint16_t *pui16Read,
-                            volatile uint16_t *pui16Write);
-
-static uint16_t     get_buffer_count(volatile uint16_t *pui16Read,
-                            volatile uint16_t *pui16Write, uint16_t ui16Size);
-
-static uint16_t     advance_buffer_index(volatile uint16_t* pui16Index, uint16_t ui16Size);
-
-static uint16_t     retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t ui16Size);
-
 static void         CMD_send_splash(uart_stdio_typedef* p_uart);
-
-//*****************************************************************************
-//
-// Macros to determine number of free and used bytes in the receive buffer.
-//
-//*****************************************************************************
-#define CMD_BUFFER_SIZE(p_cmd_line)          ((p_cmd_line)->buffer_size)
-
-#define CMD_BUFFER_USED(p_cmd_line)          (get_buffer_count(&(p_cmd_line)->read_index,  \
-                                                                  &(p_cmd_line)->write_index, \
-                                                                  (p_cmd_line)->buffer_size))
-
-#define CMD_BUFFER_FREE(p_cmd_line)          (CMD_BUFFER_SIZE - CMD_BUFFER_USED(p_cmd_line))
-
-#define CMD_BUFFER_EMPTY(p_cmd_line)         (is_buffer_empty(&(p_cmd_line)->read_index,   \
-                                                                  &(p_cmd_line)->write_index))
-
-#define CMD_BUFFER_FULL(p_cmd_line)          (is_buffer_full(&(p_cmd_line)->read_index,  \
-                                                                 &(p_cmd_line)->write_index, \
-                                                                 (p_cmd_line)->buffer_size))
-
-#define ADVANCE_CMD_WRITE_INDEX(p_cmd_line)  (advance_buffer_index(&(p_cmd_line)->write_index, \
-                                                                      (p_cmd_line)->buffer_size))
-
-#define ADVANCE_CMD_READ_INDEX(p_cmd_line)   (advance_buffer_index(&(p_cmd_line)->read_index, \
-                                                                      (p_cmd_line)->buffer_size))
-
-#define RETREAT_CMD_WRITE_INDEX(p_cmd_line)  (retreat_buffer_index(&(p_cmd_line)->write_index, \
-                                                                      (p_cmd_line)->buffer_size))
-
-#define RETREAT_CMD_READ_INDEX(p_cmd_line)   (retreat_buffer_index(&(p_cmd_line)->read_index, \
-                                                                      (p_cmd_line)->buffer_size))
-
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -137,7 +90,6 @@ void CMD_Line_Task_Init()
     CMD_line.p_buffer       = g_CMD_line_buffer;
     CMD_line.buffer_size    = 64;
     CMD_line.write_index 	= 0;
-    CMD_line.read_index		= 0;
 
     if(CMD_line.buffer_size != 0)
     {
@@ -162,10 +114,10 @@ void CMD_Line_Task(void*)
         
         if(((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127)))
         {
-            if (CMD_BUFFER_EMPTY(&CMD_line))
+            if (CMD_line.write_index == 0)
                 break;
 
-            RETREAT_CMD_WRITE_INDEX(&CMD_line);
+            CMD_line.write_index--;
             UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
             break;
         }
@@ -174,14 +126,15 @@ void CMD_Line_Task(void*)
 
         if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
         {
-            if(!CMD_BUFFER_EMPTY(&CMD_line))
+            if(CMD_line.write_index > 0)
             {
                 // Add a NUL char at the end of the CMD
                 CMD_line.p_buffer[CMD_line.write_index] = 0;
-                ADVANCE_CMD_WRITE_INDEX(&CMD_line);
+                CMD_line.write_index++;
 
-                cmd_return = CmdLineProcess(&CMD_line.p_buffer[CMD_line.read_index]);
-                CMD_line.read_index = CMD_line.write_index;
+                cmd_return = CmdLineProcess(CMD_line.p_buffer);
+                //CMD_line.read_index = CMD_line.write_index;
+                CMD_line.write_index    = 0;
 
                 UART_Send_String(&RS232_UART, "> ");
                 UART_Printf(&RS232_UART, ErrorCode[cmd_return]);
@@ -195,15 +148,16 @@ void CMD_Line_Task(void*)
         else
         {
             CMD_line.p_buffer[CMD_line.write_index] = CMD_line.RX_char;
-            ADVANCE_CMD_WRITE_INDEX(&CMD_line);
+            CMD_line.write_index++;
 
-            if (CMD_BUFFER_FULL(&CMD_line))
+            if (CMD_line.write_index > CMD_line.buffer_size)
             {
                 // SDKLFJSDFKS
                 // > CMD too long!
                 // > 
                 UART_Send_String(&RS232_UART, "\n> CMD too long!\n> ");
-                CMD_line.write_index = CMD_line.read_index;
+                //CMD_line.write_index = CMD_line.read_index;
+                CMD_line.write_index    = 0;
             }
         }
     }
@@ -286,136 +240,6 @@ void GPP_UART_IRQHandler(void)
             }
         }
     }
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-//*****************************************************************************
-//
-//! Determines whether the ring buffer whose pointers and size are provided
-//! is full or not.
-//!
-//! \param pui16Read points to the read index for the buffer.
-//! \param pui16Write points to the write index for the buffer.
-//! \param ui16Size is the size of the buffer in bytes.
-//!
-//! This function is used to determine whether or not a given ring buffer is
-//! full.  The structure of the code is specifically to ensure that we do not
-//! see warnings from the compiler related to the order of volatile accesses
-//! being undefined.
-//!
-//! \return Returns \b 1 if the buffer is full or \b 0 otherwise.
-//
-//*****************************************************************************
-
-static uint8_t is_buffer_full(volatile uint16_t *pui16Read,
-             volatile uint16_t *pui16Write, uint16_t ui16Size)
-{
-    uint16_t ui16Write;
-    uint16_t ui16Read;
-
-    ui16Write = *pui16Write;
-    ui16Read = *pui16Read;
-
-    return((((ui16Write + 1) % ui16Size) == ui16Read) ? 1 : 0);
-}
-
-
-//*****************************************************************************
-//
-//! Determines whether the ring buffer whose pointers and size are provided
-//! is empty or not.
-//!
-//! \param pui16Read points to the read index for the buffer.
-//! \param pui16Write points to the write index for the buffer.
-//!
-//! This function is used to determine whether or not a given ring buffer is
-//! empty.  The structure of the code is specifically to ensure that we do not
-//! see warnings from the compiler related to the order of volatile accesses
-//! being undefined.
-//!
-//! \return Returns \b 1 if the buffer is empty or \b 0 otherwise.
-//
-//*****************************************************************************
-
-static uint8_t is_buffer_empty(volatile uint16_t *pui16Read,
-              volatile uint16_t *pui16Write)
-{
-    uint16_t ui16Write;
-    uint16_t ui16Read;
-
-    ui16Write = *pui16Write;
-    ui16Read = *pui16Read;
-
-    return((ui16Read == ui16Write) ? 1 : 0);
-}
-
-
-//*****************************************************************************
-//
-//! Determines the number of bytes of data contained in a ring buffer.
-//!
-//! \param pui16Read points to the read index for the buffer.
-//! \param pui16Write points to the write index for the buffer.
-//! \param ui16Size is the size of the buffer in bytes.
-//!
-//! This function is used to determine how many bytes of data a given ring
-//! buffer currently contains.  The structure of the code is specifically to
-//! ensure that we do not see warnings from the compiler related to the order
-//! of volatile accesses being undefined.
-//!
-//! \return Returns the number of bytes of data currently in the buffer.
-//
-//*****************************************************************************
-
-static uint16_t get_buffer_count(volatile uint16_t *pui16Read,
-               volatile uint16_t *pui16Write, uint16_t ui16Size)
-{
-    uint16_t ui16Write;
-    uint16_t ui16Read;
-
-    ui16Write = *pui16Write;
-    ui16Read = *pui16Read;
-
-    return((ui16Write >= ui16Read) ? (ui16Write - ui16Read) :
-           (ui16Size - (ui16Read - ui16Write)));
-}
-
-//*****************************************************************************
-//
-//! Adding +1 to the index
-//!
-//! \param pui16Read points to the read index for the buffer.
-//! \param pui16Write points to the write index for the buffer.
-//! \param ui16Size is the size of the buffer in bytes.
-//!
-//! This function is use to advance the index by 1, if the index
-//! already hit the uart size then it will reset back to 0.
-//!
-//! \return Returns the number of bytes of data currently in the buffer.
-//
-//*****************************************************************************
-
-static uint16_t advance_buffer_index(volatile uint16_t* pui16Index, uint16_t ui16Size)
-{
-    *pui16Index = (*pui16Index + 1) % ui16Size;
-
-    return(*pui16Index);
-}
-
-static uint16_t retreat_buffer_index(volatile uint16_t* pui16Index, uint16_t ui16Size)
-{
-    ((*pui16Index) == 0) ? ((*pui16Index) = ui16Size) : ((*pui16Index) -= 1);
-
-    return(*pui16Index);
-}
-
-static void CMD_send_splash(uart_stdio_typedef* p_uart)
-{
-    for(uint8_t i = 0 ; i < 21 ; i++)
-    {
-		UART_Send_String(p_uart, &SPLASH[i][0]);
-	}
-	UART_Send_String(p_uart, "> ");
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
