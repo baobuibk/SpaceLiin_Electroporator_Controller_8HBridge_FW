@@ -13,8 +13,9 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
 int CMD_line_test(int argc, char *argv[]);
-int CMD_CAP_VOLT(int argc, char *argv[]);
+int GPC_CAP_VOLT(int argc, char *argv[]);
 int GPC_CAP_CONTROL(int argc, char *argv[]);
+int GPC_CAP_RELEASE(int argc, char *argv[]);
 
 int GPC_PULSE_COUNT(int argc, char *argv[]);
 int GPC_PULSE_HS_DURATION(int argc, char *argv[]);

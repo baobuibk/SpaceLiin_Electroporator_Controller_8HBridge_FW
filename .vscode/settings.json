@@ -26,6 +26,7 @@
         "pid.h": "c",
         "discharge_task.h": "c",
         "stdlib.h": "c",
-        "fsp.h": "c"
+        "fsp.h": "c",
+        "command.h": "c"
     }
 }
