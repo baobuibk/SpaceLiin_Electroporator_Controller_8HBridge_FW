@@ -627,6 +627,83 @@ convert:
 
 //*****************************************************************************
 //
+//! Writes a string of characters to the UART output.
+//!
+//! \param pcBuf points to a buffer containing the string to transmit.
+//! \param ui16Len is the length of the string to transmit.
+//!
+//! This function will transmit the string to the UART output.  The number of
+//! characters transmitted is determined by the \e ui16Len parameter.  This
+//! function does no interpretation or translation of any characters.  Since
+//! the output is sent to a UART, any LF (/n) characters encountered will be
+//! replaced with a CRLF pair.
+//!
+//! Besides using the \e ui16Len parameter to stop transmitting the string, if
+//! a null character (0) is encountered, then no more characters will be
+//! transmitted and the function will return.
+//!
+//! In non-buffered mode, this function is blocking and will not return until
+//! all the characters have been written to the output FIFO.  In buffered mode,
+//! the characters are written to the UART transmit buffer and the call returns
+//! immediately.  If insufficient space remains in the transmit buffer,
+//! additional characters are discarded.
+//!
+//! \return Returns the count of characters written.
+//
+//*****************************************************************************
+uint16_t UART_FSP(uart_stdio_typedef* p_uart, const char* pcBuf)
+{
+
+    uint8_t uIdx;
+    uint16_t ui16Len = strlen(pcBuf);
+
+    //
+    // Check for valid arguments.
+    //
+    //
+    // Send the characters
+    //
+    for(uIdx = 0; uIdx < ui16Len; uIdx++)
+    {
+        if(!TX_BUFFER_FULL(p_uart))
+        {
+        	p_uart->p_TX_buffer[p_uart->TX_write_index] = pcBuf[uIdx];
+            ADVANCE_TX_WRITE_INDEX(p_uart);
+        }
+        else
+        {
+            //
+            // Buffer is full - discard remaining characters and return.
+            //
+            p_uart->p_TX_buffer[p_uart->TX_write_index] = '\r';
+            break;
+        }
+    }
+
+    //
+    // If the usart txe irq is disable, this mean an usart phase is finished
+    // we need to enable the txe irq and kick start the transmit process.
+    //
+    if (LL_USART_IsEnabledIT_TXE(p_uart->handle) == false)
+    {
+        // NOTE: Turn on TXE after prime transmit,
+        // if turn on TXE b4 prime transmit create a
+        // bug where the index = 2 char don't get
+        // send.
+
+        //LL_USART_EnableIT_TXE(p_uart->handle);
+        UART_Prime_Transmit(p_uart);
+        LL_USART_EnableIT_TXE(p_uart->handle);
+    }
+
+    //
+    // Return the number of characters written.
+    //
+    return(uIdx);
+}
+
+//*****************************************************************************
+//
 //! Read a single character from the UART, blocking if necessary.
 //!
 //! This function will receive a single character from the UART and store it at

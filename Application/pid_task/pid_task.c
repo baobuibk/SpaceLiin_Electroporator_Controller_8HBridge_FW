@@ -24,18 +24,21 @@ typedef enum
 } PID_State_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern uart_stdio_typedef  RS232_UART;
 static PID_State_typedef PID_State = PID_OFF_STATE;
 
 static PWM_TypeDef 	Flyback_300V_Switching_PWM;
 static PWM_TypeDef	Flyback_50V_Switching_PWM;
 
-		bool		PID_is_300V_on;
+		bool		PID_is_300V_on = false;
+//static	bool		PID_is_300V_pwm_enable = false;
 		uint16_t 	PID_300V_set_voltage = 0;
-static 	uint8_t 	PID_300V_PWM_duty;
+		uint8_t 	PID_300V_PWM_duty;
 
-	   bool			PID_is_50V_on;
-	   uint16_t 	PID_50V_set_voltage	= 0;
-static uint8_t 		PID_50V_PWM_duty;
+	   	bool		PID_is_50V_on = false;
+//static	bool		PID_is_50V_pwm_enable = false;
+	   	uint16_t 	PID_50V_set_voltage	= 0;
+		uint8_t 	PID_50V_PWM_duty;
 
 static PID_TypeDef Charge_300V_Cap_PID =
 {
@@ -48,8 +51,8 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.MyInput		=	&g_Feedback_Voltage[0],
 	.MyOutput		= 	&PID_300V_PWM_duty,
 	.MySetpoint		=	&PID_300V_set_voltage,
-	.Output_Min		= 	3,
-	.Output_Max		=	20,
+	.Output_Min		= 	0,
+	.Output_Max		=	30,
 };
 
 static PID_TypeDef Charge_50V_Cap_PID =
@@ -57,14 +60,14 @@ static PID_TypeDef Charge_50V_Cap_PID =
 	.PID_Mode 		= 	_PID_MODE_AUTOMATIC,
 	.PON_Type 		= 	_PID_P_ON_E,
 	.PID_Direction 	=	_PID_CD_DIRECT,
-	.Kp				= 	(0.04 + 0.26),
+	.Kp				= 	(0.04 + 0.16),
 	.Ki				= 	0.001,
 	.Kd 			=	0.0,
 	.MyInput		=	&g_Feedback_Voltage[1],
 	.MyOutput		= 	&PID_50V_PWM_duty,
 	.MySetpoint		=	&PID_50V_set_voltage,
-	.Output_Min		= 	3,
-	.Output_Max		=	20,
+	.Output_Min		= 	0,
+	.Output_Max		=	12,
 };
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -81,6 +84,7 @@ void PID_Task_Init(void)
 
 	PWM_Set_Freq(&Flyback_300V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_300V_Switching_PWM);
+	//PWM_Disable(&Flyback_300V_Switching_PWM);
 
 	// Init 50V PWM PID
 	PID_Init(&Charge_50V_Cap_PID);
@@ -90,6 +94,7 @@ void PID_Task_Init(void)
 
 	PWM_Set_Freq(&Flyback_50V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_50V_Switching_PWM);
+	//PWM_Disable(&Flyback_50V_Switching_PWM);
 
 	LL_GPIO_SetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
 	LL_GPIO_SetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
@@ -101,20 +106,52 @@ void PID_Task(void*)
 {
 	if (PID_is_300V_on == false)
 	{
+		/*
+		if (PID_is_300V_pwm_enable == true )
+		{
+			PWM_Disable(&Flyback_300V_Switching_PWM);
+			PID_is_300V_pwm_enable = false;
+		}
+		*/
+
 		PWM_Set_Duty(&Flyback_300V_Switching_PWM, 0);
 	}
 	else if (PID_is_300V_on == true)
 	{
+		/*
+		if (PID_is_300V_pwm_enable == false)
+		{
+			PID_is_300V_pwm_enable = true;
+			PWM_Enable(&Flyback_300V_Switching_PWM);
+		}
+		*/
+
 		PID_Compute(&Charge_300V_Cap_PID);
 		PWM_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
 	}
 
 	if (PID_is_50V_on == false)
 	{
+		/*
+		if (PID_is_50V_pwm_enable == true )
+		{
+			PWM_Disable(&Flyback_50V_Switching_PWM);
+			PID_is_50V_pwm_enable = false;
+		}
+		*/
+
 		PWM_Set_Duty(&Flyback_50V_Switching_PWM, 0);
 	}
 	else if (PID_is_50V_on == true)
 	{
+		/*
+		if (PID_is_50V_pwm_enable == false)
+		{
+			PID_is_50V_pwm_enable = true;
+			PWM_Enable(&Flyback_50V_Switching_PWM);
+		}
+		*/
+
 		PID_Compute(&Charge_50V_Cap_PID);
 		PWM_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
 	}

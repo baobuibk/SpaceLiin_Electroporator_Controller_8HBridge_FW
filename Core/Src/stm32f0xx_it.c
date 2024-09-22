@@ -176,6 +176,7 @@ void USART3_6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART3_6_IRQn 0 */
   RS232_IRQHandler();
+  GPP_UART_IRQHandler();
   /* USER CODE END USART3_6_IRQn 0 */
   /* USER CODE BEGIN USART3_6_IRQn 1 */
 

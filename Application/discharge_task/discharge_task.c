@@ -45,7 +45,6 @@ void Discharge_Task_Init(void)
 }
 
 /* :::::::::: Discharge Task ::::::::::::: */
-//TODO: Adaptive PID, Ki, or sync uart command to change Ki.
 void Discharge_Task(void*)
 {
     switch (Discharge_State)
