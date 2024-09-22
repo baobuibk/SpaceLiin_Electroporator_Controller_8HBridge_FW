@@ -54,13 +54,13 @@ int GPC_CAP_VOLT(int argc, char *argv[])
     receive_argm[0] = atoi(argv[1]);
     receive_argm[1] = atoi(argv[2]);
 
-    if ((receive_argm[0] > 50) || (receive_argm[0] < 0))
+    if ((receive_argm[0] > 300) || (receive_argm[0] < 0))
         return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 15) || (receive_argm[1] < 0))
+    else if ((receive_argm[1] > 50) || (receive_argm[1] < 0))
         return CMDLINE_INVALID_ARG;
 
-    PID_300V_set_voltage    = receive_argm[0] * 10;
-    PID_50V_set_voltage     = receive_argm[1] * 60;
+    PID_300V_set_voltage    = (receive_argm[0] * 10) - 453;
+    PID_50V_set_voltage     = (receive_argm[1] * 60) - 219;
 
     return CMDLINE_OK;
 }

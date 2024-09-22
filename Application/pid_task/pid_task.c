@@ -52,7 +52,7 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.MyOutput		= 	&PID_300V_PWM_duty,
 	.MySetpoint		=	&PID_300V_set_voltage,
 	.Output_Min		= 	0,
-	.Output_Max		=	20,
+	.Output_Max		=	30,
 };
 
 static PID_TypeDef Charge_50V_Cap_PID =
@@ -60,14 +60,14 @@ static PID_TypeDef Charge_50V_Cap_PID =
 	.PID_Mode 		= 	_PID_MODE_AUTOMATIC,
 	.PON_Type 		= 	_PID_P_ON_E,
 	.PID_Direction 	=	_PID_CD_DIRECT,
-	.Kp				= 	(0.04 + 0.26),
+	.Kp				= 	(0.04 + 0.16),
 	.Ki				= 	0.001,
 	.Kd 			=	0.0,
 	.MyInput		=	&g_Feedback_Voltage[1],
 	.MyOutput		= 	&PID_50V_PWM_duty,
 	.MySetpoint		=	&PID_50V_set_voltage,
 	.Output_Min		= 	0,
-	.Output_Max		=	20,
+	.Output_Max		=	12,
 };
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
