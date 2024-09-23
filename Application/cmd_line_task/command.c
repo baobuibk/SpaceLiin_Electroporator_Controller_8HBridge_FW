@@ -23,16 +23,16 @@ extern uart_stdio_typedef  GPP_UART;
 
 tCmdLineEntry g_psCmdTable[] =
 {
-    { "MARCO", CMD_line_test, "TEST" },
-    { "GPC_CAP_VOLT", GPC_CAP_VOLT, "Set cap voltage"},
-    { "GPC_CAP_CONTROL", GPC_CAP_CONTROL, "Control charger on/off"},
-    { "GPC_CAP_RELEASE", GPC_CAP_RELEASE, "Control releasing cap"},
-    { "GPC_PULSE_COUNT", GPC_PULSE_COUNT, "Set number of pulse" },
-    { "GPC_PULSE_HS_DURATION", GPC_PULSE_HS_DURATION, "Set hs pulse on time and off time" },
-    { "GPC_PULSE_LS_DURATION", GPC_PULSE_LS_DURATION, "Set ls pulse on time and off time" },
-    { "GPC_PULSE_CONTROL", GPC_PULSE_CONTROL, "Start pulsing" },
-    { "GPC_CUVETTE_ELECTRODE", GPC_CUVETTE_ELECTRODE, "Set up cuvette"},
-    { "GPC_CUVETTE_CONTROL", GPC_CUVETTE_CONTROL, "Stop cuvette"},
+    { "MARCO",                  CMD_line_test,          "TEST" },
+    { "GPC_CAP_VOLT",           GPC_CAP_VOLT,           "Set cap voltage"},
+    { "GPC_CAP_CONTROL",        GPC_CAP_CONTROL,        "Control charger on/off"},
+    { "GPC_CAP_RELEASE",        GPC_CAP_RELEASE,        "Control releasing cap"},
+    { "GPC_PULSE_COUNT",        GPC_PULSE_COUNT,        "Set number of pulse" },
+    { "GPC_PULSE_HS_DURATION",  GPC_PULSE_HS_DURATION,  "Set hs pulse on time and off time" },
+    { "GPC_PULSE_LS_DURATION",  GPC_PULSE_LS_DURATION,  "Set ls pulse on time and off time" },
+    { "GPC_PULSE_CONTROL",      GPC_PULSE_CONTROL,      "Start pulsing" },
+    { "GPC_CUVETTE_ELECTRODE",  GPC_CUVETTE_ELECTRODE,  "Set up cuvette"},
+    { "GPC_CUVETTE_CONTROL",    GPC_CUVETTE_CONTROL,    "Stop cuvette"},
 	{0,0,0}
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
