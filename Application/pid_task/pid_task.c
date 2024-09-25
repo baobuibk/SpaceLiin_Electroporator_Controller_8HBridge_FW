@@ -31,12 +31,10 @@ static PWM_TypeDef 	Flyback_300V_Switching_PWM;
 static PWM_TypeDef	Flyback_50V_Switching_PWM;
 
 		bool		PID_is_300V_on = false;
-//static	bool		PID_is_300V_pwm_enable = false;
 		uint16_t 	PID_300V_set_voltage = 0;
 		uint8_t 	PID_300V_PWM_duty;
 
 	   	bool		PID_is_50V_on = false;
-//static	bool		PID_is_50V_pwm_enable = false;
 	   	uint16_t 	PID_50V_set_voltage	= 0;
 		uint8_t 	PID_50V_PWM_duty;
 
@@ -84,7 +82,6 @@ void PID_Task_Init(void)
 
 	PWM_Set_Freq(&Flyback_300V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_300V_Switching_PWM);
-	//PWM_Disable(&Flyback_300V_Switching_PWM);
 
 	// Init 50V PWM PID
 	PID_Init(&Charge_50V_Cap_PID);
@@ -94,7 +91,6 @@ void PID_Task_Init(void)
 
 	PWM_Set_Freq(&Flyback_50V_Switching_PWM, 60000);
     PWM_Enable(&Flyback_50V_Switching_PWM);
-	//PWM_Disable(&Flyback_50V_Switching_PWM);
 
 	LL_GPIO_SetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
 	LL_GPIO_SetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
@@ -106,52 +102,20 @@ void PID_Task(void*)
 {
 	if (PID_is_300V_on == false)
 	{
-		/*
-		if (PID_is_300V_pwm_enable == true )
-		{
-			PWM_Disable(&Flyback_300V_Switching_PWM);
-			PID_is_300V_pwm_enable = false;
-		}
-		*/
-
 		PWM_Set_Duty(&Flyback_300V_Switching_PWM, 0);
 	}
 	else if (PID_is_300V_on == true)
 	{
-		/*
-		if (PID_is_300V_pwm_enable == false)
-		{
-			PID_is_300V_pwm_enable = true;
-			PWM_Enable(&Flyback_300V_Switching_PWM);
-		}
-		*/
-
 		PID_Compute(&Charge_300V_Cap_PID);
 		PWM_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
 	}
 
 	if (PID_is_50V_on == false)
 	{
-		/*
-		if (PID_is_50V_pwm_enable == true )
-		{
-			PWM_Disable(&Flyback_50V_Switching_PWM);
-			PID_is_50V_pwm_enable = false;
-		}
-		*/
-
 		PWM_Set_Duty(&Flyback_50V_Switching_PWM, 0);
 	}
 	else if (PID_is_50V_on == true)
 	{
-		/*
-		if (PID_is_50V_pwm_enable == false)
-		{
-			PID_is_50V_pwm_enable = true;
-			PWM_Enable(&Flyback_50V_Switching_PWM);
-		}
-		*/
-
 		PID_Compute(&Charge_50V_Cap_PID);
 		PWM_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
 	}

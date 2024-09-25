@@ -131,7 +131,7 @@ int GPC_PULSE_COUNT(int argc, char *argv[])
     payload[0]  =  receive_argm[0];
     payload[1]  =  receive_argm[1];
     fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITH_ACK,  &fsp_pkt);
+    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
     uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
     uint8_t  frame_len;
@@ -164,7 +164,7 @@ int GPC_PULSE_HS_DURATION(int argc, char *argv[])
     payload[0]  =  receive_argm[0];
     payload[1]  =  receive_argm[1];
     fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITH_ACK,  &fsp_pkt);
+    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
     uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
     uint8_t  frame_len;
@@ -197,7 +197,7 @@ int GPC_PULSE_LS_DURATION(int argc, char *argv[])
     payload[0]  =  receive_argm[0];
     payload[1]  =  receive_argm[1];
     fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITH_ACK,  &fsp_pkt);
+    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
     uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
     uint8_t  frame_len;
@@ -225,7 +225,7 @@ int GPC_PULSE_CONTROL(int argc, char *argv[])
     uint8_t  cmd  = FSP_CMD_GPC_PULSE_CONTROL;
     uint8_t  payload = receive_argm;
     fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITH_ACK,  &fsp_pkt);
+    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
     uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
     uint8_t  frame_len;
@@ -258,7 +258,7 @@ int GPC_CUVETTE_ELECTRODE(int argc, char *argv[])
     payload[0]  =  receive_argm[0];
     payload[1]  =  receive_argm[1];
     fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITH_ACK,  &fsp_pkt);
+    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
     uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
     uint8_t  frame_len;
@@ -286,7 +286,7 @@ int GPC_CUVETTE_CONTROL(int argc, char *argv[])
     uint8_t  cmd  = FSP_CMD_GPC_CUVETTE_CONTROL;
     uint8_t  payload = receive_argm;
     fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITH_ACK,  &fsp_pkt);
+    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
     uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
     uint8_t  frame_len;
