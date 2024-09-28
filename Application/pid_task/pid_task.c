@@ -89,7 +89,7 @@ static PID_TypeDef Charge_50V_Cap_PID =
 };
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
+static inline FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: PID Init ::::::::::::: */
 void PID_Task_Init(void)
@@ -120,24 +120,51 @@ void PID_Task(void*)
 {
 	if (PID_is_300V_on == false)
 	{
-		PWM_Set_Duty(&Flyback_300V_Switching_PWM, 0);
+		FlyBack_Set_Duty(&Flyback_300V_Switching_PWM, 0);
 	}
 	else if (PID_is_300V_on == true)
 	{
 		PID_Compute(&Charge_300V_Cap_PID);
-		PWM_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
+		FlyBack_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
 	}
 
 	if (PID_is_50V_on == false)
 	{
-		PWM_Set_Duty(&Flyback_50V_Switching_PWM, 0);
+		FlyBack_Set_Duty(&Flyback_50V_Switching_PWM, 0);
 	}
 	else if (PID_is_50V_on == true)
 	{
 		PID_Compute(&Charge_50V_Cap_PID);
-		PWM_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
+		FlyBack_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
 	}
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+static inline FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty)
+{
+	// Limit the duty to 100
+    if (_Duty > 100)
+      return;
+
+    // Set PWM DUTY for channel 1
+    PWMx->Duty = (PWMx->Freq * (_Duty / 100.0));
+    switch (PWMx->Channel)
+    {
+    case LL_TIM_CHANNEL_CH1:
+        LL_TIM_OC_SetCompareCH1(PWMx->TIMx, PWMx->Duty);
+        break;
+    case LL_TIM_CHANNEL_CH2:
+        LL_TIM_OC_SetCompareCH2(PWMx->TIMx, PWMx->Duty);
+        break;
+    case LL_TIM_CHANNEL_CH3:
+        LL_TIM_OC_SetCompareCH3(PWMx->TIMx, PWMx->Duty);
+        break;
+    case LL_TIM_CHANNEL_CH4:
+        LL_TIM_OC_SetCompareCH4(PWMx->TIMx, PWMx->Duty);
+        break;
+
+    default:
+        break;
+    }
+}
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
