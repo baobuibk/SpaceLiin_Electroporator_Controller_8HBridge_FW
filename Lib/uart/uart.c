@@ -651,11 +651,10 @@ convert:
 //! \return Returns the count of characters written.
 //
 //*****************************************************************************
-uint16_t UART_FSP(uart_stdio_typedef* p_uart, const char* pcBuf)
+uint16_t UART_FSP(uart_stdio_typedef* p_uart, const char *pcBuf, uint16_t ui16Len)
 {
 
     uint8_t uIdx;
-    uint16_t ui16Len = strlen(pcBuf);
 
     //
     // Check for valid arguments.

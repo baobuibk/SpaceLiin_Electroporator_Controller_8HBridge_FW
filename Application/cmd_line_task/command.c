@@ -141,7 +141,7 @@ int CMD_PULSE_COUNT(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -169,7 +169,7 @@ int CMD_PULSE_DELAY(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -202,7 +202,7 @@ int CMD_PULSE_HV(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -235,7 +235,7 @@ int CMD_PULSE_LV(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -296,7 +296,7 @@ int CMD_RELAY_SET(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -324,7 +324,7 @@ int CMD_RELAY_CONTROL(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -352,7 +352,7 @@ int CMD_CHANNEL_SET(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
@@ -380,7 +380,7 @@ int CMD_CHANNEL_CONTROL(int argc, char *argv[])
     uint8_t  frame_len;
     frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
 
-    UART_Write(&GPP_UART, encoded_frame, frame_len);
+    UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
     return CMDLINE_OK;
 }
