@@ -24,11 +24,30 @@ typedef enum
 } PID_State_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern uart_stdio_typedef  RS232_UART;
-static PID_State_typedef PID_State = PID_OFF_STATE;
+extern uart_stdio_typedef  	RS232_UART;
+static PID_State_typedef 	PID_State = PID_CAP_CHARGE_STATE;
 
-static PWM_TypeDef 	Flyback_300V_Switching_PWM;
-static PWM_TypeDef	Flyback_50V_Switching_PWM;
+static PWM_TypeDef 	Flyback_300V_Switching_PWM =
+{
+    .TIMx       =   FLYBACK_SW1_HANDLE,
+    .Channel    =   FLYBACK_SW1_CHANNEL,
+    .Prescaler  =   0,
+    .Mode       =   LL_TIM_OCMODE_PWM1,
+    .Polarity   =   LL_TIM_OCPOLARITY_HIGH,
+    .Duty       =   0,
+    .Freq       =   0,
+};
+
+static PWM_TypeDef	Flyback_50V_Switching_PWM =
+{
+    .TIMx       =   FLYBACK_SW2_HANDLE,
+    .Channel    =   FLYBACK_SW2_CHANNEL,
+    .Prescaler  =   0,
+    .Mode       =   LL_TIM_OCMODE_PWM1,
+    .Polarity   =   LL_TIM_OCPOLARITY_HIGH,
+    .Duty       =   0,
+    .Freq       =   0,
+};
 
 		bool		PID_is_300V_on = false;
 		uint16_t 	PID_300V_set_voltage = 0;
@@ -51,6 +70,7 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.MySetpoint		=	&PID_300V_set_voltage,
 	.Output_Min		= 	0,
 	.Output_Max		=	30,
+	//.Output_Max		=	22,
 };
 
 static PID_TypeDef Charge_50V_Cap_PID =
@@ -77,19 +97,17 @@ void PID_Task_Init(void)
 	// Init 300V PWM PID
 	PID_Init(&Charge_300V_Cap_PID);
 
-	PWM_Init(	&Flyback_300V_Switching_PWM, FLYBACK_SW1_HANDLE, FLYBACK_SW1_CHANNEL,
-				LL_TIM_OCMODE_PWM1, LL_TIM_OCPOLARITY_HIGH);
-
+	PWM_Init(&Flyback_300V_Switching_PWM);
 	PWM_Set_Freq(&Flyback_300V_Switching_PWM, 60000);
+	LL_TIM_DisableIT_UPDATE(Flyback_300V_Switching_PWM.TIMx);
     PWM_Enable(&Flyback_300V_Switching_PWM);
 
 	// Init 50V PWM PID
 	PID_Init(&Charge_50V_Cap_PID);
 
-	PWM_Init(	&Flyback_50V_Switching_PWM, FLYBACK_SW2_HANDLE, FLYBACK_SW2_CHANNEL,
-				LL_TIM_OCMODE_PWM1, LL_TIM_OCPOLARITY_HIGH);
-
+	PWM_Init(&Flyback_50V_Switching_PWM);
 	PWM_Set_Freq(&Flyback_50V_Switching_PWM, 60000);
+	LL_TIM_DisableIT_UPDATE(Flyback_50V_Switching_PWM.TIMx);
     PWM_Enable(&Flyback_50V_Switching_PWM);
 
 	LL_GPIO_SetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
