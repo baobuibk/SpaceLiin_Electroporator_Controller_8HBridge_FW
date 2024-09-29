@@ -1,11 +1,10 @@
 // APP HEADER //
 #include "app.h"
+#include "stm32f0xx_ll_gpio.h"
 
-//TODO: Create a system to handle hard fault or smth like that.
-//extern uart_stdio_typedef  RS232_UART;
-//static int volt_log(void*);
+static void Status_Led(void*);
 
-#define         SCHEDULER_TASK_COUNT  4
+#define         SCHEDULER_TASK_COUNT  5
 uint32_t        g_ui32SchedulerNumTasks = SCHEDULER_TASK_COUNT;
 tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                 {
@@ -37,6 +36,13 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                             0,                //count from start
                             true              //is active
                     },
+                    {
+                            &Status_Led,
+                            (void *) 0,
+                            10000,            //call every 500us
+                            0,                //count from start
+                            true              //is active
+                    },
                 };
 
 void App_Main(void)
@@ -56,13 +62,7 @@ void App_Main(void)
     }
 }
 
-/*
-static int volt_log(void*)
+static void Status_Led(void*)
 {
-    if ((PID_is_50V_on == true) || (PID_is_300V_on == true))
-	{
-		UART_Printf(&RS232_UART, "300V cap: %d; 50V cap: %d\n", g_Feedback_Voltage[0], g_Feedback_Voltage[1]);
-        UART_Printf(&RS232_UART, "300V duty: %d; 50V duty: %d\n", PID_300V_PWM_duty, PID_50V_PWM_duty);
-	}
+    LL_GPIO_TogglePin(DEBUG_LED_PORT, DEBUG_LED_PIN);
 }
-*/
