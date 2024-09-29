@@ -29,12 +29,19 @@ uart_stdio_typedef  RS232_UART;
 char                g_RS232_UART_TX_buffer[2048];
 char                g_RS232_UART_RX_buffer[64];
 
+uart_stdio_typedef  RF_UART;
+char                g_RF_UART_TX_buffer[64];
+char                g_RF_UART_RX_buffer[64];
+
 uart_stdio_typedef  GPP_UART;
 char                g_GPP_UART_TX_buffer[64];
 char                g_GPP_UART_RX_buffer[64];
 
-cmd_line_typedef    CMD_line;
-char                g_CMD_line_buffer[64];
+cmd_line_typedef    RS232_CMD_line;
+char                g_RS232_CMD_line_buffer[64];
+
+cmd_line_typedef    RF_CMD_line;
+char                g_RF_CMD_line_buffer[64];
 
 static const char * ErrorCode[6] = 
 {
@@ -83,58 +90,73 @@ void CMD_Line_Task_Init()
                 g_RS232_UART_TX_buffer, g_RS232_UART_RX_buffer,
                 sizeof(g_RS232_UART_TX_buffer), sizeof(g_RS232_UART_RX_buffer));
 
+    UART_Init(  &RF_UART, RF_UART_HANDLE, RF_UART_IRQ,
+                g_RF_UART_TX_buffer, g_RF_UART_RX_buffer,
+                sizeof(g_RF_UART_TX_buffer), sizeof(g_RF_UART_RX_buffer));
+
     UART_Init(  &GPP_UART, GPP_UART_HANDLE, GPP_UART_IRQ,
                 g_GPP_UART_TX_buffer, g_GPP_UART_RX_buffer,
                 sizeof(g_GPP_UART_TX_buffer), sizeof(g_GPP_UART_RX_buffer));
     
-    CMD_line.p_buffer       = g_CMD_line_buffer;
-    CMD_line.buffer_size    = 64;
-    CMD_line.write_index 	= 0;
+    RS232_CMD_line.p_buffer         = g_RS232_CMD_line_buffer;
+    RS232_CMD_line.buffer_size      = 64;
+    RS232_CMD_line.write_index      = 0;
 
-    if(CMD_line.buffer_size != 0)
+    if(RS232_CMD_line.buffer_size != 0)
     {
-        memset((void *)CMD_line.p_buffer, 0, sizeof(CMD_line.p_buffer));
+        memset((void *)RS232_CMD_line.p_buffer, 0, sizeof(RS232_CMD_line.p_buffer));
+    }
+
+    RF_CMD_line.p_buffer            = g_RF_CMD_line_buffer;
+    RF_CMD_line.buffer_size         = 64;
+    RF_CMD_line.write_index 	    = 0;
+
+    if(RF_CMD_line.buffer_size != 0)
+    {
+        memset((void *)RF_CMD_line.p_buffer, 0, sizeof(RF_CMD_line.p_buffer));
     }
 
     UART_Send_String(&RS232_UART, "GPC FIRMWARE V1.0.0\n");
     UART_Send_String(&RS232_UART, "> ");
     //CMD_send_splash(&RS232_UART);
 
+    UART_Send_Char(&RF_UART, 'B');
+
     fsp_init(FSP_ADR_GPC);
 }
 
 /* :::::::::: CMD Line Task ::::::::::::: */
-void CMD_Line_Task(void*)
+void RS232_CMD_Line_Task(void*)
 {
     uint8_t cmd_return, time_out;
 
     for(time_out = 50; (!RX_BUFFER_EMPTY(&RS232_UART)) && (time_out != 0); time_out--)
     {
-        CMD_line.RX_char = UART_Get_Char(&RS232_UART);
+        RS232_CMD_line.RX_char = UART_Get_Char(&RS232_UART);
         
-        if(((CMD_line.RX_char == 8) || (CMD_line.RX_char == 127)))
+        if(((RS232_CMD_line.RX_char == 8) || (RS232_CMD_line.RX_char == 127)))
         {
-            if (CMD_line.write_index == 0)
+            if (RS232_CMD_line.write_index == 0)
                 break;
 
-            CMD_line.write_index--;
-            UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
+            RS232_CMD_line.write_index--;
+            UART_Send_Char(&RS232_UART, RS232_CMD_line.RX_char);
             break;
         }
 
-        UART_Send_Char(&RS232_UART, &CMD_line.RX_char);
+        UART_Send_Char(&RS232_UART, RS232_CMD_line.RX_char);
 
-        if((CMD_line.RX_char == '\r') || (CMD_line.RX_char == '\n'))
+        if((RS232_CMD_line.RX_char == '\r') || (RS232_CMD_line.RX_char == '\n'))
         {
-            if(CMD_line.write_index > 0)
+            if(RS232_CMD_line.write_index > 0)
             {
                 // Add a NUL char at the end of the CMD
-                CMD_line.p_buffer[CMD_line.write_index] = 0;
-                CMD_line.write_index++;
+                RS232_CMD_line.p_buffer[RS232_CMD_line.write_index] = 0;
+                RS232_CMD_line.write_index++;
 
-                cmd_return = CmdLineProcess(CMD_line.p_buffer);
-                //CMD_line.read_index = CMD_line.write_index;
-                CMD_line.write_index    = 0;
+                cmd_return = CmdLineProcess(RS232_CMD_line.p_buffer);
+                //RS232_CMD_line.read_index = RS232_CMD_line.write_index;
+                RS232_CMD_line.write_index    = 0;
 
                 UART_Send_String(&RS232_UART, "> ");
                 UART_Printf(&RS232_UART, ErrorCode[cmd_return]);
@@ -147,17 +169,76 @@ void CMD_Line_Task(void*)
         }
         else
         {
-            CMD_line.p_buffer[CMD_line.write_index] = CMD_line.RX_char;
-            CMD_line.write_index++;
+            RS232_CMD_line.p_buffer[RS232_CMD_line.write_index] = RS232_CMD_line.RX_char;
+            RS232_CMD_line.write_index++;
 
-            if (CMD_line.write_index > CMD_line.buffer_size)
+            if (RS232_CMD_line.write_index > RS232_CMD_line.buffer_size)
             {
                 // SDKLFJSDFKS
                 // > CMD too long!
                 // > 
                 UART_Send_String(&RS232_UART, "\n> CMD too long!\n> ");
-                //CMD_line.write_index = CMD_line.read_index;
-                CMD_line.write_index    = 0;
+                //RS232_CMD_line.write_index = RS232_CMD_line.read_index;
+                RS232_CMD_line.write_index    = 0;
+            }
+        }
+    }
+}
+
+void RF_CMD_Line_Task(void*)
+{
+    uint8_t cmd_return, time_out;
+
+    for(time_out = 50; (!RX_BUFFER_EMPTY(&RF_UART)) && (time_out != 0); time_out--)
+    {
+        RF_CMD_line.RX_char = UART_Get_Char(&RF_UART);
+        
+        if(((RF_CMD_line.RX_char == 8) || (RF_CMD_line.RX_char == 127)))
+        {
+            if (RF_CMD_line.write_index == 0)
+                break;
+
+            RF_CMD_line.write_index--;
+            UART_Send_Char(&RF_UART, RF_CMD_line.RX_char);
+            break;
+        }
+
+        UART_Send_Char(&RF_UART, RF_CMD_line.RX_char);
+
+        if((RF_CMD_line.RX_char == '\r') || (RF_CMD_line.RX_char == '\n'))
+        {
+            if(RF_CMD_line.write_index > 0)
+            {
+                // Add a NUL char at the end of the CMD
+                RF_CMD_line.p_buffer[RF_CMD_line.write_index] = 0;
+                RF_CMD_line.write_index++;
+
+                cmd_return = CmdLineProcess(RF_CMD_line.p_buffer);
+                //RF_CMD_line.read_index = RF_CMD_line.write_index;
+                RF_CMD_line.write_index    = 0;
+
+                UART_Send_String(&RF_UART, "> ");
+                UART_Printf(&RF_UART, ErrorCode[cmd_return]);
+                UART_Send_String(&RF_UART, "> ");
+            }
+            else
+            {
+                UART_Send_String(&RF_UART, "> ");
+            }
+        }
+        else
+        {
+            RF_CMD_line.p_buffer[RF_CMD_line.write_index] = RF_CMD_line.RX_char;
+            RF_CMD_line.write_index++;
+
+            if (RF_CMD_line.write_index > RF_CMD_line.buffer_size)
+            {
+                // SDKLFJSDFKS
+                // > CMD too long!
+                // > 
+                UART_Send_String(&RF_UART, "\n> CMD too long!\n> ");
+                //RF_CMD_line.write_index = RF_CMD_line.read_index;
+                RF_CMD_line.write_index    = 0;
             }
         }
     }
@@ -198,6 +279,45 @@ void RS232_IRQHandler(void)
             {
                 RS232_UART.p_RX_buffer[RS232_UART.RX_write_index] = RS232_UART.RX_irq_char;
                 ADVANCE_RX_WRITE_INDEX(&RS232_UART);
+            }
+        }
+    }
+}
+
+void RF_IRQHandler(void)
+{
+    if(LL_USART_IsActiveFlag_TXE(RF_UART.handle) == true)
+    {
+        if(TX_BUFFER_EMPTY(&RF_UART))
+        {
+            // Buffer empty, so disable interrupts
+            LL_USART_DisableIT_TXE(RF_UART.handle);
+        }
+        else
+        {
+            // There is more data in the output buffer. Send the next byte
+            UART_Prime_Transmit(&RF_UART);
+        }
+    }
+
+    if(LL_USART_IsActiveFlag_RXNE(RF_UART.handle) == true)
+    {
+        RF_UART.RX_irq_char = LL_USART_ReceiveData8(RF_UART.handle);
+
+        // NOTE: On win 10, default PUTTY when hit enter only send back '\r',
+        // while on default HERCULES when hit enter send '\r\n' in that order.
+        // The code bellow is modified so that it can work on PUTTY and HERCULES.
+        if((!RX_BUFFER_FULL(&RF_UART)) && (RF_UART.RX_irq_char != '\n'))
+        {
+            if (RF_UART.RX_irq_char == '\r')
+            {
+                RF_UART.p_RX_buffer[RF_UART.RX_write_index] = '\n';
+                ADVANCE_RX_WRITE_INDEX(&RF_UART);
+            }
+            else
+            {
+                RF_UART.p_RX_buffer[RF_UART.RX_write_index] = RF_UART.RX_irq_char;
+                ADVANCE_RX_WRITE_INDEX(&RF_UART);
             }
         }
     }
