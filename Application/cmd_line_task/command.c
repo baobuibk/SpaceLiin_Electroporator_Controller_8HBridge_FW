@@ -18,9 +18,8 @@ extern uart_stdio_typedef  GPP_UART;
 tCmdLineEntry g_psCmdTable[] =
 {
     { "MARCO",          CMD_line_test,      "TEST" },
-    { "CALIB_SET",      CMD_CALIB_SET,      "SET CALIB VOLT" },
+    { "CALIB_SET",      CMD_CALIB_RUN,      "SET CALIB VOLT" },
     { "CALIB_MEASURE",  CMD_CALIB_MEASURE,  "SET CALIB VOLT" },
-    { "CALIB_EXIT",     CMD_CALIB_EXIT,     "SET CALIB VOLT" },
     { "CAP_VOLT",       CMD_CAP_VOLT,       "Set cap voltage"},
     { "CAP_CONTROL",    CMD_CAP_CONTROL,    "Control charger on/off"},
     { "CAP_RELEASE",    CMD_CAP_RELEASE,    "Control releasing cap"},
@@ -42,7 +41,7 @@ int CMD_line_test(int argc, char *argv[])
     return CMDLINE_OK;
 }
 
-int CMD_CALIB_SET(int argc, char *argv[])
+int CMD_CALIB_RUN(int argc, char *argv[])
 {
    if (argc < 2)
         return CMDLINE_TOO_FEW_ARGS;
@@ -55,7 +54,11 @@ int CMD_CALIB_SET(int argc, char *argv[])
         return CMDLINE_INVALID_ARG;
 
     g_is_calib_running = receive_argm;
-    SchedulerTaskEnable(5, 1);
+
+    if (receive_argm == 1)
+    {
+        SchedulerTaskEnable(5, 1);
+    }
 
     return CMDLINE_OK;
 }
@@ -76,18 +79,6 @@ int CMD_CALIB_MEASURE(int argc, char *argv[])
     g_LV_Measure_mv    = receive_argm[1];
 
     g_is_measure_available = true;
-
-    return CMDLINE_OK;
-}
-
-int CMD_CALIB_EXIT(int argc, char *argv[])
-{
-    if (argc < 1)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 1)
-        return CMDLINE_TOO_MANY_ARGS;
-
-    g_is_calib_running = 0;
 
     return CMDLINE_OK;
 }
