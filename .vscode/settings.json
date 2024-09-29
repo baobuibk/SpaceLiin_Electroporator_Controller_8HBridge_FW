@@ -27,6 +27,7 @@
         "discharge_task.h": "c",
         "stdlib.h": "c",
         "fsp.h": "c",
-        "command.h": "c"
+        "command.h": "c",
+        "calib_task.h": "c"
     }
 }

@@ -89,7 +89,7 @@ static PID_TypeDef Charge_50V_Cap_PID =
 };
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-static inline FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty);
+static inline void FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: PID Init ::::::::::::: */
 void PID_Task_Init(void)
@@ -140,7 +140,7 @@ void PID_Task(void*)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-static inline FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty)
+static inline void FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty)
 {
 	// Limit the duty to 100
     if (_Duty > 100)

@@ -4,51 +4,58 @@
 
 static void Status_Led(void*);
 
-#define         SCHEDULER_TASK_COUNT  6
+#define         SCHEDULER_TASK_COUNT  7
 uint32_t        g_ui32SchedulerNumTasks = SCHEDULER_TASK_COUNT;
 tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                 {
                     {
                             &ADC_Task,
                             (void *) 0,
-                            5,                 //call every 248us
-                            0,			       //count from start
-                            true		       //is active
+                            5,                          //call every 248us
+                            0,			        //count from start
+                            true		        //is active
                     },
                     {
                             &PID_Task,
                             (void *) 0,
-                            10,               //call every 500us
-                            0,			      //count from start
-                            true		      //is active
+                            10,                         //call every 500us
+                            0,			        //count from start
+                            true		        //is active
                     },
                     {
                             &Discharge_Task,
                             (void *) 0,
-                            15,               //call every 500us
-                            0,			      //count from start
-                            true		      //is active
+                            15,                         //call every 500us
+                            0,			        //count from start
+                            true		        //is active
                     },
                     {
                             &RS232_CMD_Line_Task,
                             (void *) 0,
-                            50,               //call every 500us
-                            0,                //count from start
-                            true              //is active
+                            50,                         //call every 500us
+                            0,                          //count from start
+                            true                        //is active
                     },
                     {
                             &RF_CMD_Line_Task,
                             (void *) 0,
-                            50,               //call every 500us
-                            0,                //count from start
-                            true              //is active
+                            50,                         //call every 500us
+                            0,                          //count from start
+                            true                        //is active
+                    },
+                    {
+                            &Calib_Task,
+                            (void *) 0,
+                            50,                         //call every 500us
+                            0,                          //count from start
+                            false                       //is active
                     },
                     {
                             &Status_Led,
                             (void *) 0,
-                            10000,            //call every 500us
-                            0,                //count from start
-                            true              //is active
+                            10000,                      //call every 500us
+                            0,                          //count from start
+                            true                        //is active
                     },
                 };
 

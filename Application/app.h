@@ -1,7 +1,9 @@
 #ifndef APP_H_
 #define APP_H_
 
+#include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "stm32f030xc.h"
 
@@ -16,6 +18,9 @@
 #include "pid_task.h"
 #include "discharge_task.h"
 #include "cmd_line_task.h"
+#include "calib_task.h"
+
+#include "command.h"
 
 // INCLUDE LIB //
 #include "uart.h"

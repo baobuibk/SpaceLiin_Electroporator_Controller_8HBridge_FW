@@ -13,6 +13,11 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
 int CMD_line_test(int argc, char *argv[]);
+
+int CMD_CALIB_SET(int argc, char *argv[]);
+int CMD_CALIB_MEASURE(int argc, char *argv[]);
+int CMD_CALIB_EXIT(int argc, char *argv[]);
+
 int CMD_CAP_VOLT(int argc, char *argv[]);
 int CMD_CAP_CONTROL(int argc, char *argv[]);
 int CMD_CAP_RELEASE(int argc, char *argv[]);

@@ -26,11 +26,11 @@ struct _cmd_line_typedef
 typedef struct _cmd_line_typedef cmd_line_typedef;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 uart_stdio_typedef  RS232_UART;
-char                g_RS232_UART_TX_buffer[2048];
+char                g_RS232_UART_TX_buffer[250];
 char                g_RS232_UART_RX_buffer[64];
 
 uart_stdio_typedef  RF_UART;
-char                g_RF_UART_TX_buffer[64];
+char                g_RF_UART_TX_buffer[250];
 char                g_RF_UART_RX_buffer[64];
 
 uart_stdio_typedef  GPP_UART;
@@ -43,7 +43,7 @@ char                g_RS232_CMD_line_buffer[64];
 cmd_line_typedef    RF_CMD_line;
 char                g_RF_CMD_line_buffer[64];
 
-static const char * ErrorCode[6] = 
+static const char * ErrorCode[7] = 
 {
     "OK\n",
     "CMDLINE_BAD_CMD\n",
@@ -51,6 +51,7 @@ static const char * ErrorCode[6] =
     "CMDLINE_TOO_FEW_ARGS\n",
     "CMDLINE_INVALID_ARG\n",
     "CMDLINE_INVALID_CMD\n",
+    "CALIB IS RUNNING, USE CALIB_EXIT TO EXIT CALIB\n",
 };
 
 const char SPLASH[][65] = 

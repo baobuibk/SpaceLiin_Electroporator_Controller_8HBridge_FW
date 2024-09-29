@@ -1,10 +1,4 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Include~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#include <stdbool.h>
-#include <stdlib.h>
-
-#include "cmd_line_task.h"
-#include "command.h"
-
 #include "app.h"
 
 #include "cmd_line.h"
@@ -24,6 +18,9 @@ extern uart_stdio_typedef  GPP_UART;
 tCmdLineEntry g_psCmdTable[] =
 {
     { "MARCO",          CMD_line_test,      "TEST" },
+    { "CALIB_SET",      CMD_CALIB_SET,      "SET CALIB VOLT" },
+    { "CALIB_MEASURE",  CMD_CALIB_MEASURE,  "SET CALIB VOLT" },
+    { "CALIB_EXIT",     CMD_CALIB_EXIT,     "SET CALIB VOLT" },
     { "CAP_VOLT",       CMD_CAP_VOLT,       "Set cap voltage"},
     { "CAP_CONTROL",    CMD_CAP_CONTROL,    "Control charger on/off"},
     { "CAP_RELEASE",    CMD_CAP_RELEASE,    "Control releasing cap"},
@@ -45,8 +42,63 @@ int CMD_line_test(int argc, char *argv[])
     return CMDLINE_OK;
 }
 
+int CMD_CALIB_SET(int argc, char *argv[])
+{
+   if (argc < 2)
+        return CMDLINE_TOO_FEW_ARGS;
+    else if (argc > 2)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    int receive_argm = atoi(argv[1]);
+
+    if ((receive_argm > 1) || (receive_argm < 0))
+        return CMDLINE_INVALID_ARG;
+
+    g_is_calib_running = receive_argm;
+    SchedulerTaskEnable(5, 1);
+
+    return CMDLINE_OK;
+}
+
+int CMD_CALIB_MEASURE(int argc, char *argv[])
+{
+    if (argc < 3) 
+        return CMDLINE_TOO_FEW_ARGS;
+    else if (argc > 3)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    int receive_argm[2];
+
+    receive_argm[0] = atoi(argv[1]);
+    receive_argm[1] = atoi(argv[2]);
+
+    g_HV_Measure_mv    = receive_argm[0];
+    g_LV_Measure_mv    = receive_argm[1];
+
+    g_is_measure_available = true;
+
+    return CMDLINE_OK;
+}
+
+int CMD_CALIB_EXIT(int argc, char *argv[])
+{
+    if (argc < 1)
+        return CMDLINE_TOO_FEW_ARGS;
+    else if (argc > 1)
+        return CMDLINE_TOO_MANY_ARGS;
+
+    g_is_calib_running = 0;
+
+    return CMDLINE_OK;
+}
+
 int CMD_CAP_VOLT(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+    
     if (argc < 3) 
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -62,15 +114,18 @@ int CMD_CAP_VOLT(int argc, char *argv[])
     else if ((receive_argm[1] > 50) || (receive_argm[1] < 0))
         return CMDLINE_INVALID_ARG;
 
-    //PID_300V_set_voltage    = (receive_argm[0] * 10) - 453;
-    PID_300V_set_voltage    = (receive_argm[0] * 8.44);
-    PID_50V_set_voltage     = (receive_argm[1] * 60) - 219;
+    Calib_Calculate(receive_argm[0], receive_argm[1]);
 
     return CMDLINE_OK;
 }
 
 int CMD_CAP_CONTROL(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 3) 
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -104,6 +159,11 @@ int CMD_CAP_CONTROL(int argc, char *argv[])
 
 int CMD_CAP_RELEASE(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 3) 
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -137,6 +197,11 @@ int CMD_CAP_RELEASE(int argc, char *argv[])
 
 int CMD_PULSE_COUNT(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 3)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -168,6 +233,11 @@ int CMD_PULSE_COUNT(int argc, char *argv[])
 
 int CMD_PULSE_DELAY(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 2)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 2)
@@ -196,6 +266,11 @@ int CMD_PULSE_DELAY(int argc, char *argv[])
 
 int CMD_PULSE_HV(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 3)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -229,6 +304,11 @@ int CMD_PULSE_HV(int argc, char *argv[])
 
 int CMD_PULSE_LV(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 3)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -262,6 +342,11 @@ int CMD_PULSE_LV(int argc, char *argv[])
 
 int CMD_PULSE_CONTROL(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 2)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 2)
@@ -288,6 +373,11 @@ int CMD_PULSE_CONTROL(int argc, char *argv[])
 
 int CMD_RELAY_SET(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 3)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 3)
@@ -323,6 +413,11 @@ int CMD_RELAY_SET(int argc, char *argv[])
 
 int CMD_RELAY_CONTROL(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 2)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 2)
@@ -351,6 +446,11 @@ int CMD_RELAY_CONTROL(int argc, char *argv[])
 
 int CMD_CHANNEL_SET(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 2)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 2)
@@ -379,6 +479,11 @@ int CMD_CHANNEL_SET(int argc, char *argv[])
 
 int CMD_CHANNEL_CONTROL(int argc, char *argv[])
 {
+    if (g_is_calib_running == true)
+    {
+        return CMDLINE_CALIB_IS_RUNNING;
+    }
+
     if (argc < 2)
         return CMDLINE_TOO_FEW_ARGS;
     else if (argc > 2)
