@@ -86,6 +86,16 @@ int CMD_CAP_CONTROL(int argc, char *argv[])
     else if ((receive_argm[1] > 1) || (receive_argm[1] < 0))
         return CMDLINE_INVALID_ARG;
 
+    if (receive_argm[0] == 1)
+    {
+        g_is_Discharge_300V_On = 0;
+    }
+
+    if (receive_argm[1] == 1)
+    {
+        g_is_Discharge_50V_On = 0;
+    }
+
     PID_is_300V_on  = receive_argm[0];
     PID_is_50V_on   = receive_argm[1];
 
