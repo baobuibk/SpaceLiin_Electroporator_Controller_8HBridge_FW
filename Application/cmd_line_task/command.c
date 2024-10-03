@@ -10,11 +10,11 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uart_stdio_typedef RS232_UART;
+extern uart_stdio_typedef RF_UART;
 extern uart_stdio_typedef GPP_UART;
 
 tCmdLineEntry g_psCmdTable[] = {
-		{ "help", 			Cmd_help,			" : Display list of commands" },
-//      { "MARCO",          CMD_line_test,      " : TEST" },
+		{ "HELP", 			CMD_HELP,			" : Display list of commands" },
 		{ "CALIB_SET", 		CMD_CALIB_RUN, 		" : SET CALIB VOLT" },
 		{ "CALIB_MEASURE",	CMD_CALIB_MEASURE, 	" : SET CALIB VOLT" },
 		{ "CAP_VOLT",		CMD_CAP_VOLT, 		" : Set cap voltage" },
@@ -33,11 +33,14 @@ tCmdLineEntry g_psCmdTable[] = {
 		{ 0, 0, 0 }
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-int Cmd_help(int argc, char *argv[]) {
+int CMD_HELP(int argc, char *argv[]) {
 	tCmdLineEntry *pEntry;
 
 	UART_Send_String(&RS232_UART, "\nAvailable commands\r\n");
 	UART_Send_String(&RS232_UART, "------------------\r\n");
+
+	UART_Send_String(&RF_UART, "\nAvailable commands\r\n");
+	UART_Send_String(&RF_UART, "------------------\r\n");
 
 	// Point at the beginning of the command table.
 	pEntry = &g_psCmdTable[0];
@@ -50,6 +53,10 @@ int Cmd_help(int argc, char *argv[]) {
 		UART_Send_String(&RS232_UART, pEntry->pcHelp);
 		UART_Send_String(&RS232_UART, "\r\n");
 
+		UART_Send_String(&RF_UART, pEntry->pcCmd);
+		UART_Send_String(&RF_UART, pEntry->pcHelp);
+		UART_Send_String(&RF_UART, "\r\n");
+
 		// Advance to the next entry in the table.
 		pEntry++;
 
@@ -57,12 +64,6 @@ int Cmd_help(int argc, char *argv[]) {
 	// Return success.
 	return (CMDLINE_OK);
 }
-
-//int CMD_line_test(int argc, char *argv[])
-//{
-//    UART_Send_String(&RS232_UART, "> POLO\n");
-//    return CMDLINE_OK;
-//}
 
 int CMD_CALIB_RUN(int argc, char *argv[]) {
 	if (argc < 2)

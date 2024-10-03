@@ -16,8 +16,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
-int Cmd_help(int argc, char *argv[]);
-//int CMD_line_test(int argc, char *argv[]);
+int CMD_HELP(int argc, char *argv[]);
 
 int CMD_CALIB_RUN(int argc, char *argv[]);
 int CMD_CALIB_MEASURE(int argc, char *argv[]);
