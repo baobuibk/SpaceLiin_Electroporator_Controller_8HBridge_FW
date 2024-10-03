@@ -4,7 +4,7 @@
 
 static void Status_Led(void*);
 
-#define         SCHEDULER_TASK_COUNT  7
+#define         SCHEDULER_TASK_COUNT  8
 uint32_t        g_ui32SchedulerNumTasks = SCHEDULER_TASK_COUNT;
 tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                 {
@@ -12,22 +12,22 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                             &ADC_Task,
                             (void *) 0,
                             5,                          //call every 248us
-                            0,			        //count from start
-                            true		        //is active
+                            0,			                //count from start
+                            true		                //is active
                     },
                     {
                             &PID_Task,
                             (void *) 0,
                             10,                         //call every 500us
-                            0,			        //count from start
-                            true		        //is active
+                            0,			                //count from start
+                            true		                //is active
                     },
                     {
                             &Discharge_Task,
                             (void *) 0,
                             15,                         //call every 500us
-                            0,			        //count from start
-                            true		        //is active
+                            0,			                //count from start
+                            true		                //is active
                     },
                     {
                             &RS232_CMD_Line_Task,
@@ -40,6 +40,13 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                             &RF_CMD_Line_Task,
                             (void *) 0,
                             50,                         //call every 500us
+                            0,                          //count from start
+                            true                        //is active
+                    },
+                    {
+                            &FSP_Line_Task,
+                            (void *) 0,
+                            100,                        //call every 500us
                             0,                          //count from start
                             true                        //is active
                     },
@@ -69,6 +76,7 @@ void App_Main(void)
     PID_Task_Init();
     Discharge_Task_Init();
     CMD_Line_Task_Init();
+    FSP_Line_Task_Init();
 
     while (1)
     {

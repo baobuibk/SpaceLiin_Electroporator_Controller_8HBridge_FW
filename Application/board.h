@@ -91,4 +91,8 @@
 #define DEBUG_GPIO5_PIN         LL_GPIO_PIN_15
 /***********************************************/
 
+#define GPP_TX_BUF_LEN			64
+#define	GPP_RX_BUF_LEN			64
+#define FSP_BUF_LEN				64
+
 #endif /* BOARD_H_ */

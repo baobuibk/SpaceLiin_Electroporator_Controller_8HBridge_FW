@@ -26,16 +26,12 @@ struct _cmd_line_typedef
 typedef struct _cmd_line_typedef cmd_line_typedef;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 uart_stdio_typedef  RS232_UART;
-char                g_RS232_UART_TX_buffer[250];
+char                g_RS232_UART_TX_buffer[256];
 char                g_RS232_UART_RX_buffer[64];
 
 uart_stdio_typedef  RF_UART;
-char                g_RF_UART_TX_buffer[250];
+char                g_RF_UART_TX_buffer[256];
 char                g_RF_UART_RX_buffer[64];
-
-uart_stdio_typedef  GPP_UART;
-char                g_GPP_UART_TX_buffer[64];
-char                g_GPP_UART_RX_buffer[64];
 
 cmd_line_typedef    RS232_CMD_line;
 char                g_RS232_CMD_line_buffer[64];
@@ -95,10 +91,6 @@ void CMD_Line_Task_Init()
                 g_RF_UART_TX_buffer, g_RF_UART_RX_buffer,
                 sizeof(g_RF_UART_TX_buffer), sizeof(g_RF_UART_RX_buffer));
 
-    UART_Init(  &GPP_UART, GPP_UART_HANDLE, GPP_UART_IRQ,
-                g_GPP_UART_TX_buffer, g_GPP_UART_RX_buffer,
-                sizeof(g_GPP_UART_TX_buffer), sizeof(g_GPP_UART_RX_buffer));
-    
     RS232_CMD_line.p_buffer         = g_RS232_CMD_line_buffer;
     RS232_CMD_line.buffer_size      = 64;
     RS232_CMD_line.write_index      = 0;
@@ -122,8 +114,6 @@ void CMD_Line_Task_Init()
     //CMD_send_splash(&RS232_UART);
 
     UART_Send_Char(&RF_UART, 'B');
-
-    fsp_init(FSP_ADR_GPC);
 }
 
 /* :::::::::: CMD Line Task ::::::::::::: */
@@ -324,44 +314,7 @@ void RF_IRQHandler(void)
     }
 }
 
-void GPP_UART_IRQHandler(void)
-{
-    if(LL_USART_IsActiveFlag_TXE(GPP_UART.handle) == true)
-    {
-        if(TX_BUFFER_EMPTY(&GPP_UART))
-        {
-            // Buffer empty, so disable interrupts
-            LL_USART_DisableIT_TXE(GPP_UART.handle);
-        }
-        else
-        {
-            // There is more data in the output buffer. Send the next byte
-            UART_Prime_Transmit(&GPP_UART);
-        }
-    }
 
-    if(LL_USART_IsActiveFlag_RXNE(GPP_UART.handle) == true)
-    {
-        GPP_UART.RX_irq_char = LL_USART_ReceiveData8(GPP_UART.handle);
-
-        // NOTE: On win 10, default PUTTY when hit enter only send back '\r',
-        // while on default HERCULES when hit enter send '\r\n' in that order.
-        // The code bellow is modified so that it can work on PUTTY and HERCULES.
-        if((!RX_BUFFER_FULL(&GPP_UART)) && (GPP_UART.RX_irq_char != '\n'))
-        {
-            if (GPP_UART.RX_irq_char == '\r')
-            {
-                GPP_UART.p_RX_buffer[GPP_UART.RX_write_index] = '\n';
-                ADVANCE_RX_WRITE_INDEX(&GPP_UART);
-            }
-            else
-            {
-                GPP_UART.p_RX_buffer[GPP_UART.RX_write_index] = GPP_UART.RX_irq_char;
-                ADVANCE_RX_WRITE_INDEX(&GPP_UART);
-            }
-        }
-    }
-}
 
 static void CMD_send_splash(uart_stdio_typedef* p_uart)
 {

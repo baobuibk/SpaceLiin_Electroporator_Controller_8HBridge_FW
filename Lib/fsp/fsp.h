@@ -28,9 +28,9 @@
 // Transposed Frame Escape
 #define FSP_PKT_TESC 					0xDB
 /*
-| SOD | dst_adr | src_adr | length | type | payload (mã hóa) | CRC16 | EOF |
-TSOD (ESC D7) => SOD (7E) TEOF (ESC DE) => EOF (EF) TESC (ESC DB) => ESC (BD)
-*/
+ | SOD | dst_adr | src_adr | length | type | payload (mã hóa) | CRC16 | EOF |
+ TSOD (ESC D7) => SOD (7E) TEOF (ESC DE) => EOF (EF) TESC (ESC DB) => ESC (BD)
+ */
 /*-----------DEFINE FOR TSOD[ESC SOD]/TEOF[ESC EOF]/TESC[ESC ESC]------------*/
 
 // Addresses
@@ -47,16 +47,7 @@ TSOD (ESC D7) => SOD (7E) TEOF (ESC DE) => EOF (EF) TESC (ESC DB) => ESC (BD)
 #define FSP_PKT_TYPE_CMD_W_DATA     	7
 #define FSP_PKT_TYPE_CMD_W_DATA_ACK		8
 
-// Commands
-#define FSP_CMD_PULSE_COUNT             1       /**< Set number of pulse. */
-#define FSP_CMD_PULSE_DELAY             2
-#define FSP_CMD_PULSE_HV	            3       /**< Set hs pulse on time and off time. */
-#define FSP_CMD_PULSE_LV                4       /**< Set ls pulse on time and off time. */
-#define FSP_CMD_PULSE_CONTROL		    5       /**< Start pulsing. */
-#define FSP_CMD_RELAY_SET	            6       /**< Stop pulsing. */
-#define FSP_CMD_RELAY_CONTROL           7       /**< Stop cuvette. */
-#define FSP_CMD_CHANNEL_SET             8
-#define FSP_CMD_CHANNEL_CONTROL         9
+
 
 // Ack answers
 #define FSP_ACK_RF_MUTEX_FREE           1       /**< RF mutex is free. */
@@ -90,15 +81,15 @@ TSOD (ESC D7) => SOD (7E) TEOF (ESC DE) => EOF (EF) TESC (ESC DB) => ESC (BD)
 /**
  * \brief FSP packet struct.
  */
-typedef struct
-{
-    uint8_t sod;                                /**< Start of data. */
-    uint8_t src_adr;                            /**< Source address. */
-    uint8_t dst_adr;                            /**< Destination address. */
-    uint8_t length;                             /**< Length of the packet payload. */
-    uint8_t type;                               /**< Type of packet. */
-    uint8_t payload[FSP_PAYLOAD_MAX_LENGTH];    /**< Payload of the packet. */
-    uint16_t crc16;                             /**< CRC16-CCITT bytes. */
+typedef struct {
+	uint8_t sod; /**< Start of data. */
+	uint8_t src_adr; /**< Source address. */
+	uint8_t dst_adr; /**< Destination address. */
+	uint8_t length; /**< Length of the packet payload. */
+	uint8_t type; /**< Type of packet. */
+	uint8_t payload[FSP_PAYLOAD_MAX_LENGTH]; /**< Payload of the packet. */
+	uint16_t crc16; /**< CRC16-CCITT bytes. */
+	uint8_t eof;
 } fsp_packet_t;
 
 /**
@@ -138,7 +129,8 @@ void fsp_reset(void);
  *
  * \return None
  */
-void fsp_gen_data_pkt(uint8_t *data, uint8_t data_len, uint8_t dst_adr, uint8_t ack, fsp_packet_t *fsp);
+void fsp_gen_data_pkt(uint8_t *data, uint8_t data_len, uint8_t dst_adr,
+		uint8_t ack, fsp_packet_t *fsp);
 
 /**
  * \brief Generates a FSP command packet.
@@ -151,13 +143,11 @@ void fsp_gen_data_pkt(uint8_t *data, uint8_t data_len, uint8_t dst_adr, uint8_t 
  * \return None
  */
 
+void fsp_gen_cmd_w_data_pkt(uint8_t cmd, uint8_t *data, uint8_t data_len,
+		uint8_t dst_adr, uint8_t ack, fsp_packet_t *fsp);
 
-void fsp_gen_cmd_w_data_pkt(uint8_t cmd, uint8_t *data, uint8_t data_len, uint8_t dst_adr, uint8_t ack, fsp_packet_t *fsp);
-
-
-
-
-void fsp_gen_cmd_pkt(uint8_t cmd, uint8_t dst_adr, uint8_t ack, fsp_packet_t *fsp);
+void fsp_gen_cmd_pkt(uint8_t cmd, uint8_t dst_adr, uint8_t ack,
+		fsp_packet_t *fsp);
 
 /**
  * \brief Generates a FSP ack. packet.
@@ -193,7 +183,8 @@ void fsp_gen_nack_pkt(uint8_t dst_adr, fsp_packet_t *fsp);
  *
  * \return None
  */
-void fsp_gen_pkt(uint8_t *cmd, uint8_t *payload, uint8_t payload_len, uint8_t dst_adr, uint8_t type, fsp_packet_t *fsp);
+void fsp_gen_pkt(uint8_t *cmd, uint8_t *payload, uint8_t payload_len,
+		uint8_t dst_adr, uint8_t type, fsp_packet_t *fsp);
 
 /**
  * \brief Encodes a fsp_packet_t struct into a array of bytes.

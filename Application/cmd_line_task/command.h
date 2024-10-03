@@ -3,6 +3,10 @@
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #include <stdint.h>
+#include "app.h"
+#include "cmd_line.h"
+#include "fsp_line_task.h"
+#include "fsp.h"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -12,7 +16,8 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
-int CMD_line_test(int argc, char *argv[]);
+int Cmd_help(int argc, char *argv[]);
+//int CMD_line_test(int argc, char *argv[]);
 
 int CMD_CALIB_RUN(int argc, char *argv[]);
 int CMD_CALIB_MEASURE(int argc, char *argv[]);
@@ -32,6 +37,8 @@ int CMD_RELAY_CONTROL(int argc, char *argv[]);
 
 int CMD_CHANNEL_SET(int argc, char *argv[]);
 int CMD_CHANNEL_CONTROL(int argc, char *argv[]);
+
+int CMD_CALL_GPP(int argc, char *argv[]);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

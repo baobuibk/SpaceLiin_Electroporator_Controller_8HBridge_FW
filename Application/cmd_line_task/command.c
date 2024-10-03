@@ -1,8 +1,5 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Include~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#include "app.h"
-
-#include "cmd_line.h"
-#include "fsp.h"
+#include "command.h"
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -12,491 +9,623 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern uart_stdio_typedef  RS232_UART;
-extern uart_stdio_typedef  GPP_UART;
+extern uart_stdio_typedef RS232_UART;
+extern uart_stdio_typedef GPP_UART;
 
-tCmdLineEntry g_psCmdTable[] =
-{
-    { "MARCO",          CMD_line_test,      "TEST" },
-    { "CALIB_SET",      CMD_CALIB_RUN,      "SET CALIB VOLT" },
-    { "CALIB_MEASURE",  CMD_CALIB_MEASURE,  "SET CALIB VOLT" },
-    { "CAP_VOLT",       CMD_CAP_VOLT,       "Set cap voltage"},
-    { "CAP_CONTROL",    CMD_CAP_CONTROL,    "Control charger on/off"},
-    { "CAP_RELEASE",    CMD_CAP_RELEASE,    "Control releasing cap"},
-    { "PULSE_COUNT",    CMD_PULSE_COUNT,    "Set number of pulse" },
-    { "PULSE_DELAY",    CMD_PULSE_DELAY,    "Set delay between pulse hv and lv"},
-    { "PULSE_HV",       CMD_PULSE_HV,       "Set hs pulse on time and off time" },
-    { "PULSE_LV",       CMD_PULSE_LV,       "Set ls pulse on time and off time" },
-    { "PULSE_CONTROL",  CMD_PULSE_CONTROL,  "Start pulsing" },
-    { "RELAY_SET",      CMD_RELAY_SET,      "Set up cuvette"},
-    { "RELAY_CONTROL",  CMD_RELAY_CONTROL,  "Stop cuvette"},
-    { "CHANNEL_SET",    CMD_CHANNEL_SET,    "Choose a cap channel"},
-    { "CHANNEL_CONTROL",CMD_CHANNEL_CONTROL,"Control the setted channel"},
-	{0,0,0}
+tCmdLineEntry g_psCmdTable[] = {
+		{ "help", 			Cmd_help,			" : Display list of commands" },
+//      { "MARCO",          CMD_line_test,      " : TEST" },
+		{ "CALIB_SET", 		CMD_CALIB_RUN, 		" : SET CALIB VOLT" },
+		{ "CALIB_MEASURE",	CMD_CALIB_MEASURE, 	" : SET CALIB VOLT" },
+		{ "CAP_VOLT",		CMD_CAP_VOLT, 		" : Set cap voltage" },
+		{ "CAP_CONTROL",	CMD_CAP_CONTROL, 	" : Control charger on/off" },
+		{ "CAP_RELEASE",	CMD_CAP_RELEASE, 	" : Control releasing cap" },
+		{ "PULSE_COUNT",	CMD_PULSE_COUNT, 	" : Set number of pulse" },
+		{ "PULSE_DELAY",	CMD_PULSE_DELAY, 	" : Set delay between pulse hv and lv" },
+		{ "PULSE_HV", 		CMD_PULSE_HV, 		" : Set hs pulse on time and off time" },
+		{ "PULSE_LV", 		CMD_PULSE_LV, 		" : Set ls pulse on time and off time" },
+		{ "PULSE_CONTROL", 	CMD_PULSE_CONTROL, 	" : Start pulsing" },
+		{ "RELAY_SET", 		CMD_RELAY_SET, 		" : Set up cuvette" },
+		{ "RELAY_CONTROL", 	CMD_RELAY_CONTROL, 	" : Stop cuvette" },
+		{ "CHANNEL_SET", 	CMD_CHANNEL_SET, 	" : Choose a cap channel" },
+		{ "CHANNEL_CONTROL",CMD_CHANNEL_CONTROL," : Control the setted channel" },
+		{ "CALL_GPP", 		CMD_CALL_GPP,	    " : Test communicate to GPP" },
+		{ 0, 0, 0 }
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-int CMD_line_test(int argc, char *argv[])
-{
-    UART_Send_String(&RS232_UART, "> POLO\n");
-    return CMDLINE_OK;
+int Cmd_help(int argc, char *argv[]) {
+	tCmdLineEntry *pEntry;
+
+	UART_Send_String(&RS232_UART, "\nAvailable commands\r\n");
+	UART_Send_String(&RS232_UART, "------------------\r\n");
+
+	// Point at the beginning of the command table.
+	pEntry = &g_psCmdTable[0];
+
+	// Enter a loop to read each entry from the command table.  The
+	// end of the table has been reached when the command name is NULL.
+	while (pEntry->pcCmd) {
+		// Print the command name and the brief description.
+		UART_Send_String(&RS232_UART, pEntry->pcCmd);
+		UART_Send_String(&RS232_UART, pEntry->pcHelp);
+		UART_Send_String(&RS232_UART, "\r\n");
+
+		// Advance to the next entry in the table.
+		pEntry++;
+
+	}
+	// Return success.
+	return (CMDLINE_OK);
 }
 
-int CMD_CALIB_RUN(int argc, char *argv[])
-{
-   if (argc < 2)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 2)
-        return CMDLINE_TOO_MANY_ARGS;
+//int CMD_line_test(int argc, char *argv[])
+//{
+//    UART_Send_String(&RS232_UART, "> POLO\n");
+//    return CMDLINE_OK;
+//}
 
-    int receive_argm = atoi(argv[1]);
+int CMD_CALIB_RUN(int argc, char *argv[]) {
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    if ((receive_argm > 1) || (receive_argm < 0))
-        return CMDLINE_INVALID_ARG;
+	int receive_argm = atoi(argv[1]);
 
-    g_is_calib_running = receive_argm;
+	if ((receive_argm > 1) || (receive_argm < 0))
+		return CMDLINE_INVALID_ARG;
 
-    if (receive_argm == 1)
-    {
-        SchedulerTaskEnable(5, 1);
-    }
+	g_is_calib_running = receive_argm;
 
-    return CMDLINE_OK;
+	if (receive_argm == 1) {
+		SchedulerTaskEnable(5, 1);
+	}
+
+	return CMDLINE_OK;
 }
 
-int CMD_CALIB_MEASURE(int argc, char *argv[])
-{
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
+int CMD_CALIB_MEASURE(int argc, char *argv[]) {
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm[2];
+	int receive_argm[2];
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    g_HV_Measure_mv    = receive_argm[0];
-    g_LV_Measure_mv    = receive_argm[1];
+	g_HV_Measure_mv = receive_argm[0];
+	g_LV_Measure_mv = receive_argm[1];
 
-    g_is_measure_available = true;
+	g_is_measure_available = true;
 
-    return CMDLINE_OK;
+	return CMDLINE_OK;
 }
 
-int CMD_CAP_VOLT(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
-    
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
+int CMD_CAP_VOLT(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    int receive_argm[2];
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	int receive_argm[2];
 
-    if ((receive_argm[0] > 300) || (receive_argm[0] < 0))
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 50) || (receive_argm[1] < 0))
-        return CMDLINE_INVALID_ARG;
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    Calib_Calculate(receive_argm[0], receive_argm[1]);
+	if ((receive_argm[0] > 300) || (receive_argm[0] < 0))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 50) || (receive_argm[1] < 0))
+		return CMDLINE_INVALID_ARG;
 
-    return CMDLINE_OK;
+	Calib_Calculate(receive_argm[0], receive_argm[1]);
+
+	return CMDLINE_OK;
 }
 
-int CMD_CAP_CONTROL(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_CAP_CONTROL(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm[2];
+	int receive_argm[2];
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    if ((receive_argm[0] > 1) || (receive_argm[0] < 0))
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 1) || (receive_argm[1] < 0))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm[0] > 1) || (receive_argm[0] < 0))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 1) || (receive_argm[1] < 0))
+		return CMDLINE_INVALID_ARG;
 
-    if (receive_argm[0] == 1)
-    {
-        g_is_Discharge_300V_On = 0;
-    }
+	if (receive_argm[0] == 1) {
+		g_is_Discharge_300V_On = 0;
+	}
 
-    if (receive_argm[1] == 1)
-    {
-        g_is_Discharge_50V_On = 0;
-    }
+	if (receive_argm[1] == 1) {
+		g_is_Discharge_50V_On = 0;
+	}
 
-    PID_is_300V_on  = receive_argm[0];
-    PID_is_50V_on   = receive_argm[1];
+	PID_is_300V_on = receive_argm[0];
+	PID_is_50V_on = receive_argm[1];
 
-    return CMDLINE_OK;
+	return CMDLINE_OK;
 }
 
-int CMD_CAP_RELEASE(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_CAP_RELEASE(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 3) 
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm[2];
+	int receive_argm[2];
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    if ((receive_argm[0] > 1) || (receive_argm[0] < 0))
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 1) || (receive_argm[1] < 0))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm[0] > 1) || (receive_argm[0] < 0))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 1) || (receive_argm[1] < 0))
+		return CMDLINE_INVALID_ARG;
 
-    if (receive_argm[0] == 1)
-    {
-        PID_is_300V_on = 0;
-    }
+	if (receive_argm[0] == 1) {
+		PID_is_300V_on = 0;
+	}
 
-    if (receive_argm[1] == 1)
-    {
-        PID_is_50V_on = 0;
-    }
-    
-    g_is_Discharge_300V_On  = receive_argm[0];
-    g_is_Discharge_50V_On   = receive_argm[1];
+	if (receive_argm[1] == 1) {
+		PID_is_50V_on = 0;
+	}
 
-    return CMDLINE_OK;
+	g_is_Discharge_300V_On = receive_argm[0];
+	g_is_Discharge_50V_On = receive_argm[1];
+
+	return CMDLINE_OK;
 }
 
-int CMD_PULSE_COUNT(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_PULSE_COUNT(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 3)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm[2];
+	int receive_argm[2];
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    if ((receive_argm[0] > 20) || (receive_argm[1] > 20))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm[0] > 20) || (receive_argm[1] > 20))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_PULSE_COUNT;
-    uint8_t  payload[2];
-    payload[0]  =  receive_argm[0];
-    payload[1]  =  receive_argm[1];
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	s_pGPC_Sfp_Payload->pulseCount.Cmd = FSP_CMD_PULSE_COUNT;
+	s_pGPC_Sfp_Payload->pulseCount.HV_count = receive_argm[0];
+	s_pGPC_Sfp_Payload->pulseCount.LV_count = receive_argm[1];
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 3;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+//    uint8_t  cmd  = FSP_CMD_PULSE_COUNT;
+//    uint8_t  payload[2];
+//    payload[0]  =  receive_argm[0];
+//    payload[1]  =  receive_argm[1];
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[20] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_PULSE_DELAY(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_PULSE_DELAY(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 2)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 2)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm;
+	int receive_argm;
 
-    receive_argm = atoi(argv[1]);
+	receive_argm = atoi(argv[1]);
 
-    if ((receive_argm > 127) || (receive_argm < 2))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm > 127) || (receive_argm < 2))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_PULSE_DELAY;
-    uint8_t  payload = receive_argm;
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+//    uint8_t  cmd  = FSP_CMD_PULSE_DELAY;
+//    uint8_t  payload = receive_argm;
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_pGPC_Sfp_Payload->pulseDelay.Cmd = FSP_CMD_PULSE_DELAY;
+	s_pGPC_Sfp_Payload->pulseDelay.Delay = receive_argm;
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 2;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_PULSE_HV(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_PULSE_HV(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 3)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm[2];
+	int receive_argm[2];
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    if ((receive_argm[0] > 20) || (receive_argm[0] < 1))
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm[0] > 20) || (receive_argm[0] < 1))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_PULSE_HV;
-    uint8_t  payload[2];
-    payload[0]  =  receive_argm[0];
-    payload[1]  =  receive_argm[1];
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+//    uint8_t  cmd  = FSP_CMD_PULSE_HV;
+//    uint8_t  payload[2];
+//    payload[0]  =  receive_argm[0];
+//    payload[1]  =  receive_argm[1];
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_pGPC_Sfp_Payload->pulseHV.Cmd = FSP_CMD_PULSE_HV;
+	s_pGPC_Sfp_Payload->pulseHV.OnTime = receive_argm[0];
+	s_pGPC_Sfp_Payload->pulseHV.OffTime = receive_argm[1];
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 3;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
+	uint8_t encoded_frame[15] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
 
-    return CMDLINE_OK;
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_PULSE_LV(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_PULSE_LV(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 3)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-    
-    int receive_argm[2];
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	int receive_argm[2];
 
-    if ((receive_argm[0] > 500) || (receive_argm[0] < 1))
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 500) || (receive_argm[1] < 1))
-        return CMDLINE_INVALID_ARG;
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    uint8_t  cmd  = FSP_CMD_PULSE_LV;
-    uint8_t  payload[2];
-    payload[0]  =  receive_argm[0];
-    payload[1]  =  receive_argm[1];
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	if ((receive_argm[0] > 500) || (receive_argm[0] < 1))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 500) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_pGPC_Sfp_Payload->pulseLV.Cmd = FSP_CMD_PULSE_LV;
+	s_pGPC_Sfp_Payload->pulseLV.OnTime = receive_argm[0];
+	s_pGPC_Sfp_Payload->pulseLV.OffTime = receive_argm[1];
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 3;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    return CMDLINE_OK;
+//    uint8_t  cmd  = FSP_CMD_PULSE_LV;
+//    uint8_t  payload[2];
+//    payload[0]  =  receive_argm[0];
+//    payload[1]  =  receive_argm[1];
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+
+	uint8_t encoded_frame[15] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_PULSE_CONTROL(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_PULSE_CONTROL(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 2)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 2)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int8_t receive_argm = atoi(argv[1]);
+	int8_t receive_argm = atoi(argv[1]);
 
-    if ((receive_argm > 1) || (receive_argm < 0))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm > 1) || (receive_argm < 0))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_PULSE_CONTROL;
-    uint8_t  payload = receive_argm;
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	s_pGPC_Sfp_Payload->pulseControl.Cmd = FSP_CMD_PULSE_CONTROL;
+	s_pGPC_Sfp_Payload->pulseControl.State = receive_argm;
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 2;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    UART_Write(&GPP_UART, &encoded_frame, frame_len);
+//    uint8_t  cmd  = FSP_CMD_PULSE_CONTROL;
+//    uint8_t  payload = receive_argm;
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_Write(&GPP_UART, &encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_RELAY_SET(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_RELAY_SET(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 3)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 3)
-        return CMDLINE_TOO_MANY_ARGS;
-    
-    int receive_argm[2];
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    receive_argm[0] = atoi(argv[1]);
-    receive_argm[1] = atoi(argv[2]);
+	int receive_argm[2];
 
-    if (receive_argm[0] == receive_argm[1])
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[0] > 7) || (receive_argm[0] < 0))
-        return CMDLINE_INVALID_ARG;
-    else if ((receive_argm[1] > 7) || (receive_argm[1] < 0))
-        return CMDLINE_INVALID_ARG;
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
 
-    uint8_t  cmd  = FSP_CMD_RELAY_SET;
-    uint8_t  payload[2];
-    payload[0]  =  receive_argm[0];
-    payload[1]  =  receive_argm[1];
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	if (receive_argm[0] == receive_argm[1])
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[0] > 7) || (receive_argm[0] < 0))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 7) || (receive_argm[1] < 0))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_pGPC_Sfp_Payload->relaySet.Cmd = FSP_CMD_RELAY_SET;
+	s_pGPC_Sfp_Payload->relaySet.HvRelay = receive_argm[0];
+	s_pGPC_Sfp_Payload->relaySet.LvRelay = receive_argm[1];
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 3;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
+//
+//    uint8_t  cmd  = FSP_CMD_RELAY_SET;
+//    uint8_t  payload[2];
+//    payload[0]  =  receive_argm[0];
+//    payload[1]  =  receive_argm[1];
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[15] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_RELAY_CONTROL(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_RELAY_CONTROL(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 2)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 2)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm;
+	int receive_argm;
 
-    receive_argm = atoi(argv[1]);
+	receive_argm = atoi(argv[1]);
 
-    if ((receive_argm > 1) || (receive_argm < 0))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm > 1) || (receive_argm < 0))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_RELAY_CONTROL;
-    uint8_t  payload = receive_argm;
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	s_pGPC_Sfp_Payload->relayControl.Cmd = FSP_CMD_RELAY_CONTROL;
+	s_pGPC_Sfp_Payload->relayControl.State = receive_argm;
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 2;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+//    uint8_t  cmd  = FSP_CMD_RELAY_CONTROL;
+//    uint8_t  payload = receive_argm;
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_CHANNEL_SET(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_CHANNEL_SET(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 2)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 2)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm;
+	int receive_argm;
 
-    receive_argm = atoi(argv[1]);
+	receive_argm = atoi(argv[1]);
 
-    if ((receive_argm > 2) || (receive_argm < 1))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm > 2) || (receive_argm < 1))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_CHANNEL_SET;
-    uint8_t  payload = receive_argm;
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	s_pGPC_Sfp_Payload->channelSet.Cmd = FSP_CMD_CHANNEL_SET;
+	s_pGPC_Sfp_Payload->channelSet.Channel = receive_argm;
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 2;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+//    uint8_t  cmd  = FSP_CMD_CHANNEL_SET;
+//    uint8_t  payload = receive_argm;
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
 
-int CMD_CHANNEL_CONTROL(int argc, char *argv[])
-{
-    if (g_is_calib_running == true)
-    {
-        return CMDLINE_CALIB_IS_RUNNING;
-    }
+int CMD_CHANNEL_CONTROL(int argc, char *argv[]) {
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
 
-    if (argc < 2)
-        return CMDLINE_TOO_FEW_ARGS;
-    else if (argc > 2)
-        return CMDLINE_TOO_MANY_ARGS;
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
 
-    int receive_argm;
+	int receive_argm;
 
-    receive_argm = atoi(argv[1]);
+	receive_argm = atoi(argv[1]);
 
-    if ((receive_argm > 1) || (receive_argm < 0))
-        return CMDLINE_INVALID_ARG;
+	if ((receive_argm > 1) || (receive_argm < 0))
+		return CMDLINE_INVALID_ARG;
 
-    uint8_t  cmd  = FSP_CMD_CHANNEL_CONTROL;
-    uint8_t  payload = receive_argm;
-    fsp_packet_t  fsp_pkt;
-    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	s_pGPC_Sfp_Payload->channelControl.Cmd = FSP_CMD_CHANNEL_CONTROL;
+	s_pGPC_Sfp_Payload->channelControl.State = receive_argm;
 
-    uint8_t  encoded_frame[FSP_PKT_MAX_LENGTH] = {0};
-    uint8_t  frame_len;
-    frame_encode(&fsp_pkt,  encoded_frame,  &frame_len);
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 2;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
 
-    UART_FSP(&GPP_UART, encoded_frame, frame_len);
+//    uint8_t  cmd  = FSP_CMD_CHANNEL_CONTROL;
+//    uint8_t  payload = receive_argm;
+//    fsp_packet_t  fsp_pkt;
+//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
-    return CMDLINE_OK;
+	uint8_t encoded_frame[15] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
+}
+
+int CMD_CALL_GPP(int argc, char *argv[]) {
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	s_pGPC_Sfp_Payload->handshake.Cmd = FSP_CMD_HANDSHAKE;
+	s_pGPC_Sfp_Payload->handshake.Check = 0xAB;
+	s_GPC_FspPacket.sod = FSP_PKT_SOD;
+	s_GPC_FspPacket.src_adr = fsp_my_adr;
+	s_GPC_FspPacket.dst_adr = FSP_ADR_GPP;
+	s_GPC_FspPacket.length = 2;
+	s_GPC_FspPacket.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FspPacket.eof = FSP_PKT_EOF;
+	s_GPC_FspPacket.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FspPacket.src_adr, s_GPC_FspPacket.length + 4);
+
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FspPacket, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
