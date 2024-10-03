@@ -60,7 +60,10 @@
 
 #define GPP_UART_HANDLE         USART3
 #define GPP_UART_IRQ            USART3_6_IRQn
-/***********************************************/
+
+#define GPP_TX_SIZE			64
+#define	GPP_RX_SIZE			64
+#define FSP_BUF_LEN				64
 
 /**********************SPI**********************/
 #define FRAM_SPI_HANDLE         SPI1
@@ -90,9 +93,5 @@
 #define DEBUG_GPIO5_PORT        GPIOB
 #define DEBUG_GPIO5_PIN         LL_GPIO_PIN_15
 /***********************************************/
-
-#define GPP_TX_BUF_LEN			64
-#define	GPP_RX_BUF_LEN			64
-#define FSP_BUF_LEN				64
 
 #endif /* BOARD_H_ */

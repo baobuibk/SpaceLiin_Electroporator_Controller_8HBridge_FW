@@ -9,14 +9,8 @@
 #define FSP_LINE_TASK_H_
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#include "app.h"
-#include "board.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include "fsp.h"
 #include "fsp_frame.h"
-#include "cmd_line_task.h"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -24,11 +18,11 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern fsp_packet_t		    s_GPC_FSP_Packet;
+extern fsp_packet_t		    s_GPP_FSP_Packet;
+extern GPC_FSP_Payload  	*pu_GPC_FSP_Payload;		//for TX
+extern GPP_FSP_Payload		*pu_GPP_FSP_Payload;		//for RX
 
-extern fsp_packet_t		s_GPC_FspPacket;
-extern fsp_packet_t		s_GPP_FspPacket;
-extern GPC_Sfp_Payload  	*s_pGPC_Sfp_Payload;		//for TX
-extern GPP_Sfp_Payload		*s_pGPP_Sfp_Payload;		//for RX
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
 void FSP_Line_Task_Init();
@@ -39,7 +33,7 @@ void FSP_Line_Task(void);
 /* :::::::::: IRQ Handler ::::::::::::: */
 void GPP_UART_IRQHandler(void);
 
-void FSP_PROCESS();
+void FSP_Line_Process();
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #endif /* FSP_LINE_TASK_H_ */

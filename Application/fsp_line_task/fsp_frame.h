@@ -102,7 +102,7 @@ typedef struct _CURRENT_RESPONSE_FRAME_
 } CURRENT_RESPONSE_FRAME;
 
 // Union to encapsulate all frame types
-typedef union _GPP_Sfp_Payload_ {
+typedef union _GPC_FSP_Payload_ {
 	COMMON_FRAME							commonFrame;
 	FSP_PULSE_COUNT							pulseCount;
 	FSP_PULSE_DELAY							pulseDelay;
@@ -115,13 +115,13 @@ typedef union _GPP_Sfp_Payload_ {
 	FSP_CHANNEL_CONTROL						channelControl;
 	FSP_GET_CURRENT							currentGet;
 	FSP_HANDSAKE							handshake;
-} GPC_Sfp_Payload;
+} GPC_FSP_Payload;
 
-typedef union _GPC_Sfp_Payload_ {
+typedef union _GPP_FSP_Payload_ {
 	COMMON_RESPONSE_FRAME					commonFrame;
 	CURRENT_RESPONSE_FRAME					currentResponse;
 	FSP_HANDSAKE							handshake;
-} GPP_Sfp_Payload;
+} GPP_FSP_Payload;
 
 
 #endif
