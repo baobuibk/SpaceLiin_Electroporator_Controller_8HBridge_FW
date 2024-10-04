@@ -29,6 +29,7 @@ typedef struct _fsp_line_typedef fsp_line_typedef;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern 	uart_stdio_typedef RS232_UART;
+extern 	uart_stdio_typedef RF_UART;
 		uart_stdio_typedef GPP_UART;
 
 char g_GPP_UART_TX_buffer[GPP_TX_SIZE];
@@ -129,7 +130,49 @@ void FSP_Line_Task(void)
 
 void FSP_Line_Process()
 {
-	;
+	switch (s_GPC_FSP_Packet.type) {
+	case FSP_PKT_TYPE_DATA:
+
+		break;
+	case FSP_PKT_TYPE_DATA_WITH_ACK:
+
+		break;
+	case FSP_PKT_TYPE_CMD:
+
+		break;
+	case FSP_PKT_TYPE_CMD_WITH_ACK:
+
+		break;
+	case FSP_PKT_TYPE_ACK:
+
+		break;
+	case FSP_PKT_TYPE_NACK:
+
+		break;
+	case FSP_PKT_TYPE_CMD_W_DATA:
+		switch (pu_GPP_FSP_Payload->commonFrame.Cmd) {
+		case FSP_CMD_AVR_CURRENT:
+			uint16_t Impedance;
+			UART_Send_String(&RS232_UART, "Received FSP_CMD_IMPDANCE\r\n");
+			UART_Send_String(&RF_UART, "Received FSP_CMD_IMPDANCE\r\n");
+			Impedance = g_Feedback_Voltage / pu_GPC_FSP_Payload->avr_current.value;
+			UART_Send_String(&RF_UART, "Measuring...OK\n");
+			UART_Printf(&RF_UART, "Impedance is: %u Ohm\n", Impedance);
+			break;
+		
+		default:
+			break;
+		}
+		break;
+	case FSP_PKT_TYPE_CMD_W_DATA_ACK:
+
+		break;
+
+	default:
+
+		break;
+
+	}
 }
 
 /* :::::::::: IRQ Handler ::::::::::::: */

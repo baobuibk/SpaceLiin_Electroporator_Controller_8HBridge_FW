@@ -14,22 +14,23 @@ extern uart_stdio_typedef RF_UART;
 extern uart_stdio_typedef GPP_UART;
 
 tCmdLineEntry g_psCmdTable[] = {
-		{ "HELP", 			CMD_HELP,			" : Display list of commands" },
-		{ "CALIB_SET", 		CMD_CALIB_RUN, 		" : SET CALIB VOLT" },
-		{ "CALIB_MEASURE",	CMD_CALIB_MEASURE, 	" : SET CALIB VOLT" },
-		{ "CAP_VOLT",		CMD_CAP_VOLT, 		" : Set cap voltage" },
-		{ "CAP_CONTROL",	CMD_CAP_CONTROL, 	" : Control charger on/off" },
-		{ "CAP_RELEASE",	CMD_CAP_RELEASE, 	" : Control releasing cap" },
-		{ "PULSE_COUNT",	CMD_PULSE_COUNT, 	" : Set number of pulse" },
-		{ "PULSE_DELAY",	CMD_PULSE_DELAY, 	" : Set delay between pulse hv and lv" },
-		{ "PULSE_HV", 		CMD_PULSE_HV, 		" : Set hs pulse on time and off time" },
-		{ "PULSE_LV", 		CMD_PULSE_LV, 		" : Set ls pulse on time and off time" },
-		{ "PULSE_CONTROL", 	CMD_PULSE_CONTROL, 	" : Start pulsing" },
-		{ "RELAY_SET", 		CMD_RELAY_SET, 		" : Set up cuvette" },
-		{ "RELAY_CONTROL", 	CMD_RELAY_CONTROL, 	" : Stop cuvette" },
-		{ "CHANNEL_SET", 	CMD_CHANNEL_SET, 	" : Choose a cap channel" },
-		{ "CHANNEL_CONTROL",CMD_CHANNEL_CONTROL," : Control the setted channel" },
-		{ "CALL_GPP", 		CMD_CALL_GPP,	    " : Test communicate to GPP" },
+		{ "HELP", 				CMD_HELP,				" : Display list of commands" },
+		{ "CALIB_SET", 			CMD_CALIB_RUN, 			" : SET CALIB VOLT" },
+		{ "CALIB_MEASURE",		CMD_CALIB_MEASURE, 		" : SET CALIB VOLT" },
+		{ "IMPEDANCE_MEASURE", 	CMD_IMPEDANCE_MEASURE,	" : MEASURE CUVETTE IMPEDANCE"},
+		{ "CAP_VOLT",			CMD_CAP_VOLT, 			" : Set cap voltage" },
+		{ "CAP_CONTROL",		CMD_CAP_CONTROL, 		" : Control charger on/off" },
+		{ "CAP_RELEASE",		CMD_CAP_RELEASE, 		" : Control releasing cap" },
+		{ "PULSE_COUNT",		CMD_PULSE_COUNT, 		" : Set number of pulse" },
+		{ "PULSE_DELAY",		CMD_PULSE_DELAY, 		" : Set delay between pulse hv and lv" },
+		{ "PULSE_HV", 			CMD_PULSE_HV, 			" : Set hs pulse on time and off time" },
+		{ "PULSE_LV", 			CMD_PULSE_LV, 			" : Set ls pulse on time and off time" },
+		{ "PULSE_CONTROL", 		CMD_PULSE_CONTROL, 		" : Start pulsing" },
+		{ "RELAY_SET", 			CMD_RELAY_SET, 			" : Set up cuvette" },
+		{ "RELAY_CONTROL", 		CMD_RELAY_CONTROL, 		" : Stop cuvette" },
+		{ "CHANNEL_SET", 		CMD_CHANNEL_SET, 		" : Choose a cap channel" },
+		{ "CHANNEL_CONTROL",	CMD_CHANNEL_CONTROL,	" : Control the setted channel" },
+		{ "CALL_GPP", 			CMD_CALL_GPP,	    	" : Test communicate to GPP" },
 		{ 0, 0, 0 }
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -100,6 +101,45 @@ int CMD_CALIB_MEASURE(int argc, char *argv[]) {
 	g_LV_Measure_mv = receive_argm[1];
 
 	g_is_measure_available = true;
+
+	return CMDLINE_OK;
+}
+
+int CMD_IMPEDANCE_MEASURE(int argc, char *argv[])
+{
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	int receive_argm[2];
+
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
+
+	g_is_Discharge_300V_On = 0;
+	g_is_Discharge_50V_On = 0;
+	PID_is_300V_on = 0;
+	PID_is_50V_on = 0;
+	Calib_Calculate(receive_argm[0], 0);
+	UART_Send_String(&RF_UART, "CHARGING HV TO 50V");
+	PID_is_300V_on = 1;
+
+	pu_GPP_FSP_Payload->avr_current.Cmd 	= FSP_CMD_AVR_CURRENT;
+	pu_GPP_FSP_Payload->avr_current.Value   = Impedance_Current_Average;
+	s_GPP_FSP_Packet.sod 		= FSP_PKT_SOD;
+	s_GPP_FSP_Packet.src_adr 	= fsp_my_adr;
+	s_GPP_FSP_Packet.dst_adr 	= FSP_ADR_GPC;
+	s_GPP_FSP_Packet.length 	= 2;
+	s_GPP_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPP_FSP_Packet.eof 		= FSP_PKT_EOF;
+	s_GPP_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPP_FSP_Packet.src_adr, s_GPP_FSP_Packet.length + 4);
+
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPP_FSP_Packet, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
 
 	return CMDLINE_OK;
 }
@@ -215,25 +255,17 @@ int CMD_PULSE_COUNT(int argc, char *argv[]) {
 	if ((receive_argm[0] > 20) || (receive_argm[1] > 20))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseCount.Cmd = FSP_CMD_PULSE_COUNT;
+	pu_GPC_FSP_Payload->pulseCount.Cmd 		= FSP_CMD_PULSE_COUNT;
 	pu_GPC_FSP_Payload->pulseCount.HV_count = receive_argm[0];
 	pu_GPC_FSP_Payload->pulseCount.LV_count = receive_argm[1];
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 3;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-//    uint8_t  cmd  = FSP_CMD_PULSE_COUNT;
-//    uint8_t  payload[2];
-//    payload[0]  =  receive_argm[0];
-//    payload[1]  =  receive_argm[1];
-//    fsp_packet_t  fsp_pkt;
-//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
+	s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
+	s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
+	s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
+	s_GPC_FSP_Packet.length 	= 3;
+	s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
+	s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
 
 	uint8_t encoded_frame[20] = { 0 };
 	uint8_t frame_len;
