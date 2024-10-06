@@ -23,6 +23,7 @@ void PID_Task_Init(void);
 
 /* :::::::::: PID Task ::::::::::::: */
 void PID_Task(void*);
+void Impedance_Task(void*);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

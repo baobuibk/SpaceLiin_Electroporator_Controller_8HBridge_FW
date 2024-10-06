@@ -128,6 +128,9 @@ void FSP_Line_Task(void)
 	}
 }
 
+uint16_t Avr_Current;
+uint16_t Impedance;
+uint32_t Voltage;
 void FSP_Line_Process()
 {
 	switch (s_GPC_FSP_Packet.type) {
@@ -152,12 +155,20 @@ void FSP_Line_Process()
 	case FSP_PKT_TYPE_CMD_W_DATA:
 		switch (pu_GPP_FSP_Payload->commonFrame.Cmd) {
 		case FSP_CMD_AVR_CURRENT:
-			uint16_t Impedance;
-			UART_Send_String(&RS232_UART, "Received FSP_CMD_IMPDANCE\r\n");
-			UART_Send_String(&RF_UART, "Received FSP_CMD_IMPDANCE\r\n");
-			Impedance = g_Feedback_Voltage / pu_GPC_FSP_Payload->avr_current.value;
-			UART_Send_String(&RF_UART, "Measuring...OK\n");
-			UART_Printf(&RF_UART, "Impedance is: %u Ohm\n", Impedance);
+			Voltage = g_Feedback_Voltage[0] * 125;
+			PID_is_300V_on = 0;
+			PID_is_50V_on = 0;
+			g_is_Discharge_300V_On = 1;
+			g_is_Discharge_50V_On = 1;	
+			UART_Send_String(&RS232_UART, "> RECEIVED FSP_CMD_IMPDANCE\r\n");
+			UART_Send_String(&RF_UART, "> RECEIVED FSP_CMD_IMPDANCE\r\n");
+			Avr_Current = pu_GPP_FSP_Payload->avr_current.Value_high;
+			Avr_Current = Avr_Current << 8;
+			Avr_Current |= pu_GPP_FSP_Payload->avr_current.Value_low;
+			Impedance = Voltage / Avr_Current;
+			UART_Send_String(&RF_UART, "> MEASURING...OK\n");
+			UART_Printf(&RF_UART, "> IMPEDANCE IS %d Ohm\n", Impedance);
+			UART_Send_String(&RF_UART, "> ");
 			break;
 		
 		default:

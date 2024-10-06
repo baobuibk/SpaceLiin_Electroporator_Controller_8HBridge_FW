@@ -14,10 +14,11 @@
 #define FSP_CMD_CHANNEL_SET             0x08
 #define FSP_CMD_CHANNEL_CONTROL         0x09
 #define FSP_CMD_GET_CURRENT				0x0A	//Get current
+#define FSP_CMD_GET_IMPEDANCE			0x0B
 
 // FROM GPP TO GPC
-#define FSP_CMD_HANDSHAKE				0x0B
-#define FSP_CMD_AVR_CURRENT				0x0C
+#define FSP_CMD_HANDSHAKE				0x0C
+#define FSP_CMD_AVR_CURRENT				0x0D
 
 
 typedef struct _COMMON_FRAME_
@@ -88,6 +89,12 @@ typedef struct _FSP_GET_CURRENT_
 	uint8_t Cmd;            /* The command class */
 } FSP_GET_CURRENT;
 
+typedef struct _FSP_GET_IMPEDANCE_
+{
+	uint8_t Cmd;            /* The command class */
+	uint8_t Period;
+} FSP_GET_IMPEDANCE;
+
 typedef struct _FSP_HANDSAKE_
 {
 	uint8_t Cmd;
@@ -102,13 +109,14 @@ typedef struct _COMMON_RESPONSE_FRAME_
 typedef struct _CURRENT_RESPONSE_FRAME_
 {
 	uint8_t 	Cmd;
-	uint16_t 	Current;
+	uint8_t 	Current;
 } CURRENT_RESPONSE_FRAME;
 
 typedef struct _AVR_CURRENT_FRAME_
 {
-	uint8_t Cmd;
-	float 	Value;
+	uint8_t 	Cmd;
+	uint8_t 	Value_high;
+	uint8_t 	Value_low;
 } AVR_CURRENT_FRAME;
 
 
@@ -125,6 +133,7 @@ typedef union _GPC_FSP_Payload_ {
 	FSP_CHANNEL_SET							channelSet;
 	FSP_CHANNEL_CONTROL						channelControl;
 	FSP_GET_CURRENT							currentGet;
+	FSP_GET_IMPEDANCE						get_impedance;
 	FSP_HANDSAKE							handshake;
 } GPC_FSP_Payload;
 

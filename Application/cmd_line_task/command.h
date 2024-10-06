@@ -7,6 +7,7 @@
 #include "cmd_line.h"
 #include "fsp_line_task.h"
 #include "fsp.h"
+#include "crc.h"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -20,6 +21,7 @@ int CMD_HELP(int argc, char *argv[]);
 
 int CMD_CALIB_RUN(int argc, char *argv[]);
 int CMD_CALIB_MEASURE(int argc, char *argv[]);
+int CMD_IMPEDANCE_MEASURE(int argc, char *argv[]);
 
 int CMD_CAP_VOLT(int argc, char *argv[]);
 int CMD_CAP_CONTROL(int argc, char *argv[]);

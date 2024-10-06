@@ -105,6 +105,7 @@ int CMD_CALIB_MEASURE(int argc, char *argv[]) {
 	return CMDLINE_OK;
 }
 
+uint8_t Impedance_Period = 0;
 int CMD_IMPEDANCE_MEASURE(int argc, char *argv[])
 {
 	if (argc < 3)
@@ -115,31 +116,17 @@ int CMD_IMPEDANCE_MEASURE(int argc, char *argv[])
 	int receive_argm[2];
 
 	receive_argm[0] = atoi(argv[1]);
-	receive_argm[1] = atoi(argv[2]);
+	Impedance_Period = atoi(argv[2]);
 
 	g_is_Discharge_300V_On = 0;
 	g_is_Discharge_50V_On = 0;
 	PID_is_300V_on = 0;
 	PID_is_50V_on = 0;
 	Calib_Calculate(receive_argm[0], 0);
-	UART_Send_String(&RF_UART, "CHARGING HV TO 50V");
+	UART_Send_String(&RF_UART, "> CHARGING HV TO 50V\r\n");
 	PID_is_300V_on = 1;
 
-	pu_GPP_FSP_Payload->avr_current.Cmd 	= FSP_CMD_AVR_CURRENT;
-	pu_GPP_FSP_Payload->avr_current.Value   = Impedance_Current_Average;
-	s_GPP_FSP_Packet.sod 		= FSP_PKT_SOD;
-	s_GPP_FSP_Packet.src_adr 	= fsp_my_adr;
-	s_GPP_FSP_Packet.dst_adr 	= FSP_ADR_GPC;
-	s_GPP_FSP_Packet.length 	= 2;
-	s_GPP_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPP_FSP_Packet.eof 		= FSP_PKT_EOF;
-	s_GPP_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPP_FSP_Packet.src_adr, s_GPP_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[10] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPP_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	SchedulerTaskEnable(7, 1);
 
 	return CMDLINE_OK;
 }

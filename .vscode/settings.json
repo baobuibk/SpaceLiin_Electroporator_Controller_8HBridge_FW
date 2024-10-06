@@ -29,6 +29,8 @@
         "fsp.h": "c",
         "command.h": "c",
         "calib_task.h": "c",
-        "fsp_line_task.h": "c"
+        "fsp_line_task.h": "c",
+        "type_traits": "c",
+        "fsp_frame.h": "c"
     }
 }

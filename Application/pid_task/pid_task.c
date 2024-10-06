@@ -24,8 +24,9 @@ typedef enum
 } PID_State_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern uart_stdio_typedef  	RS232_UART;
+extern uart_stdio_typedef  	GPP_UART;
 static PID_State_typedef 	PID_State = PID_CAP_CHARGE_STATE;
+extern uint8_t 				Impedance_Period;
 
 static PWM_TypeDef 	Flyback_300V_Switching_PWM =
 {
@@ -63,7 +64,8 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.PON_Type 		= 	_PID_P_ON_E,
 	.PID_Direction 	=	_PID_CD_DIRECT,
 	.Kp				= 	(0.04 + 0.26),
-	.Ki				= 	0.001,
+	.Ki				= 	0.1,
+	//.Ki				= 	0.001,
 	.Kd 			=	0.0,
 	.MyInput		=	&g_Feedback_Voltage[0],
 	.MyOutput		= 	&PID_300V_PWM_duty,
@@ -91,6 +93,9 @@ static PID_TypeDef Charge_50V_Cap_PID =
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static inline void FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern uart_stdio_typedef RF_UART;
+extern uart_stdio_typedef GPP_UART;
+
 /* :::::::::: PID Init ::::::::::::: */
 void PID_Task_Init(void)
 {
@@ -136,6 +141,29 @@ void PID_Task(void*)
 	{
 		PID_Compute(&Charge_50V_Cap_PID);
 		FlyBack_Set_Duty(&Flyback_50V_Switching_PWM, PID_50V_PWM_duty);
+	}
+}
+
+void Impedance_Task(void*)
+{
+	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.8))
+	{
+		pu_GPC_FSP_Payload->get_impedance.Cmd 		= FSP_CMD_GET_IMPEDANCE;
+		pu_GPC_FSP_Payload->get_impedance.Period   	= Impedance_Period;
+		s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
+		s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
+		s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
+		s_GPC_FSP_Packet.length 	= 2;
+		s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+		s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
+		s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
+
+		uint8_t encoded_frame[20] = { 0 };
+		uint8_t frame_len;
+		fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
+		UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+		SchedulerTaskDisable(7);
 	}
 }
 
