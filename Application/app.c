@@ -25,7 +25,7 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                     {
                             &Discharge_Task,
                             (void *) 0,
-                            15,                         //call every 500us
+                            50,                         //call every 500us
                             0,			                //count from start
                             true		                //is active
                     },

@@ -19,7 +19,7 @@ void PID_Init(PID_TypeDef *uPID)
 
     PID_SetControllerDirection(uPID, uPID->PID_Direction);
 
-    PID_SetTunings2(uPID, uPID->Kp, uPID->Kd, uPID->Ki, uPID->PON_Type);
+    PID_SetTunings2(uPID, uPID->Kp, uPID->Ki, uPID->Kd, uPID->PON_Type);
 
 	uPID->OutputSum = *uPID->MyOutput;
 	uPID->LastInput = *uPID->MyInput;

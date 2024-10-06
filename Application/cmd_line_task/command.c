@@ -15,7 +15,7 @@ extern uart_stdio_typedef GPP_UART;
 
 tCmdLineEntry g_psCmdTable[] = {
 		{ "HELP", 				CMD_HELP,				" : Display list of commands" },
-		{ "CALIB_SET", 			CMD_CALIB_RUN, 			" : SET CALIB VOLT" },
+		{ "CALIB_RUN", 			CMD_CALIB_RUN, 			" : SET CALIB VOLT" },
 		{ "CALIB_MEASURE",		CMD_CALIB_MEASURE, 		" : SET CALIB VOLT" },
 		{ "IMPEDANCE_MEASURE", 	CMD_IMPEDANCE_MEASURE,	" : MEASURE CUVETTE IMPEDANCE"},
 		{ "CAP_VOLT",			CMD_CAP_VOLT, 			" : Set cap voltage" },
@@ -80,7 +80,7 @@ int CMD_CALIB_RUN(int argc, char *argv[]) {
 	g_is_calib_running = receive_argm;
 
 	if (receive_argm == 1) {
-		SchedulerTaskEnable(5, 1);
+		SchedulerTaskEnable(6, 1);
 	}
 
 	return CMDLINE_OK;

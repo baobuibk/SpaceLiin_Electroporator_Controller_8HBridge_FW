@@ -64,7 +64,7 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.PON_Type 		= 	_PID_P_ON_E,
 	.PID_Direction 	=	_PID_CD_DIRECT,
 	.Kp				= 	(0.04 + 0.26),
-	.Ki				= 	0.1,
+	.Ki				= 	0.5,
 	//.Ki				= 	0.001,
 	.Kd 			=	0.0,
 	.MyInput		=	&g_Feedback_Voltage[0],
@@ -80,13 +80,14 @@ static PID_TypeDef Charge_50V_Cap_PID =
 	.PID_Mode 		= 	_PID_MODE_AUTOMATIC,
 	.PON_Type 		= 	_PID_P_ON_E,
 	.PID_Direction 	=	_PID_CD_DIRECT,
-	.Kp				= 	(0.04 + 0.16),
-	.Ki				= 	0.001,
+	.Kp				= 	(0.04 + 0.26),
+	.Ki				= 	0.5,
 	.Kd 			=	0.0,
 	.MyInput		=	&g_Feedback_Voltage[1],
 	.MyOutput		= 	&PID_50V_PWM_duty,
 	.MySetpoint		=	&PID_50V_set_voltage,
 	.Output_Min		= 	0,
+	//.Output_Max		=	8,
 	.Output_Max		=	12,
 };
 
@@ -146,7 +147,7 @@ void PID_Task(void*)
 
 void Impedance_Task(void*)
 {
-	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.8))
+	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage))
 	{
 		pu_GPC_FSP_Payload->get_impedance.Cmd 		= FSP_CMD_GET_IMPEDANCE;
 		pu_GPC_FSP_Payload->get_impedance.Period   	= Impedance_Period;

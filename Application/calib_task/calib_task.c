@@ -31,22 +31,22 @@ extern uart_stdio_typedef  RF_UART;
 
 struct _hv_calib_coefficient hv_calib_coefficient = 
 {
-    .default_value  = 8.44,
+    .default_value  = 8.32801533,
     .at_50v         = 0.0,
     .at_100v        = 0.0,
     .at_200v        = 0.0,
     .at_300v        = 0.0,
-    .average_value  = 8.44,
+    .average_value  = 8.32801533,
 };
 
 struct _lv_calib_coefficient lv_calib_coefficient =
 {
-    .default_value  = 55.6,
+    .default_value  = 55.2,
     .at_5v          = 0.0,
     .at_10v         = 0.0,
     .at_25v         = 0.0,
     .at_50v         = 0.0,
-    .average_value  = 55.6,
+    .average_value  = 55.2,
 };
 
 uint16_t g_HV_Calib_set = 0;
@@ -81,7 +81,7 @@ void Calib_Task(void*)
         }
         else
         {
-            SchedulerTaskDisable(5);
+            SchedulerTaskDisable(6);
         }
         
         break;
@@ -206,7 +206,7 @@ void Calib_Task(void*)
                 g_is_measure_available = false;
                 g_is_calib_running = false;
                 Calib_State = CALIB_OFF_STATE;
-                SchedulerTaskDisable(5);
+                SchedulerTaskDisable(6);
                 break;
 
             default:
