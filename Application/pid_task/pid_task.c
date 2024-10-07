@@ -28,7 +28,7 @@ extern uart_stdio_typedef  	GPP_UART;
 static PID_State_typedef 	PID_State = PID_CAP_CHARGE_STATE;
 extern uint8_t 				Impedance_Period;
 
-static PWM_TypeDef 	Flyback_300V_Switching_PWM =
+PWM_TypeDef 	Flyback_300V_Switching_PWM =
 {
     .TIMx       =   FLYBACK_SW1_HANDLE,
     .Channel    =   FLYBACK_SW1_CHANNEL,
@@ -71,7 +71,8 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.MyOutput		= 	&PID_300V_PWM_duty,
 	.MySetpoint		=	&PID_300V_set_voltage,
 	.Output_Min		= 	0,
-	.Output_Max		=	30,
+	//.Output_Max		=	30,
+	.Output_Max		=	50,
 	//.Output_Max		=	22,
 };
 
@@ -131,6 +132,19 @@ void PID_Task(void*)
 	else if (PID_is_300V_on == true)
 	{
 		PID_Compute(&Charge_300V_Cap_PID);
+		/*
+		if(g_Feedback_Voltage[0] < PID_300V_set_voltage)
+		{
+			if (PID_300V_PWM_duty < 10)
+				PID_300V_PWM_duty++;
+		}
+		else
+		{
+			if (PID_300V_PWM_duty > 0)
+				PID_300V_PWM_duty--;
+		}
+		*/
+
 		FlyBack_Set_Duty(&Flyback_300V_Switching_PWM, PID_300V_PWM_duty);
 	}
 

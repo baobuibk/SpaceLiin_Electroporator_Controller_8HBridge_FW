@@ -155,7 +155,7 @@ void FSP_Line_Process()
 	case FSP_PKT_TYPE_CMD_W_DATA:
 		switch (pu_GPP_FSP_Payload->commonFrame.Cmd) {
 		case FSP_CMD_AVR_CURRENT:
-			Voltage = g_Feedback_Voltage[0] * 125;
+			Voltage = g_Feedback_Voltage[0] * 120.0766281;
 			PID_is_300V_on = 0;
 			PID_is_50V_on = 0;
 			g_is_Discharge_300V_On = 1;
