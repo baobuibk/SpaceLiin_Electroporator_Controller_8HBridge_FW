@@ -33,7 +33,6 @@ void ADC_Task_Init(uint32_t Sampling_Time)
     LL_ADC_REG_SetSequencerDiscont(ADC_FEEDBACK_HANDLE, LL_ADC_REG_SEQ_DISCONT_1RANK);
 
     LL_ADC_EnableIT_EOC(ADC_FEEDBACK_HANDLE);
-    //LL_ADC_EnableIT_EOS(ADC_FEEDBACK_HANDLE);
 
     LL_ADC_REG_StartConversion(ADC_FEEDBACK_HANDLE);
 }
@@ -48,15 +47,6 @@ void ADC_Task(void*)
 
         LL_ADC_REG_StartConversion(ADC_FEEDBACK_HANDLE);
     }
-    /*
-    else if (is_ADC_sequence_completed == true)
-    {
-        is_ADC_sequence_completed = false;
-        ADC_channel_index = 0;
-
-        LL_ADC_REG_StartConversion(ADC_FEEDBACK_HANDLE);
-    }
-    */
 }
 
 /* :::::::::: ADC Interupt Handler ::::::::::::: */
@@ -71,25 +61,6 @@ void ADC_Task_IRQHandler(void)
         g_Feedback_Voltage[ADC_channel_index] = 
             __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, ADC_Value[ADC_channel_index], LL_ADC_RESOLUTION_12B);
 
-        /*
-        if((ADC_channel_index == 0) && (PID_is_300V_on == true))
-        {
-            if(g_Feedback_Voltage[0] < PID_300V_set_voltage)
-            {
-                if (PID_300V_PWM_duty < 10)
-                    PID_300V_PWM_duty++;
-            }
-            else
-            {
-                if (PID_300V_PWM_duty > 0)
-                    PID_300V_PWM_duty--;
-            }
-
-            Flyback_300V_Switching_PWM.Duty = (Flyback_300V_Switching_PWM.Freq * (PID_300V_PWM_duty / 100.0));
-            LL_TIM_OC_SetCompareCH1(Flyback_300V_Switching_PWM.TIMx, Flyback_300V_Switching_PWM.Duty);
-        }
-        */
-
         if(ADC_channel_index >= 1)
         {
             ADC_channel_index = 0;
@@ -99,13 +70,6 @@ void ADC_Task_IRQHandler(void)
             ADC_channel_index = ADC_channel_index + 1;
         }  
     }
-/*
-    else if(LL_ADC_IsActiveFlag_EOS(ADC_FEEDBACK_HANDLE) == true)
-    {
-        is_ADC_sequence_completed = true;
-        LL_ADC_ClearFlag_EOS(ADC_FEEDBACK_HANDLE);
-    }
-*/
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
