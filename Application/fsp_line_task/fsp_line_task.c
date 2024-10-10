@@ -169,6 +169,10 @@ void FSP_Line_Process()
 			UART_Send_String(&RF_UART, "> MEASURING...OK\n");
 			UART_Printf(&RF_UART, "> IMPEDANCE IS %d Ohm\n", Impedance);
 			UART_Send_String(&RF_UART, "> ");
+
+			Voltage = 0;
+			Avr_Current = 0;
+			Impedance = 0;
 			break;
 		
 		default:

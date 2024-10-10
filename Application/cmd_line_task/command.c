@@ -430,11 +430,6 @@ int CMD_PULSE_CONTROL(int argc, char *argv[]) {
 	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
 			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
 
-//    uint8_t  cmd  = FSP_CMD_PULSE_CONTROL;
-//    uint8_t  payload = receive_argm;
-//    fsp_packet_t  fsp_pkt;
-//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
-
 	uint8_t encoded_frame[10] = { 0 };
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);

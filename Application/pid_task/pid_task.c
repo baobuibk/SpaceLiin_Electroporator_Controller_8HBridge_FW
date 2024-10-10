@@ -163,7 +163,7 @@ void Impedance_Task(void*)
 		uint8_t encoded_frame[20] = { 0 };
 		uint8_t frame_len;
 		fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-		UART_FSP(&GPP_UART, encoded_frame, frame_len);
+		UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
 
 		SchedulerTaskDisable(7);
 	}
