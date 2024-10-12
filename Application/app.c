@@ -60,7 +60,7 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                     {
                             &Impedance_Task,
                             (void *) 0,
-                            50,                         //call every 500us
+                            30000,                         //call every 500us
                             0,                          //count from start
                             false                       //is active
                     },

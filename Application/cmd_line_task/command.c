@@ -229,32 +229,37 @@ int CMD_PULSE_COUNT(int argc, char *argv[]) {
 		return CMDLINE_CALIB_IS_RUNNING;
 	}
 
-	if (argc < 3)
+	if (argc < 5)
 		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 3)
+	else if (argc > 5)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	int receive_argm[2];
+	int receive_argm[4];
 
 	receive_argm[0] = atoi(argv[1]);
 	receive_argm[1] = atoi(argv[2]);
+	receive_argm[2] = atoi(argv[3]);
+	receive_argm[3] = atoi(argv[4]);
 
-	if ((receive_argm[0] > 20) || (receive_argm[1] > 20))
+	if ((receive_argm[0] > 20) || (receive_argm[1] > 20) || (receive_argm[2] > 20) || (receive_argm[3] > 20))
 		return CMDLINE_INVALID_ARG;
 
 	pu_GPC_FSP_Payload->pulseCount.Cmd 		= FSP_CMD_PULSE_COUNT;
-	pu_GPC_FSP_Payload->pulseCount.HV_count = receive_argm[0];
-	pu_GPC_FSP_Payload->pulseCount.LV_count = receive_argm[1];
+	pu_GPC_FSP_Payload->pulseCount.HV_pos_count 	= receive_argm[0];
+	pu_GPC_FSP_Payload->pulseCount.HV_neg_count = receive_argm[1];
+
+	pu_GPC_FSP_Payload->pulseCount.LV_pos_count 	= receive_argm[2];
+	pu_GPC_FSP_Payload->pulseCount.LV_neg_count = receive_argm[3];
 
 	s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
 	s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
 	s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length 	= 3;
+	s_GPC_FSP_Packet.length 	= 5;
 	s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
 	s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
 	s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
 
-	uint8_t encoded_frame[20] = { 0 };
+	uint8_t encoded_frame[22] = { 0 };
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
@@ -268,36 +273,41 @@ int CMD_PULSE_DELAY(int argc, char *argv[]) {
 		return CMDLINE_CALIB_IS_RUNNING;
 	}
 
-	if (argc < 2)
+	if (argc < 4)
 		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 2)
+	else if (argc > 4)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	int receive_argm;
+	int receive_argm[3];
 
-	receive_argm = atoi(argv[1]);
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
+	receive_argm[2] = atoi(argv[3]);
 
-	if ((receive_argm > 127) || (receive_argm < 2))
+	if ((receive_argm[0] > 100) || (receive_argm[0] < 1))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 100) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[2] > 1000) || (receive_argm[2] < 2))
 		return CMDLINE_INVALID_ARG;
 
-//    uint8_t  cmd  = FSP_CMD_PULSE_DELAY;
-//    uint8_t  payload = receive_argm;
-//    fsp_packet_t  fsp_pkt;
-//    fsp_gen_cmd_w_data_pkt(cmd,  &payload,  1, FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
-
 	pu_GPC_FSP_Payload->pulseDelay.Cmd = FSP_CMD_PULSE_DELAY;
-	pu_GPC_FSP_Payload->pulseDelay.Delay = receive_argm;
+	pu_GPC_FSP_Payload->pulseDelay.HV_delay		= receive_argm[0];
+	pu_GPC_FSP_Payload->pulseDelay.LV_delay		= receive_argm[1];
+
+	pu_GPC_FSP_Payload->pulseDelay.Delay_low 	= receive_argm[2];
+	pu_GPC_FSP_Payload->pulseDelay.Delay_high 	= (receive_argm[2]  >> 8);
 
 	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
 	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
 	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 2;
+	s_GPC_FSP_Packet.length = 5;
 	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
 	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
 	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
 			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
 
-	uint8_t encoded_frame[10] = { 0 };
+	uint8_t encoded_frame[20] = { 0 };
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
@@ -325,13 +335,6 @@ int CMD_PULSE_HV(int argc, char *argv[]) {
 		return CMDLINE_INVALID_ARG;
 	else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
-
-//    uint8_t  cmd  = FSP_CMD_PULSE_HV;
-//    uint8_t  payload[2];
-//    payload[0]  =  receive_argm[0];
-//    payload[1]  =  receive_argm[1];
-//    fsp_packet_t  fsp_pkt;
-//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
 	pu_GPC_FSP_Payload->pulseHV.Cmd = FSP_CMD_PULSE_HV;
 	pu_GPC_FSP_Payload->pulseHV.OnTime = receive_argm[0];
@@ -369,32 +372,27 @@ int CMD_PULSE_LV(int argc, char *argv[]) {
 	receive_argm[0] = atoi(argv[1]);
 	receive_argm[1] = atoi(argv[2]);
 
-	if ((receive_argm[0] > 500) || (receive_argm[0] < 1))
+	if ((receive_argm[0] > 1000) || (receive_argm[0] < 1))
 		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[1] > 500) || (receive_argm[1] < 1))
+	else if ((receive_argm[1] > 1000) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
 	pu_GPC_FSP_Payload->pulseLV.Cmd = FSP_CMD_PULSE_LV;
-	pu_GPC_FSP_Payload->pulseLV.OnTime = receive_argm[0];
-	pu_GPC_FSP_Payload->pulseLV.OffTime = receive_argm[1];
+	pu_GPC_FSP_Payload->pulseLV.OnTime_low 		= receive_argm[0];
+	pu_GPC_FSP_Payload->pulseLV.OnTime_high 	= (receive_argm[0] >> 8);
+	pu_GPC_FSP_Payload->pulseLV.OffTime_low 	= receive_argm[1];
+	pu_GPC_FSP_Payload->pulseLV.OffTime_high 	= (receive_argm[1] >> 8);
 
 	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
 	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
 	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 3;
+	s_GPC_FSP_Packet.length = 5;
 	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
 	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
 	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
 			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
 
-//    uint8_t  cmd  = FSP_CMD_PULSE_LV;
-//    uint8_t  payload[2];
-//    payload[0]  =  receive_argm[0];
-//    payload[1]  =  receive_argm[1];
-//    fsp_packet_t  fsp_pkt;
-//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
-
-	uint8_t encoded_frame[15] = { 0 };
+	uint8_t encoded_frame[17] = { 0 };
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
@@ -456,9 +454,9 @@ int CMD_RELAY_SET(int argc, char *argv[]) {
 
 	if (receive_argm[0] == receive_argm[1])
 		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[0] > 7) || (receive_argm[0] < 0))
+	else if ((receive_argm[0] > 9) || (receive_argm[0] < 1) || (receive_argm[0] == 5))
 		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[1] > 7) || (receive_argm[1] < 0))
+	else if ((receive_argm[1] > 9) || (receive_argm[1] < 1) || (receive_argm[1] == 5))
 		return CMDLINE_INVALID_ARG;
 
 	pu_GPC_FSP_Payload->relaySet.Cmd = FSP_CMD_RELAY_SET;
@@ -473,13 +471,6 @@ int CMD_RELAY_SET(int argc, char *argv[]) {
 	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
 	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
 			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-//
-//    uint8_t  cmd  = FSP_CMD_RELAY_SET;
-//    uint8_t  payload[2];
-//    payload[0]  =  receive_argm[0];
-//    payload[1]  =  receive_argm[1];
-//    fsp_packet_t  fsp_pkt;
-//    fsp_gen_cmd_w_data_pkt(cmd,  payload,  sizeof(payload), FSP_ADR_GPP, FSP_PKT_WITHOUT_ACK,  &fsp_pkt);
 
 	uint8_t encoded_frame[15] = { 0 };
 	uint8_t frame_len;

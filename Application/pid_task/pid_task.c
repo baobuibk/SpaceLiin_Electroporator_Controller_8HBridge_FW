@@ -71,7 +71,7 @@ static PID_TypeDef Charge_300V_Cap_PID =
 	.MyOutput		= 	&PID_300V_PWM_duty,
 	.MySetpoint		=	&PID_300V_set_voltage,
 	.Output_Min		= 	0,
-	.Output_Max		=	30,
+	.Output_Max		=	25,
 	//.Output_Max		=	50,
 	//.Output_Max		=	22,
 };

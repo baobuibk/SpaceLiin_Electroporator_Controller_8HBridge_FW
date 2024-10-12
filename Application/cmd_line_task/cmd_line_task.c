@@ -30,7 +30,7 @@ char                g_RS232_UART_TX_buffer[256];
 char                g_RS232_UART_RX_buffer[64];
 
 uart_stdio_typedef  RF_UART;
-char                g_RF_UART_TX_buffer[256];
+char                g_RF_UART_TX_buffer[2048];
 char                g_RF_UART_RX_buffer[64];
 
 cmd_line_typedef    RS232_CMD_line;
