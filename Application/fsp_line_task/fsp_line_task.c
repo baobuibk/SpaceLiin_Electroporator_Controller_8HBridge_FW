@@ -34,7 +34,8 @@ extern 	uart_stdio_typedef RF_UART;
 
 char g_GPP_UART_TX_buffer[GPP_TX_SIZE];
 char g_GPP_UART_RX_buffer[GPP_RX_SIZE];
-
+float temperature;
+uint32_t pressure;
 fsp_packet_t 	s_GPC_FSP_Packet;
 fsp_packet_t 	s_GPP_FSP_Packet;
 GPC_FSP_Payload *pu_GPC_FSP_Payload;		//for TX
@@ -174,7 +175,18 @@ void FSP_Line_Process()
 			Avr_Current = 0;
 			Impedance = 0;
 			break;
-		
+		case FSP_CMD_GET_BMP390	:
+				UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_BMP390\r\n");
+				temperature = atof(pu_GPP_FSP_Payload->getBMP390.temp);
+				pressure = atoi(pu_GPP_FSP_Payload->getBMP390.pressure);
+				UART_Send_String(&RS232_UART, "temperature: ");
+				UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.temp);
+				UART_Send_String(&RS232_UART, " Celsius");
+				UART_Send_String(&RS232_UART, "\r\npressure: ");
+				UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.pressure);
+				UART_Send_String(&RS232_UART, " Pa\r\n");
+				UART_Send_String(&RS232_UART, ">");
+				break;
 		default:
 			break;
 		}
