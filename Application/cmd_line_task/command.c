@@ -124,7 +124,7 @@ int CMD_IMPEDANCE_MEASURE(int argc, char *argv[])
 	PID_is_300V_on = 0;
 	PID_is_50V_on = 0;
 	Calib_Calculate(receive_argm[0], 0);
-	UART_Send_String(&RF_UART, "> CHARGING HV TO 50V\r\n");
+	UART_Printf(&RF_UART, "> CHARGING HV TO %dV\r\n", receive_argm[0]);
 	PID_is_300V_on = 1;
 
 	SchedulerTaskEnable(7, 1);

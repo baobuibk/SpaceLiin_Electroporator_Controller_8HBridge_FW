@@ -148,7 +148,7 @@ void PID_Task(void*)
 
 void Impedance_Task(void*)
 {
-	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage))
+	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
 	{
 		pu_GPC_FSP_Payload->get_impedance.Cmd 		= FSP_CMD_GET_IMPEDANCE;
 		pu_GPC_FSP_Payload->get_impedance.Period   	= Impedance_Period;
