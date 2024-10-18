@@ -34,6 +34,7 @@ int CMD_RELAY_CONTROL(int argc, char *argv[]);
 
 /* :::::::::: VOM Command :::::::: */
 int CMD_MEASURE_VOLT(int argc, char *argv[]);
+int CMD_MEASURE_CURRENT(int argc, char *argv[]);
 int CMD_MEASURE_IMPEDANCE(int argc, char *argv[]);
 
 /* :::::::::: Ultility Command :::::::: */

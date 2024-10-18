@@ -8,6 +8,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+static void fsp_print(uint8_t packet_length);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uart_stdio_typedef RS232_UART;
 extern uart_stdio_typedef RF_UART;
@@ -35,8 +36,8 @@ tCmdLineEntry g_psCmdTable[] = {
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ VOM Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "MEASURE_VOLT", 		CMD_MEASURE_VOLT,		" : Measure cap voltage"},
+		{ "MEASURE_CURRENT",	CMD_MEASURE_CURRENT,	" : Measure cuvette current"},
 		{ "MEASURE_IMPEDANCE", 	CMD_MEASURE_IMPEDANCE,	" : Measure cuvette impedance"},
-		//{ "MEASURE_AMPERE",		CMD_MEASURE_AMPERE,		" : Measure cuvette current"},
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "HELP", 				CMD_HELP,				" : Display list of commands" },
@@ -168,27 +169,14 @@ int CMD_PULSE_COUNT(int argc, char *argv[])
 	if ((receive_argm[0] > 20) || (receive_argm[1] > 20) || (receive_argm[2] > 20) || (receive_argm[3] > 20))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseCount.Cmd 		= FSP_CMD_PULSE_COUNT;
-	pu_GPC_FSP_Payload->pulseCount.HV_pos_count 	= receive_argm[0];
+	pu_GPC_FSP_Payload->pulseCount.Cmd 			= FSP_CMD_PULSE_COUNT;
+	pu_GPC_FSP_Payload->pulseCount.HV_pos_count = receive_argm[0];
 	pu_GPC_FSP_Payload->pulseCount.HV_neg_count = receive_argm[1];
 
-	pu_GPC_FSP_Payload->pulseCount.LV_pos_count 	= receive_argm[2];
+	pu_GPC_FSP_Payload->pulseCount.LV_pos_count = receive_argm[2];
 	pu_GPC_FSP_Payload->pulseCount.LV_neg_count = receive_argm[3];
 
-	s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length 	= 5;
-	s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[22] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(5);
 	return CMDLINE_OK;
 }
 
@@ -216,28 +204,14 @@ int CMD_PULSE_DELAY(int argc, char *argv[])
 	else if ((receive_argm[2] > 1000) || (receive_argm[2] < 0))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseDelay.Cmd = FSP_CMD_PULSE_DELAY;
+	pu_GPC_FSP_Payload->pulseDelay.Cmd 			= FSP_CMD_PULSE_DELAY;
 	pu_GPC_FSP_Payload->pulseDelay.HV_delay		= receive_argm[0];
 	pu_GPC_FSP_Payload->pulseDelay.LV_delay		= receive_argm[1];
 
 	pu_GPC_FSP_Payload->pulseDelay.Delay_low 	= receive_argm[2];
 	pu_GPC_FSP_Payload->pulseDelay.Delay_high 	= (receive_argm[2]  >> 8);
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 5;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[20] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(5);
 	return CMDLINE_OK;
 }
 
@@ -262,24 +236,11 @@ int CMD_PULSE_HV(int argc, char *argv[])
 	else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseHV.Cmd = FSP_CMD_PULSE_HV;
-	pu_GPC_FSP_Payload->pulseHV.OnTime = receive_argm[0];
+	pu_GPC_FSP_Payload->pulseHV.Cmd 	= FSP_CMD_PULSE_HV;
+	pu_GPC_FSP_Payload->pulseHV.OnTime 	= receive_argm[0];
 	pu_GPC_FSP_Payload->pulseHV.OffTime = receive_argm[1];
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 3;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-	uint8_t encoded_frame[15] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(3);
 	return CMDLINE_OK;
 }
 
@@ -310,21 +271,7 @@ int CMD_PULSE_LV(int argc, char *argv[])
 	pu_GPC_FSP_Payload->pulseLV.OffTime_low 	= receive_argm[1];
 	pu_GPC_FSP_Payload->pulseLV.OffTime_high 	= (receive_argm[1] >> 8);
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 5;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[17] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(5);
 	return CMDLINE_OK;
 }
 
@@ -347,21 +294,7 @@ int CMD_PULSE_CONTROL(int argc, char *argv[])
 	pu_GPC_FSP_Payload->pulseControl.Cmd = FSP_CMD_PULSE_CONTROL;
 	pu_GPC_FSP_Payload->pulseControl.State = receive_argm;
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 2;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[10] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_Write(&GPP_UART, &encoded_frame, frame_len);
-
+	fsp_print(2);
 	return CMDLINE_OK;
 }
 
@@ -393,21 +326,7 @@ int CMD_RELAY_SET(int argc, char *argv[])
 	pu_GPC_FSP_Payload->relaySet.HvRelay = receive_argm[0];
 	pu_GPC_FSP_Payload->relaySet.LvRelay = receive_argm[1];
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 3;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[15] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(3);
 	return CMDLINE_OK;
 }
 
@@ -432,21 +351,7 @@ int CMD_RELAY_CONTROL(int argc, char *argv[])
 	pu_GPC_FSP_Payload->relayControl.Cmd = FSP_CMD_RELAY_CONTROL;
 	pu_GPC_FSP_Payload->relayControl.State = receive_argm;
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 2;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[10] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(2);
 	return CMDLINE_OK;
 }
 
@@ -463,13 +368,23 @@ int CMD_MEASURE_VOLT(int argc, char *argv[])
 	data_tmp[0] = g_Feedback_Voltage[0]* 10 / hv_calib_coefficient.average_value;
 	data_tmp[1] = g_Feedback_Voltage[1]* 10 / lv_calib_coefficient.average_value;
 
-	data1_tmp[0] = data_tmp[0]%10;
-	data1_tmp[1] = data_tmp[1]%10;
+	data1_tmp[0] = data_tmp[0] % 10;
+	data1_tmp[1] = data_tmp[1] % 10;
 
 	data_tmp[0] /= 10;
 	data_tmp[1] /= 10;
 	UART_Printf(&RS232_UART, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
 	UART_Printf(&RF_UART, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
+
+	return CMDLINE_OK;
+}
+
+int CMD_MEASURE_CURRENT(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
 
 	return CMDLINE_OK;
 }
@@ -596,21 +511,7 @@ int CMD_CHANNEL_SET(int argc, char *argv[])
 	pu_GPC_FSP_Payload->channelSet.Cmd = FSP_CMD_CHANNEL_SET;
 	pu_GPC_FSP_Payload->channelSet.Channel = receive_argm;
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 2;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[10] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(2);
 	return CMDLINE_OK;
 }
 
@@ -635,21 +536,7 @@ int CMD_CHANNEL_CONTROL(int argc, char *argv[])
 	pu_GPC_FSP_Payload->channelControl.Cmd = FSP_CMD_CHANNEL_CONTROL;
 	pu_GPC_FSP_Payload->channelControl.State = receive_argm;
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 2;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[15] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(2);
 	return CMDLINE_OK;
 }
 
@@ -660,23 +547,10 @@ int CMD_CALL_GPP(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->handshake.Cmd = FSP_CMD_HANDSHAKE;
+	pu_GPC_FSP_Payload->handshake.Cmd 	= FSP_CMD_HANDSHAKE;
 	pu_GPC_FSP_Payload->handshake.Check = 0xAB;
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 2;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
 
-	uint8_t encoded_frame[10] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
+	fsp_print(2);
 	return CMDLINE_OK;
 }
 int CMD_GET_BMP390(int argc, char *argv[])
@@ -688,20 +562,24 @@ int CMD_GET_BMP390(int argc, char *argv[])
 
 	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_BMP390;
 
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 1;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
+	fsp_print(1);
+	return CMDLINE_OK;
+}
 
-	uint8_t encoded_frame[10] = { 0 };
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+static void fsp_print(uint8_t packet_length)
+{
+	s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
+	s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
+	s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
+	s_GPC_FSP_Packet.length 	= packet_length;
+	s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
+	s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
+
+	uint8_t encoded_frame[25] = { 0 };
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
 	UART_FSP(&GPP_UART, encoded_frame, frame_len);
-
-	return CMDLINE_OK;
 }

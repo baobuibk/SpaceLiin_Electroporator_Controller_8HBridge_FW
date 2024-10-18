@@ -154,39 +154,70 @@ void FSP_Line_Process()
 
 		break;
 	case FSP_PKT_TYPE_CMD_W_DATA:
-		switch (pu_GPP_FSP_Payload->commonFrame.Cmd) {
-		case FSP_CMD_AVR_CURRENT:
-			Voltage = g_Feedback_Voltage[0] * 120.0766281;
+		switch (pu_GPP_FSP_Payload->commonFrame.Cmd)
+		{
+		case FSP_CMD_SENT_CURRENT:
+			Avr_Current = pu_GPP_FSP_Payload->get_current.Value_high;
+			Avr_Current = Avr_Current << 8;
+			Avr_Current |= pu_GPP_FSP_Payload->get_current.Value_low;
+
+			if (Avr_Current < 1000)
+			{
+				UART_Printf(&RS232_UART, "CURRENT IS %dmA\n", Avr_Current);
+				UART_Printf(&RF_UART, "CURRENT IS %dmA\n", Avr_Current);
+
+				UART_Send_String(&RS232_UART, "> ");
+				UART_Send_String(&RF_UART, "> ");
+			}
+			else
+			{
+				UART_Printf(&RS232_UART, "CURRENT IS %d.%dA\n", Avr_Current / 1000, Avr_Current % 1000);
+				UART_Printf(&RF_UART, "CURRENT IS %d.%dA\n", Avr_Current / 1000, Avr_Current % 1000);
+
+				UART_Send_String(&RS232_UART, "> ");
+				UART_Send_String(&RF_UART, "> ");
+			}
+			
+			break;
+
+		case FSP_CMD_SENT_IMPEDANCE:
+			Voltage = g_Feedback_Voltage[0] * 1000 / hv_calib_coefficient.average_value;
+
 			PID_is_300V_on = 0;
 			PID_is_50V_on = 0;
 			g_is_Discharge_300V_On = 1;
 			g_is_Discharge_50V_On = 1;	
-			UART_Send_String(&RS232_UART, "> RECEIVED FSP_CMD_IMPDANCE\r\n");
-			UART_Send_String(&RF_UART, "> RECEIVED FSP_CMD_IMPDANCE\r\n");
-			Avr_Current = pu_GPP_FSP_Payload->avr_current.Value_high;
-			Avr_Current = Avr_Current << 8;
-			Avr_Current |= pu_GPP_FSP_Payload->avr_current.Value_low;
-			Impedance = Voltage / Avr_Current;
-			UART_Send_String(&RF_UART, "> MEASURING...OK\n");
-			UART_Printf(&RF_UART, "> IMPEDANCE IS %d Ohm\n", Impedance);
-			UART_Send_String(&RF_UART, "> ");
 
-			Voltage = 0;
-			Avr_Current = 0;
-			Impedance = 0;
+			Avr_Current = pu_GPP_FSP_Payload->get_impedance.Value_high;
+			Avr_Current = Avr_Current << 8;
+			Avr_Current |= pu_GPP_FSP_Payload->get_impedance.Value_low;
+
+			Impedance = Voltage / Avr_Current;
+
+			UART_Send_String(&RS232_UART, "MEASURING...OK\n");
+			UART_Send_String(&RF_UART, "MEASURING...OK\n");
+			
+			UART_Printf(&RS232_UART, "> CURRENT IS %dmA\n", Avr_Current);
+			UART_Printf(&RF_UART, "> CURRENT IS %dmA\n", Avr_Current);
+
+			UART_Printf(&RS232_UART, "> IMPEDANCE IS %d Ohm\n", Impedance);
+			UART_Printf(&RF_UART, "> IMPEDANCE IS %d Ohm\n", Impedance);
+
+			UART_Send_String(&RS232_UART, "> ");
+			UART_Send_String(&RF_UART, "> ");
 			break;
 		case FSP_CMD_GET_BMP390	:
-				UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_BMP390\r\n");
-				temperature = atof(pu_GPP_FSP_Payload->getBMP390.temp);
-				pressure = atoi(pu_GPP_FSP_Payload->getBMP390.pressure);
-				UART_Send_String(&RS232_UART, "temperature: ");
-				UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.temp);
-				UART_Send_String(&RS232_UART, " Celsius");
-				UART_Send_String(&RS232_UART, "\r\npressure: ");
-				UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.pressure);
-				UART_Send_String(&RS232_UART, " Pa\r\n");
-				UART_Send_String(&RS232_UART, ">");
-				break;
+			UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_BMP390\r\n");
+			temperature = atof(pu_GPP_FSP_Payload->getBMP390.temp);
+			pressure = atoi(pu_GPP_FSP_Payload->getBMP390.pressure);
+			UART_Send_String(&RS232_UART, "temperature: ");
+			UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.temp);
+			UART_Send_String(&RS232_UART, " Celsius");
+			UART_Send_String(&RS232_UART, "\r\npressure: ");
+			UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.pressure);
+			UART_Send_String(&RS232_UART, " Pa\r\n");
+			UART_Send_String(&RS232_UART, ">");
+			break;
 		default:
 			break;
 		}
