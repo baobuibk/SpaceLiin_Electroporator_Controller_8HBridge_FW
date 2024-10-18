@@ -468,8 +468,8 @@ int CMD_MEASURE_VOLT(int argc, char *argv[])
 
 	data_tmp[0] /= 10;
 	data_tmp[1] /= 10;
-	UART_Printf(&RS232_UART, ">HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
-	UART_Printf(&RF_UART, ">HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
+	UART_Printf(&RS232_UART, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
+	UART_Printf(&RF_UART, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
 
 	return CMDLINE_OK;
 }
