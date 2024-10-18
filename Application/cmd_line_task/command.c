@@ -285,11 +285,11 @@ int CMD_PULSE_DELAY(int argc, char *argv[]) {
 	receive_argm[1] = atoi(argv[2]);
 	receive_argm[2] = atoi(argv[3]);
 
-	if ((receive_argm[0] > 100) || (receive_argm[0] < 1))
+	if ((receive_argm[0] > 100) || (receive_argm[0] < 0))
 		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[1] > 100) || (receive_argm[1] < 1))
+	else if ((receive_argm[1] > 100) || (receive_argm[1] < 0))
 		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[2] > 1000) || (receive_argm[2] < 2))
+	else if ((receive_argm[2] > 1000) || (receive_argm[2] < 0))
 		return CMDLINE_INVALID_ARG;
 
 	pu_GPC_FSP_Payload->pulseDelay.Cmd = FSP_CMD_PULSE_DELAY;
