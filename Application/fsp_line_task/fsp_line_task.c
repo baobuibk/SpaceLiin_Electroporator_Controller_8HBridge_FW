@@ -46,7 +46,7 @@ char g_FSP_line_buffer[FSP_BUF_LEN];
 
 bool is_receive_SOD = false;
 bool escape = false;
-int convertArrayToInteger(uint8_t arr[], int  *p);
+void convertArrayToInteger(uint8_t arr[], uint32_t *p);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
@@ -208,59 +208,40 @@ void FSP_Line_Process()
 			UART_Send_String(&RF_UART, "> ");
 			break;
 		case FSP_CMD_GET_BMP390	:
-				UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_BMP390\r\n");
-				temperature = atof(pu_GPP_FSP_Payload->getBMP390.temp);
-				pressure = atoi(pu_GPP_FSP_Payload->getBMP390.pressure);
-				UART_Send_String(&RS232_UART, "temperature: ");
-				UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.temp);
-				UART_Send_String(&RS232_UART, " Celsius");
-				UART_Send_String(&RS232_UART, "\r\npressure: ");
-				UART_Send_String(&RS232_UART, pu_GPP_FSP_Payload->getBMP390.pressure);
-				UART_Send_String(&RS232_UART, " Pa\r\n");
-				UART_Send_String(&RS232_UART, ">");
-				break;
+			UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_BMP390\n");
+			UART_Send_String(&RF_UART, "Received FSP_CMD_GET_BMP390\n");
+
+			UART_Printf(&RS232_UART, "> TEMPERATURE: %s Celsius\n", pu_GPP_FSP_Payload->getBMP390.temp);
+			UART_Printf(&RF_UART, "> TEMPERATURE: %s Celsius\n", pu_GPP_FSP_Payload->getBMP390.temp);
+
+			UART_Printf(&RS232_UART, "> PRESSURE: %s Pa\n", pu_GPP_FSP_Payload->getBMP390.pressure);
+			UART_Printf(&RF_UART, "> PRESSURE: %s Pa\n", pu_GPP_FSP_Payload->getBMP390.pressure);
+
+			UART_Send_String(&RS232_UART, "> ");
+			UART_Send_String(&RF_UART, "> ");
+			break;
 		case FSP_CMD_GET_LMSDOX:
-						UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_LSMDOX\r\n");
-						int accel_x=0, accel_y=0, accel_z=0, gyro_x=0, gyro_y=0, gyro_z=0;
-					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_x, (int *)&accel_x);
-					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_y, (int *)&accel_y);
-					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_z, (int *)&accel_z);
-					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_x, (int *)&gyro_x);
-					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_y, (int *)&gyro_y);
-					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_z, (int *)&gyro_z);
-					 uint8_t arr[20] = {0};
-					 sprintf(arr, "%d", accel_x);
-					 UART_Send_String(&RS232_UART, "accel x: ");
+			UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_LSMDOX\n");
+			UART_Send_String(&RF_UART, "Received FSP_CMD_GET_LSMDOX\n");
 
-					 UART_Send_String(&RS232_UART, arr);
-					 UART_Send_String(&RS232_UART, "mm/s2 ");
-					 sprintf(arr, "%d", accel_y);
-					UART_Send_String(&RS232_UART, "accel y: ");
+			uint32_t accel_x=0, accel_y=0, accel_z=0, gyro_x=0, gyro_y=0, gyro_z=0;
 
-					 UART_Send_String(&RS232_UART, arr);
-					 UART_Send_String(&RS232_UART, "mm/s2 ");
-					 sprintf(arr, "%d", accel_z);
-					 UART_Send_String(&RS232_UART, "accel z: ");
+			convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_x, &accel_x);
+			convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_y, &accel_y);
+			convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_z, &accel_z);
+			convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_x, &gyro_x);
+			convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_y, &gyro_y);
+			convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_z, &gyro_z);
 
-					 UART_Send_String(&RS232_UART, arr);
-					 UART_Send_String(&RS232_UART, "mm/s2 \r\n");
-					 sprintf(arr, "%d", gyro_x);
-					 UART_Send_String(&RS232_UART, "gyro x: ");
+			UART_Printf(&RS232_UART, "> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n", accel_x, accel_y, accel_z);
+			UART_Printf(&RF_UART, "> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n", accel_x, accel_y, accel_z);
 
-					 UART_Send_String(&RS232_UART, arr);
-					 UART_Send_String(&RS232_UART, "mdps ");
-					 sprintf(arr, "%d", gyro_y);
-					 UART_Send_String(&RS232_UART, "gyro y: ");
+			UART_Printf(&RS232_UART, "> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x, gyro_y, gyro_z);
+			UART_Printf(&RF_UART, "> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x, gyro_y, gyro_z);
 
-					 UART_Send_String(&RS232_UART, arr);
-					  UART_Send_String(&RS232_UART, "mpds ");
-					 sprintf(arr, "%d", gyro_z);
-					 UART_Send_String(&RS232_UART, "gyro z: ");
-
-					 UART_Send_String(&RS232_UART, arr);
-					 UART_Send_String(&RS232_UART, "mpds \r\n");
-					 UART_Send_String(&RS232_UART, ">");
-						break;
+			UART_Send_String(&RS232_UART, "> ");
+			UART_Send_String(&RF_UART, "> ");
+			break;
 		default:
 			break;
 		}
@@ -305,11 +286,8 @@ void GPP_UART_IRQHandler(void) {
 		}
 	}
 }
-int convertArrayToInteger(uint8_t arr[], int *p) {
-
-	*p= (int)(arr[3]<<24 | arr[2]<<16 | arr[1]<<8 | arr[0]);
-	return 0;
-
-
+void convertArrayToInteger(uint8_t arr[], uint32_t *p)
+{
+	*p= (uint32_t)(arr[3]<<24 | arr[2]<<16 | arr[1]<<8 | arr[0]);
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
