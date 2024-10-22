@@ -31,6 +31,7 @@
         "calib_task.h": "c",
         "fsp_line_task.h": "c",
         "type_traits": "c",
-        "fsp_frame.h": "c"
+        "fsp_frame.h": "c",
+        "impedance_task.h": "c"
     }
 }
