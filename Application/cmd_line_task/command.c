@@ -46,7 +46,8 @@ tCmdLineEntry g_psCmdTable[] = {
 		{ "CHANNEL_SET", 		CMD_CHANNEL_SET, 		" : Choose a cap channel" },
 		{ "CHANNEL_CONTROL",	CMD_CHANNEL_CONTROL,	" : Control the setted channel" },
 		{ "CALL_GPP", 			CMD_CALL_GPP,	    	" : Test communicate to GPP" },
-		{ "GET_BMP390", 		CMD_GET_BMP390,	    	" : Get temperature and pressure" },
+		{ "GET_BMP390", 		CMD_GET_BMP390,	    " : Get temperature and pressure" },
+		{ "GET_LMSDOX", 		CMD_GET_LMSDOX,	    " : Get accel and gyro" },
 		{ 0, 0, 0 }
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -582,4 +583,30 @@ static void fsp_print(uint8_t packet_length)
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
 	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+}
+
+int CMD_GET_LMSDOX(int argc, char *argv[]) {
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_LMSDOX;
+
+	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
+	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
+	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
+	s_GPC_FSP_Packet.length = 1;
+	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
+	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
+	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
+			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
+
+	uint8_t encoded_frame[10] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+
+	return CMDLINE_OK;
 }
