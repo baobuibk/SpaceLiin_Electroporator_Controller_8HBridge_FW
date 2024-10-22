@@ -46,6 +46,7 @@ char g_FSP_line_buffer[FSP_BUF_LEN];
 
 bool is_receive_SOD = false;
 bool escape = false;
+int convertArrayToInteger(uint8_t arr[], int  *p);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
@@ -187,6 +188,18 @@ void FSP_Line_Process()
 				UART_Send_String(&RS232_UART, " Pa\r\n");
 				UART_Send_String(&RS232_UART, ">");
 				break;
+		case FSP_CMD_GET_LMSDOX:
+						UART_Send_String(&RS232_UART, "Received FSP_CMD_GET_LSMDOX\r\n");
+						int accel_x=0, accel_y=0, accel_z=0, gyro_x=0, gyro_y=0, gyro_z=0;
+					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_x, (int *)&accel_x);
+					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_y, (int *)&accel_y);
+					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.accel_z, (int *)&accel_z);
+					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_x, (int *)&gyro_x);
+					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_y, (int *)&gyro_y);
+					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_z, (int *)&gyro_z);
+
+					UART_Send_String(&RS232_UART, ">");
+						break;
 		default:
 			break;
 		}
@@ -231,5 +244,11 @@ void GPP_UART_IRQHandler(void) {
 		}
 	}
 }
+int convertArrayToInteger(uint8_t arr[], int *p) {
 
+	*p= (int)(arr[3]<<24 | arr[2]<<16 | arr[1]<<8 | arr[0]);
+	return 0;
+
+
+}
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

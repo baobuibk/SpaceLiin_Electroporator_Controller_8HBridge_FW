@@ -41,6 +41,7 @@ int CMD_CHANNEL_CONTROL(int argc, char *argv[]);
 
 int CMD_CALL_GPP(int argc, char *argv[]);
 int CMD_GET_BMP390(int argc, char *argv[]);
+int CMD_GET_LMSDOX(int argc, char *argv[]) ;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #endif /* COMMAND_H_ */
