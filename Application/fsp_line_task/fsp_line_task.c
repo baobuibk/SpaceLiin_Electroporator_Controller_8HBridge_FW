@@ -228,8 +228,38 @@ void FSP_Line_Process()
 					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_x, (int *)&gyro_x);
 					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_y, (int *)&gyro_y);
 					 convertArrayToInteger(pu_GPP_FSP_Payload->getLSMDOX.gyro_z, (int *)&gyro_z);
+					 uint8_t arr[20] = {0};
+					 sprintf(arr, "%d", accel_x);
+					 UART_Send_String(&RS232_UART, "accel x: ");
 
-					UART_Send_String(&RS232_UART, ">");
+					 UART_Send_String(&RS232_UART, arr);
+					 UART_Send_String(&RS232_UART, "mm/s2 ");
+					 sprintf(arr, "%d", accel_y);
+					UART_Send_String(&RS232_UART, "accel y: ");
+
+					 UART_Send_String(&RS232_UART, arr);
+					 UART_Send_String(&RS232_UART, "mm/s2 ");
+					 sprintf(arr, "%d", accel_z);
+					 UART_Send_String(&RS232_UART, "accel z: ");
+
+					 UART_Send_String(&RS232_UART, arr);
+					 UART_Send_String(&RS232_UART, "mm/s2 \r\n");
+					 sprintf(arr, "%d", gyro_x);
+					 UART_Send_String(&RS232_UART, "gyro x: ");
+
+					 UART_Send_String(&RS232_UART, arr);
+					 UART_Send_String(&RS232_UART, "mdps ");
+					 sprintf(arr, "%d", gyro_y);
+					 UART_Send_String(&RS232_UART, "gyro y: ");
+
+					 UART_Send_String(&RS232_UART, arr);
+					  UART_Send_String(&RS232_UART, "mpds ");
+					 sprintf(arr, "%d", gyro_z);
+					 UART_Send_String(&RS232_UART, "gyro z: ");
+
+					 UART_Send_String(&RS232_UART, arr);
+					 UART_Send_String(&RS232_UART, "mpds \r\n");
+					 UART_Send_String(&RS232_UART, ">");
 						break;
 		default:
 			break;
