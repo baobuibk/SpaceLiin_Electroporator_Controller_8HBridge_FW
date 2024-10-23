@@ -16,45 +16,59 @@ extern uart_stdio_typedef GPP_UART;
 
 tCmdLineEntry g_psCmdTable[] = {
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Cap Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "CAP_VOLT",			CMD_CAP_VOLT, 			" : Set cap voltage" },
-		{ "CAP_CONTROL",		CMD_CAP_CONTROL, 		" : Control charger on/off" },
-		{ "CAP_RELEASE",		CMD_CAP_RELEASE, 		" : Control releasing cap" },
-		//{ "CAP_GET",			CMD_CAP_GET, 			" : Command to get all related cap controll data" },
+		{ "SET_CAP_VOLT",			CMD_SET_CAP_VOLT, 			" : Set cap voltage" },
+		{ "SET_CAP_CONTROL",		CMD_SET_CAP_CONTROL, 		" : Control charger on/off" },
+		{ "SET_CAP_RELEASE",		CMD_SET_CAP_RELEASE, 		" : Control releasing cap" },
+
+		{ "GET_CAP_VOLT",			CMD_GET_CAP_VOLT, 			" : Get set voltage on cap" },
+		{ "GET_CAP_CONTROL",		CMD_GET_CAP_CONTROL, 		" : Get info whether cap is charging or not" },
+		{ "GET_CAP_RELEASE",		CMD_GET_CAP_RELEASE, 		" : Get info whether cap is releasing or not" },
+		{ "GET_CAP_ALL",			CMD_GET_CAP_ALL, 			" : Get all info about cap" },
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Pulse Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "PULSE_COUNT",		CMD_PULSE_COUNT, 		" : Set number of pulse" },
-		{ "PULSE_DELAY",		CMD_PULSE_DELAY, 		" : Set delay between pulse hv and lv" },
-		{ "PULSE_HV", 			CMD_PULSE_HV, 			" : Set hs pulse on time and off time" },
-		{ "PULSE_LV", 			CMD_PULSE_LV, 			" : Set ls pulse on time and off time" },
-		{ "PULSE_CONTROL", 		CMD_PULSE_CONTROL, 		" : Start pulsing" },
-		//{ "PULSE_GET",			CMD_PULSE_GET, 			" : Command to get all related pulse controll data" },
+		{ "SET_PULSE_COUNT",		CMD_SET_PULSE_COUNT, 		" : Set number of pulse" },
+		{ "SET_PULSE_DELAY",		CMD_SET_PULSE_DELAY, 		" : Set delay between pulse hv and lv" },
+		{ "SET_PULSE_HV", 			CMD_SET_PULSE_HV, 			" : Set hs pulse on time and off time" },
+		{ "SET_PULSE_LV", 			CMD_SET_PULSE_LV, 			" : Set ls pulse on time and off time" },
+		{ "SET_PULSE_CONTROL", 		CMD_SET_PULSE_CONTROL, 		" : Start pulsing" },
+
+		{ "GET_PULSE_COUNT",		CMD_GET_PULSE_COUNT, 		" : Get number of pulse" },
+		{ "GET_PULSE_DELAY",		CMD_GET_PULSE_DELAY, 		" : Get delay between pulse hv and lv" },
+		{ "GET_PULSE_HV", 			CMD_GET_PULSE_HV, 			" : Get hs pulse on time and off time" },
+		{ "GET_PULSE_LV", 			CMD_GET_PULSE_LV, 			" : Get ls pulse on time and off time" },
+		{ "GET_PULSE_CONTROL", 		CMD_GET_PULSE_CONTROL, 		" : Get info whether pulse starting pulsing" },
+		{ "GET_PULSE_ALL", 			CMD_GET_PULSE_ALL, 			" : Get all info about pulse" },
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Relay Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "RELAY_SET", 			CMD_RELAY_SET, 			" : Set up cuvette" },
-		{ "RELAY_CONTROL", 		CMD_RELAY_CONTROL, 		" : Stop cuvette" },
-		//{ "RELAY_GET", 			CMD_RELAY_GET, 			" : Command to get all related relay controll data" },
+		{ "SET_RELAY_POLE", 		CMD_SET_RELAY_POLE, 		" : Set up cuvette" },
+		{ "SET_RELAY_CONTROL", 		CMD_SET_RELAY_CONTROL, 		" : Stop cuvette" },
+
+		{ "GET_RELAY_POLE", 		CMD_GET_RELAY_POLE, 		" : Get cuvette pole" },
+		{ "GET_RELAY_CONTROL", 		CMD_GET_RELAY_CONTROL, 		" : Get relay state" },
+		{ "GET_RELAY_ALL", 			CMD_GET_RELAY_ALL, 			" : Get all info about relay" },
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ VOM Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "MEASURE_VOLT", 		CMD_MEASURE_VOLT,		" : Measure cap voltage"},
-		{ "MEASURE_CURRENT",	CMD_MEASURE_CURRENT,	" : Measure cuvette current"},
-		{ "MEASURE_IMPEDANCE", 	CMD_MEASURE_IMPEDANCE,	" : Measure cuvette impedance"},
+		{ "MEASURE_VOLT", 			CMD_MEASURE_VOLT,			" : Measure cap voltage"},
+		{ "MEASURE_CURRENT",		CMD_MEASURE_CURRENT,		" : Measure cuvette current"},
+		{ "MEASURE_IMPEDANCE", 		CMD_MEASURE_IMPEDANCE,		" : Measure cuvette impedance"},
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "HELP", 				CMD_HELP,				" : Display list of commands" },
-		{ "CALIB_RUN", 			CMD_CALIB_RUN, 			" : Start cap calib process" },
-		{ "CALIB_MEASURE",		CMD_CALIB_MEASURE, 		" : Command to input VOM value" },
-		{ "CHANNEL_SET", 		CMD_CHANNEL_SET, 		" : Choose a cap channel" },
-		{ "CHANNEL_CONTROL",	CMD_CHANNEL_CONTROL,	" : Control the setted channel" },
-		{ "CALL_GPP", 			CMD_CALL_GPP,	    	" : Test communicate to GPP" },
-		{ "GET_BMP390", 		CMD_GET_BMP390,	    " : Get temperature and pressure" },
-		{ "GET_LMSDOX", 		CMD_GET_LMSDOX,	    " : Get accel and gyro" },
+		{ "HELP", 					CMD_HELP,					" : Display list of commands" },
+		{ "CALIB_RUN", 				CMD_CALIB_RUN, 				" : Start cap calib process" },
+		{ "CALIB_MEASURE",			CMD_CALIB_MEASURE, 			" : Command to input VOM value" },
+		{ "CHANNEL_SET", 			CMD_CHANNEL_SET, 			" : Choose a cap channel" },
+		{ "CHANNEL_CONTROL",		CMD_CHANNEL_CONTROL,		" : Control the setted channel" },
+		{ "CALL_GPP", 				CMD_CALL_GPP,	    		" : Test communicate to GPP" },
+		{ "GET_BMP390", 			CMD_GET_BMP390,	    		" : Get temperature and pressure" },
+		{ "GET_LMSDOX", 			CMD_GET_LMSDOX,	   			 " : Get accel and gyro" },
 		{ 0, 0, 0 }
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Control Command :::::::: */
-int CMD_CAP_VOLT(int argc, char *argv[])
+int CMD_SET_CAP_VOLT(int argc, char *argv[])
 {
-	if (g_is_calib_running == true) {
+	if (g_is_calib_running == true)
+	{
 		return CMDLINE_CALIB_IS_RUNNING;
 	}
 
@@ -78,9 +92,10 @@ int CMD_CAP_VOLT(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
-int CMD_CAP_CONTROL(int argc, char *argv[])
+int CMD_SET_CAP_CONTROL(int argc, char *argv[])
 {
-	if (g_is_calib_running == true) {
+	if (g_is_calib_running == true)
+	{
 		return CMDLINE_CALIB_IS_RUNNING;
 	}
 
@@ -113,7 +128,7 @@ int CMD_CAP_CONTROL(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
-int CMD_CAP_RELEASE(int argc, char *argv[])
+int CMD_SET_CAP_RELEASE(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -148,8 +163,152 @@ int CMD_CAP_RELEASE(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
+int CMD_GET_CAP_VOLT(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	uint16_t hv_cap_set_voltage, lv_cap_set_voltage;
+	hv_cap_set_voltage = PID_300V_set_voltage / hv_calib_coefficient.average_value;
+	lv_cap_set_voltage = PID_50V_set_voltage / lv_calib_coefficient.average_value;
+
+	UART_Printf(&RS232_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
+
+	UART_Printf(&RF_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_CAP_CONTROL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	if (PID_is_300V_on == true)
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS CHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS CHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS NOT CHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS NOT CHARGING\n");
+	}
+
+	if (PID_is_50V_on == true)
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS CHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS CHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS NOT CHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS NOT CHARGING\n");
+	}
+	
+	return CMDLINE_OK;
+}
+
+int CMD_GET_CAP_RELEASE(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	if (g_is_Discharge_300V_On == true)
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS DISCHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS NOT DISCHARGING\n");
+	}
+
+	if (g_is_Discharge_50V_On == true)
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS DISCHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS NOT DISCHARGING\n");
+	}
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_CAP_ALL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+	
+	uint16_t hv_cap_set_voltage, lv_cap_set_voltage;
+	hv_cap_set_voltage = PID_300V_set_voltage / hv_calib_coefficient.average_value;
+	lv_cap_set_voltage = PID_50V_set_voltage / lv_calib_coefficient.average_value;
+
+	UART_Printf(&RS232_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
+
+	UART_Printf(&RF_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
+
+	if (PID_is_300V_on == true)
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS CHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS CHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS NOT CHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS NOT CHARGING\n");
+	}
+
+	if (PID_is_50V_on == true)
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS CHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS CHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS NOT CHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS NOT CHARGING\n");
+	}
+
+	if (g_is_Discharge_300V_On == true)
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS DISCHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> HV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> HV CAP IS NOT DISCHARGING\n");
+	}
+
+	if (g_is_Discharge_50V_On == true)
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS DISCHARGING\n");
+	}
+	else
+	{
+		UART_Send_String(&RS232_UART, "> LV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(&RF_UART, "> LV CAP IS NOT DISCHARGING\n");
+	}
+
+	return CMDLINE_OK;
+}
+
 /* :::::::::: Pulse Control Command :::::::: */
-int CMD_PULSE_COUNT(int argc, char *argv[])
+int CMD_SET_PULSE_COUNT(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -170,18 +329,18 @@ int CMD_PULSE_COUNT(int argc, char *argv[])
 	if ((receive_argm[0] > 20) || (receive_argm[1] > 20) || (receive_argm[2] > 20) || (receive_argm[3] > 20))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseCount.Cmd 			= FSP_CMD_PULSE_COUNT;
-	pu_GPC_FSP_Payload->pulseCount.HV_pos_count = receive_argm[0];
-	pu_GPC_FSP_Payload->pulseCount.HV_neg_count = receive_argm[1];
+	pu_GPC_FSP_Payload->set_pulse_count.Cmd 			= FSP_CMD_SET_PULSE_COUNT;
+	pu_GPC_FSP_Payload->set_pulse_count.HV_pos_count = receive_argm[0];
+	pu_GPC_FSP_Payload->set_pulse_count.HV_neg_count = receive_argm[1];
 
-	pu_GPC_FSP_Payload->pulseCount.LV_pos_count = receive_argm[2];
-	pu_GPC_FSP_Payload->pulseCount.LV_neg_count = receive_argm[3];
+	pu_GPC_FSP_Payload->set_pulse_count.LV_pos_count = receive_argm[2];
+	pu_GPC_FSP_Payload->set_pulse_count.LV_neg_count = receive_argm[3];
 
 	fsp_print(5);
 	return CMDLINE_OK;
 }
 
-int CMD_PULSE_DELAY(int argc, char *argv[])
+int CMD_SET_PULSE_DELAY(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -205,18 +364,18 @@ int CMD_PULSE_DELAY(int argc, char *argv[])
 	else if ((receive_argm[2] > 1000) || (receive_argm[2] < 0))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseDelay.Cmd 			= FSP_CMD_PULSE_DELAY;
-	pu_GPC_FSP_Payload->pulseDelay.HV_delay		= receive_argm[0];
-	pu_GPC_FSP_Payload->pulseDelay.LV_delay		= receive_argm[1];
+	pu_GPC_FSP_Payload->set_pulse_delay.Cmd 			= FSP_CMD_SET_PULSE_DELAY;
+	pu_GPC_FSP_Payload->set_pulse_delay.HV_delay		= receive_argm[0];
+	pu_GPC_FSP_Payload->set_pulse_delay.LV_delay		= receive_argm[1];
 
-	pu_GPC_FSP_Payload->pulseDelay.Delay_low 	= receive_argm[2];
-	pu_GPC_FSP_Payload->pulseDelay.Delay_high 	= (receive_argm[2]  >> 8);
+	pu_GPC_FSP_Payload->set_pulse_delay.Delay_low 	= receive_argm[2];
+	pu_GPC_FSP_Payload->set_pulse_delay.Delay_high 	= (receive_argm[2]  >> 8);
 
 	fsp_print(5);
 	return CMDLINE_OK;
 }
 
-int CMD_PULSE_HV(int argc, char *argv[])
+int CMD_SET_PULSE_HV(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -237,15 +396,15 @@ int CMD_PULSE_HV(int argc, char *argv[])
 	else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseHV.Cmd 	= FSP_CMD_PULSE_HV;
-	pu_GPC_FSP_Payload->pulseHV.OnTime 	= receive_argm[0];
-	pu_GPC_FSP_Payload->pulseHV.OffTime = receive_argm[1];
+	pu_GPC_FSP_Payload->set_pulse_HV.Cmd 	= FSP_CMD_SET_PULSE_HV;
+	pu_GPC_FSP_Payload->set_pulse_HV.OnTime 	= receive_argm[0];
+	pu_GPC_FSP_Payload->set_pulse_HV.OffTime = receive_argm[1];
 
 	fsp_print(3);
 	return CMDLINE_OK;
 }
 
-int CMD_PULSE_LV(int argc, char *argv[])
+int CMD_SET_PULSE_LV(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -266,17 +425,17 @@ int CMD_PULSE_LV(int argc, char *argv[])
 	else if ((receive_argm[1] > 1000) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseLV.Cmd = FSP_CMD_PULSE_LV;
-	pu_GPC_FSP_Payload->pulseLV.OnTime_low 		= receive_argm[0];
-	pu_GPC_FSP_Payload->pulseLV.OnTime_high 	= (receive_argm[0] >> 8);
-	pu_GPC_FSP_Payload->pulseLV.OffTime_low 	= receive_argm[1];
-	pu_GPC_FSP_Payload->pulseLV.OffTime_high 	= (receive_argm[1] >> 8);
+	pu_GPC_FSP_Payload->set_pulse_LV.Cmd = FSP_CMD_SET_PULSE_LV;
+	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_low 		= receive_argm[0];
+	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_high 	= (receive_argm[0] >> 8);
+	pu_GPC_FSP_Payload->set_pulse_LV.OffTime_low 	= receive_argm[1];
+	pu_GPC_FSP_Payload->set_pulse_LV.OffTime_high 	= (receive_argm[1] >> 8);
 
 	fsp_print(5);
 	return CMDLINE_OK;
 }
 
-int CMD_PULSE_CONTROL(int argc, char *argv[])
+int CMD_SET_PULSE_CONTROL(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -292,15 +451,93 @@ int CMD_PULSE_CONTROL(int argc, char *argv[])
 	if ((receive_argm > 1) || (receive_argm < 0))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->pulseControl.Cmd = FSP_CMD_PULSE_CONTROL;
-	pu_GPC_FSP_Payload->pulseControl.State = receive_argm;
+	pu_GPC_FSP_Payload->set_pulse_control.Cmd = FSP_CMD_SET_PULSE_CONTROL;
+	pu_GPC_FSP_Payload->set_pulse_control.State = receive_argm;
 
 	fsp_print(2);
 	return CMDLINE_OK;
 }
 
+int CMD_GET_PULSE_COUNT(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_COUNT;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_DELAY(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_DELAY;
+
+	fsp_print(1);
+	return CMDLINE_OK;		
+}
+
+int CMD_GET_PULSE_HV(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_HV;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_LV(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_LV;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_CONTROL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_CONTROL;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_ALL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_ALL;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
 /* :::::::::: Relay Control Command :::::::: */
-int CMD_RELAY_SET(int argc, char *argv[])
+int CMD_SET_RELAY_POLE(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -323,15 +560,15 @@ int CMD_RELAY_SET(int argc, char *argv[])
 	else if ((receive_argm[1] > 9) || (receive_argm[1] < 1) || (receive_argm[1] == 5))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->relaySet.Cmd = FSP_CMD_RELAY_SET;
-	pu_GPC_FSP_Payload->relaySet.HvRelay = receive_argm[0];
-	pu_GPC_FSP_Payload->relaySet.LvRelay = receive_argm[1];
+	pu_GPC_FSP_Payload->set_relay_pole.Cmd = FSP_CMD_SET_RELAY_POLE;
+	pu_GPC_FSP_Payload->set_relay_pole.HvRelay = receive_argm[0];
+	pu_GPC_FSP_Payload->set_relay_pole.LvRelay = receive_argm[1];
 
 	fsp_print(3);
 	return CMDLINE_OK;
 }
 
-int CMD_RELAY_CONTROL(int argc, char *argv[])
+int CMD_SET_RELAY_CONTROL(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -349,10 +586,49 @@ int CMD_RELAY_CONTROL(int argc, char *argv[])
 	if ((receive_argm > 1) || (receive_argm < 0))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->relayControl.Cmd = FSP_CMD_RELAY_CONTROL;
-	pu_GPC_FSP_Payload->relayControl.State = receive_argm;
+	pu_GPC_FSP_Payload->set_relay_control.Cmd = FSP_CMD_SET_RELAY_CONTROL;
+	pu_GPC_FSP_Payload->set_relay_control.State = receive_argm;
 
 	fsp_print(2);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_RELAY_POLE(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_RELAY_POLE;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_RELAY_CONTROL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_RELAY_CONTROL;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_RELAY_ALL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_RELAY_ALL;
+
+	fsp_print(1);
 	return CMDLINE_OK;
 }
 
