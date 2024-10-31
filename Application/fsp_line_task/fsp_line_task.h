@@ -9,6 +9,7 @@
 #define FSP_LINE_TASK_H_
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#include "uart.h"
 #include "fsp.h"
 #include "fsp_frame.h"
 
@@ -18,8 +19,11 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern uart_stdio_typedef 	GPP_UART;
+
 extern fsp_packet_t		    s_GPC_FSP_Packet;
 extern fsp_packet_t		    s_GPP_FSP_Packet;
+
 extern GPC_FSP_Payload  	*pu_GPC_FSP_Payload;		//for TX
 extern GPP_FSP_Payload		*pu_GPP_FSP_Payload;		//for RX
 
@@ -28,12 +32,11 @@ extern GPP_FSP_Payload		*pu_GPP_FSP_Payload;		//for RX
 void FSP_Line_Task_Init();
 
 /* :::::::::: CMD Line Task ::::::::::::: */
-void FSP_Line_Task(void);
+void FSP_Line_Task(void*);
 
 /* :::::::::: IRQ Handler ::::::::::::: */
 void GPP_UART_IRQHandler(void);
 
-void FSP_Line_Process();
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #endif /* FSP_LINE_TASK_H_ */

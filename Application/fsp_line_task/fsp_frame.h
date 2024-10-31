@@ -240,5 +240,7 @@ typedef union _GPP_FSP_Payload_ {
 	GET_LSMDOX								getLSMDOX;
 } GPP_FSP_Payload;
 
+/* :::::::::: FSP Line Process ::::::::::::: */
+void FSP_Line_Process();
 
 #endif

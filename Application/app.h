@@ -12,6 +12,7 @@
 
 // USER DRIVER //
 #include "scheduler.h"
+#include "uart.h"
 
 // INCLUDE TASK //
 #include "adc_task.h"
@@ -23,9 +24,6 @@
 #include "impedance_task.h"
 
 #include "command.h"
-
-// INCLUDE LIB //
-#include "uart.h"
 
 void App_Main(void);
 

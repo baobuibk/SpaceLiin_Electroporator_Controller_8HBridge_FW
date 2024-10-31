@@ -10,10 +10,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern uart_stdio_typedef RS232_UART;
-extern uart_stdio_typedef RF_UART;
-extern uart_stdio_typedef GPP_UART;
-
 tCmdLineEntry g_psCmdTable[] = {
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Cap Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "SET_CAP_VOLT",			CMD_SET_CAP_VOLT, 			" : Set cap voltage" },
@@ -858,7 +854,7 @@ static void fsp_print(uint8_t packet_length)
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
 }
 
 int CMD_GET_LMSDOX(int argc, char *argv[]) {
@@ -882,7 +878,7 @@ int CMD_GET_LMSDOX(int argc, char *argv[]) {
 	uint8_t frame_len;
 	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
 
-	UART_FSP(&GPP_UART, encoded_frame, frame_len);
+	UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
 
 	return CMDLINE_OK;
 }

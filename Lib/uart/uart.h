@@ -4,8 +4,6 @@
 //#include "stm32f0xx_hal.h"
 #include "stm32f0xx_ll_usart.h"
 
-#include "app.h"
-
 struct _uart_stdio_typedef
 {
     USART_TypeDef*          handle;
