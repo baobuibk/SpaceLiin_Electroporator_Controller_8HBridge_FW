@@ -10,6 +10,8 @@
 static bool			is_h_bridge_enable;
 
 static uint16_t		pulse_delay_ms;
+static uint8_t		HB_pos_pole_index;
+static uint8_t		HB_neg_pole_index;
 
 static uint8_t		hv_pulse_pos_count;
 static uint8_t		hv_pulse_neg_count;
@@ -22,10 +24,6 @@ static uint8_t		lv_pulse_neg_count;
 static uint8_t		lv_delay_ms;
 static uint16_t		lv_on_time_ms;
 static uint16_t		lv_off_time_ms;
-
-static uint8_t		relay_state;
-static uint8_t		hs_relay_pole;
-static uint8_t		ls_relay_pole;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length);
@@ -44,26 +42,20 @@ tCmdLineEntry g_psCmdTable[] = {
 		{ "GET_CAP_ALL",			CMD_GET_CAP_ALL, 			" : Get all info about cap" },
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Pulse Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+		{ "SET_PULSE_POLE",			CMD_SET_PULSE_POLE,			" : Set pos and neg pole of a pulse" },
 		{ "SET_PULSE_COUNT",		CMD_SET_PULSE_COUNT, 		" : Set number of pulse" },
 		{ "SET_PULSE_DELAY",		CMD_SET_PULSE_DELAY, 		" : Set delay between pulse hv and lv" },
 		{ "SET_PULSE_HV", 			CMD_SET_PULSE_HV, 			" : Set hs pulse on time and off time" },
 		{ "SET_PULSE_LV", 			CMD_SET_PULSE_LV, 			" : Set ls pulse on time and off time" },
 		{ "SET_PULSE_CONTROL", 		CMD_SET_PULSE_CONTROL, 		" : Start pulsing" },
 
+		{ "GET_PULSE_POLE",			CMD_GET_PULSE_POLE,			" : Get the pos and neg pole of a pulse" },
 		{ "GET_PULSE_COUNT",		CMD_GET_PULSE_COUNT, 		" : Get number of pulse" },
 		{ "GET_PULSE_DELAY",		CMD_GET_PULSE_DELAY, 		" : Get delay between pulse hv and lv" },
 		{ "GET_PULSE_HV", 			CMD_GET_PULSE_HV, 			" : Get hs pulse on time and off time" },
 		{ "GET_PULSE_LV", 			CMD_GET_PULSE_LV, 			" : Get ls pulse on time and off time" },
 		{ "GET_PULSE_CONTROL", 		CMD_GET_PULSE_CONTROL, 		" : Get info whether pulse starting pulsing" },
 		{ "GET_PULSE_ALL", 			CMD_GET_PULSE_ALL, 			" : Get all info about pulse" },
-
-		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Relay Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "SET_RELAY_POLE", 		CMD_SET_RELAY_POLE, 		" : Set up cuvette" },
-		{ "SET_RELAY_CONTROL", 		CMD_SET_RELAY_CONTROL, 		" : Stop cuvette" },
-
-		{ "GET_RELAY_POLE", 		CMD_GET_RELAY_POLE, 		" : Get cuvette pole" },
-		{ "GET_RELAY_CONTROL", 		CMD_GET_RELAY_CONTROL, 		" : Get relay state" },
-		{ "GET_RELAY_ALL", 			CMD_GET_RELAY_ALL, 			" : Get all info about relay" },
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ VOM Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "MEASURE_VOLT", 			CMD_MEASURE_VOLT,			" : Measure cap voltage"},
@@ -74,8 +66,6 @@ tCmdLineEntry g_psCmdTable[] = {
 		{ "HELP", 					CMD_HELP,					" : Display list of commands" },
 		{ "CALIB_RUN", 				CMD_CALIB_RUN, 				" : Start cap calib process" },
 		{ "CALIB_MEASURE",			CMD_CALIB_MEASURE, 			" : Command to input VOM value" },
-		{ "CHANNEL_SET", 			CMD_CHANNEL_SET, 			" : Choose a cap channel" },
-		{ "CHANNEL_CONTROL",		CMD_CHANNEL_CONTROL,		" : Control the setted channel" },
 		{ "CALL_GPP", 				CMD_CALL_GPP,	    		" : Test communicate to GPP" },
 		{ "GET_BMP390", 			CMD_GET_BMP390,	    		" : Get temperature and pressure" },
 		{ "GET_LMSDOX", 			CMD_GET_LMSDOX,	   			 " : Get accel and gyro" },
@@ -306,6 +296,38 @@ int CMD_GET_CAP_ALL(int argc, char *argv[])
 }
 
 /* :::::::::: Pulse Control Command :::::::: */
+int CMD_SET_PULSE_POLE(int argc, char *argv[])
+{
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
+
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	int receive_argm[3];
+
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
+
+	if ((receive_argm[0] > 9) || (receive_argm[1] > 9))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[0] < 1) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
+
+	HB_pos_pole_index = receive_argm[0];
+	HB_neg_pole_index = receive_argm[1];
+
+	ps_FSP_TX->CMD	   						 	= FSP_CMD_SET_PULSE_POLE;
+	ps_FSP_TX->Payload.set_pulse_pole.pos_pole = receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_pole.neg_pole = receive_argm[1];
+
+	fsp_print(3);
+	return CMDLINE_OK;
+}
+
 int CMD_SET_PULSE_COUNT(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
@@ -333,12 +355,12 @@ int CMD_SET_PULSE_COUNT(int argc, char *argv[])
 	lv_pulse_pos_count = receive_argm[2];
 	lv_pulse_neg_count = receive_argm[3];
 
-	pu_GPC_FSP_Payload->set_pulse_count.Cmd 		 = FSP_CMD_SET_PULSE_COUNT;
-	pu_GPC_FSP_Payload->set_pulse_count.HV_pos_count = receive_argm[0];
-	pu_GPC_FSP_Payload->set_pulse_count.HV_neg_count = receive_argm[1];
+	ps_FSP_TX->CMD	   						 		 = FSP_CMD_SET_PULSE_COUNT;
+	ps_FSP_TX->Payload.set_pulse_count.HV_pos_count = receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_count.HV_neg_count = receive_argm[1];
 
-	pu_GPC_FSP_Payload->set_pulse_count.LV_pos_count = receive_argm[2];
-	pu_GPC_FSP_Payload->set_pulse_count.LV_neg_count = receive_argm[3];
+	ps_FSP_TX->Payload.set_pulse_count.LV_pos_count = receive_argm[2];
+	ps_FSP_TX->Payload.set_pulse_count.LV_neg_count = receive_argm[3];
 
 	fsp_print(5);
 	return CMDLINE_OK;
@@ -373,12 +395,12 @@ int CMD_SET_PULSE_DELAY(int argc, char *argv[])
 
 	pulse_delay_ms = receive_argm[2];
 
-	pu_GPC_FSP_Payload->set_pulse_delay.Cmd 			= FSP_CMD_SET_PULSE_DELAY;
-	pu_GPC_FSP_Payload->set_pulse_delay.HV_delay		= receive_argm[0];
-	pu_GPC_FSP_Payload->set_pulse_delay.LV_delay		= receive_argm[1];
+	ps_FSP_TX->CMD									= FSP_CMD_SET_PULSE_DELAY;
+	ps_FSP_TX->Payload.set_pulse_delay.HV_delay	= receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_delay.LV_delay	= receive_argm[1];
 
-	pu_GPC_FSP_Payload->set_pulse_delay.Delay_low 	= receive_argm[2];
-	pu_GPC_FSP_Payload->set_pulse_delay.Delay_high 	= (receive_argm[2] >> 8);
+	ps_FSP_TX->Payload.set_pulse_delay.Delay_low 	= receive_argm[2];
+	ps_FSP_TX->Payload.set_pulse_delay.Delay_high 	= (receive_argm[2] >> 8);
 
 	fsp_print(5);
 	return CMDLINE_OK;
@@ -408,9 +430,9 @@ int CMD_SET_PULSE_HV(int argc, char *argv[])
 	hv_on_time_ms  = receive_argm[0];
 	hv_off_time_ms = receive_argm[1];
 
-	pu_GPC_FSP_Payload->set_pulse_HV.Cmd 	 = FSP_CMD_SET_PULSE_HV;
-	pu_GPC_FSP_Payload->set_pulse_HV.OnTime	 = receive_argm[0];
-	pu_GPC_FSP_Payload->set_pulse_HV.OffTime = receive_argm[1];
+	ps_FSP_TX->CMD 	 			 		 = FSP_CMD_SET_PULSE_HV;
+	ps_FSP_TX->Payload.set_pulse_HV.OnTime	 = receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_HV.OffTime = receive_argm[1];
 
 	fsp_print(3);
 	return CMDLINE_OK;
@@ -440,11 +462,12 @@ int CMD_SET_PULSE_LV(int argc, char *argv[])
 	lv_on_time_ms  = receive_argm[0];
 	lv_off_time_ms = receive_argm[1];
 
-	pu_GPC_FSP_Payload->set_pulse_LV.Cmd 			= FSP_CMD_SET_PULSE_LV;
-	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_low 	= receive_argm[0];
-	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_high 	= (receive_argm[0] >> 8);
-	pu_GPC_FSP_Payload->set_pulse_LV.OffTime_low 	= receive_argm[1];
-	pu_GPC_FSP_Payload->set_pulse_LV.OffTime_high 	= (receive_argm[1] >> 8);
+	ps_FSP_TX->CMD 								= FSP_CMD_SET_PULSE_LV;
+	ps_FSP_TX->Payload.set_pulse_LV.OnTime_low 	= receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_LV.OnTime_high 	= (receive_argm[0] >> 8);
+
+	ps_FSP_TX->Payload.set_pulse_LV.OffTime_low 	= receive_argm[1];
+	ps_FSP_TX->Payload.set_pulse_LV.OffTime_high 	= (receive_argm[1] >> 8);
 
 	fsp_print(5);
 	return CMDLINE_OK;
@@ -468,10 +491,23 @@ int CMD_SET_PULSE_CONTROL(int argc, char *argv[])
 
 	is_h_bridge_enable = receive_argm;
 
-	pu_GPC_FSP_Payload->set_pulse_control.Cmd = FSP_CMD_SET_PULSE_CONTROL;
-	pu_GPC_FSP_Payload->set_pulse_control.State = receive_argm;
+	ps_FSP_TX->CMD = FSP_CMD_SET_PULSE_CONTROL;
+	ps_FSP_TX->Payload.set_pulse_control.State = receive_argm;
 
 	fsp_print(2);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_POLE(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	UART_Printf(&RS232_UART, "> PULSE POS POLE: %d; PULSE NEG POLE: %d\n", 
+	HB_pos_pole_index, HB_neg_pole_index);
+
 	return CMDLINE_OK;
 }
 
@@ -595,122 +631,6 @@ int CMD_GET_PULSE_ALL(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
-/* :::::::::: Relay Control Command :::::::: */
-int CMD_SET_RELAY_POLE(int argc, char *argv[])
-{
-	if (g_is_calib_running == true) {
-		return CMDLINE_CALIB_IS_RUNNING;
-	}
-
-	if (argc < 3)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 3)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	int receive_argm[2];
-
-	receive_argm[0] = atoi(argv[1]);
-	receive_argm[1] = atoi(argv[2]);
-
-	if (receive_argm[0] == receive_argm[1])
-		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[0] > 9) || (receive_argm[0] < 1) || (receive_argm[0] == 5))
-		return CMDLINE_INVALID_ARG;
-	else if ((receive_argm[1] > 9) || (receive_argm[1] < 1) || (receive_argm[1] == 5))
-		return CMDLINE_INVALID_ARG;
-
-	hs_relay_pole = receive_argm[0];
-	ls_relay_pole = receive_argm[1];
-
-	pu_GPC_FSP_Payload->set_relay_pole.Cmd = FSP_CMD_SET_RELAY_POLE;
-	pu_GPC_FSP_Payload->set_relay_pole.HvRelay = receive_argm[0];
-	pu_GPC_FSP_Payload->set_relay_pole.LvRelay = receive_argm[1];
-
-	fsp_print(3);
-	return CMDLINE_OK;
-}
-
-int CMD_SET_RELAY_CONTROL(int argc, char *argv[])
-{
-	if (g_is_calib_running == true) {
-		return CMDLINE_CALIB_IS_RUNNING;
-	}
-
-	if (argc < 2)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 2)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	int receive_argm;
-
-	receive_argm = atoi(argv[1]);
-
-	if ((receive_argm > 1) || (receive_argm < 0))
-		return CMDLINE_INVALID_ARG;
-
-	relay_state = receive_argm;
-
-	pu_GPC_FSP_Payload->set_relay_control.Cmd = FSP_CMD_SET_RELAY_CONTROL;
-	pu_GPC_FSP_Payload->set_relay_control.State = receive_argm;
-
-	fsp_print(2);
-	return CMDLINE_OK;
-}
-
-int CMD_GET_RELAY_POLE(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	UART_Printf(CMD_line_handle, "> RELAY POS POLE: %d; RELAY NEG POLE: %d\n", 
-    hs_relay_pole, ls_relay_pole);
-
-	return CMDLINE_OK;
-}
-
-int CMD_GET_RELAY_CONTROL(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	if (relay_state == 1)
-    {
-        UART_Send_String(CMD_line_handle, "> RELAY IS ON\n");
-    }
-    else
-    {
-        UART_Send_String(CMD_line_handle, "> RELAY IS OFF\n");
-    }
-
-	return CMDLINE_OK;
-}
-
-int CMD_GET_RELAY_ALL(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	UART_Printf(CMD_line_handle, "> RELAY POS POLE: %d; RELAY NEG POLE: %d\n", 
-    hs_relay_pole, ls_relay_pole);
-
-	if (relay_state == 1)
-    {
-        UART_Send_String(CMD_line_handle, "> RELAY IS ON\n");
-    }
-    else
-    {
-        UART_Send_String(CMD_line_handle, "> RELAY IS OFF\n");
-    }
-
-	return CMDLINE_OK;
-}
-
 /* :::::::::: VOM Command :::::::: */
 int CMD_MEASURE_VOLT(int argc, char *argv[])
 {
@@ -760,8 +680,10 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 
 	g_is_Discharge_300V_On = 0;
 	g_is_Discharge_50V_On = 0;
+
 	PID_is_300V_on = 0;
 	PID_is_50V_on = 0;
+
 	Calib_Calculate(receive_argm[0], 0);
 	UART_Printf(&RF_UART, "> CHARGING HV TO %dV\r\n", receive_argm[0]);
 	PID_is_300V_on = 1;
@@ -846,56 +768,6 @@ int CMD_CALIB_MEASURE(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
-int CMD_CHANNEL_SET(int argc, char *argv[])
-{
-	if (g_is_calib_running == true) {
-		return CMDLINE_CALIB_IS_RUNNING;
-	}
-
-	if (argc < 2)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 2)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	int receive_argm;
-
-	receive_argm = atoi(argv[1]);
-
-	if ((receive_argm > 2) || (receive_argm < 1))
-		return CMDLINE_INVALID_ARG;
-
-	pu_GPC_FSP_Payload->channelSet.Cmd = FSP_CMD_CHANNEL_SET;
-	pu_GPC_FSP_Payload->channelSet.Channel = receive_argm;
-
-	fsp_print(2);
-	return CMDLINE_OK;
-}
-
-int CMD_CHANNEL_CONTROL(int argc, char *argv[])
-{
-	if (g_is_calib_running == true) {
-		return CMDLINE_CALIB_IS_RUNNING;
-	}
-
-	if (argc < 2)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 2)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	int receive_argm;
-
-	receive_argm = atoi(argv[1]);
-
-	if ((receive_argm > 1) || (receive_argm < 0))
-		return CMDLINE_INVALID_ARG;
-
-	pu_GPC_FSP_Payload->channelControl.Cmd = FSP_CMD_CHANNEL_CONTROL;
-	pu_GPC_FSP_Payload->channelControl.State = receive_argm;
-
-	fsp_print(2);
-	return CMDLINE_OK;
-}
-
 int CMD_CALL_GPP(int argc, char *argv[])
 {
 	if (argc < 1)
@@ -903,12 +775,13 @@ int CMD_CALL_GPP(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->handshake.Cmd 	= FSP_CMD_HANDSHAKE;
-	pu_GPC_FSP_Payload->handshake.Check = 0xAB;
+	ps_FSP_TX->CMD 			= FSP_CMD_HANDSHAKE;
+	ps_FSP_TX->Payload.handshake.Check = 0xAB;
 
 	fsp_print(2);
 	return CMDLINE_OK;
 }
+
 int CMD_GET_BMP390(int argc, char *argv[])
 {
 	if (argc < 1)
@@ -916,7 +789,20 @@ int CMD_GET_BMP390(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_BMP390;
+	ps_FSP_TX->CMD = FSP_CMD_GET_BMP390;
+
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_LMSDOX(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_LMSDOX;
 
 	fsp_print(1);
 	return CMDLINE_OK;
@@ -925,43 +811,17 @@ int CMD_GET_BMP390(int argc, char *argv[])
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length)
 {
-	s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length 	= packet_length;
-	s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
+	s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+	s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+	s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+	s_FSP_TX_Packet.length 	= packet_length;
+	s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
 
 	uint8_t encoded_frame[25] = { 0 };
 	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
+	fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
 
 	UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
-}
-
-int CMD_GET_LMSDOX(int argc, char *argv[]) {
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_LMSDOX;
-
-	s_GPC_FSP_Packet.sod = FSP_PKT_SOD;
-	s_GPC_FSP_Packet.src_adr = fsp_my_adr;
-	s_GPC_FSP_Packet.dst_adr = FSP_ADR_GPP;
-	s_GPC_FSP_Packet.length = 1;
-	s_GPC_FSP_Packet.type = FSP_PKT_TYPE_CMD_W_DATA;
-	s_GPC_FSP_Packet.eof = FSP_PKT_EOF;
-	s_GPC_FSP_Packet.crc16 = crc16_CCITT(FSP_CRC16_INITIAL_VALUE,
-			&s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
-
-	uint8_t encoded_frame[10] = { 0 };
-	uint8_t frame_len;
-	fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
-
-	UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
-
-	return CMDLINE_OK;
 }

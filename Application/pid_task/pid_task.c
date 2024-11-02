@@ -150,19 +150,19 @@ void Impedance_Task(void*)
 {
 	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
 	{
-		pu_GPC_FSP_Payload->get_impedance.Cmd 		= FSP_CMD_GET_IMPEDANCE;
-		pu_GPC_FSP_Payload->get_impedance.Period   	= Impedance_Period;
-		s_GPC_FSP_Packet.sod 		= FSP_PKT_SOD;
-		s_GPC_FSP_Packet.src_adr 	= fsp_my_adr;
-		s_GPC_FSP_Packet.dst_adr 	= FSP_ADR_GPP;
-		s_GPC_FSP_Packet.length 	= 2;
-		s_GPC_FSP_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
-		s_GPC_FSP_Packet.eof 		= FSP_PKT_EOF;
-		s_GPC_FSP_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_GPC_FSP_Packet.src_adr, s_GPC_FSP_Packet.length + 4);
+		ps_FSP_TX->CMD 								= FSP_CMD_MEASURE_IMPEDANCE;
+		ps_FSP_TX->Payload.measure_impedance.Period   	= Impedance_Period;
+		s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+		s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+		s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+		s_FSP_TX_Packet.length 	= 2;
+		s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+		s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+		s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
 
 		uint8_t encoded_frame[20] = { 0 };
 		uint8_t frame_len;
-		fsp_encode(&s_GPC_FSP_Packet, encoded_frame, &frame_len);
+		fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
 		UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
 
 		SchedulerTaskDisable(7);

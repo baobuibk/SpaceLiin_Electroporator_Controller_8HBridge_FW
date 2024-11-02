@@ -34,10 +34,10 @@ uart_stdio_typedef 	GPP_UART;
 char 				g_GPP_UART_TX_buffer[GPP_TX_SIZE];
 char 				g_GPP_UART_RX_buffer[GPP_RX_SIZE];
 
-fsp_packet_t 		s_GPC_FSP_Packet;
-fsp_packet_t 		s_GPP_FSP_Packet;
-GPC_FSP_Payload 	*pu_GPC_FSP_Payload = (GPC_FSP_Payload*) (&s_GPC_FSP_Packet.payload);		//for TX
-GPP_FSP_Payload 	*pu_GPP_FSP_Payload = (GPP_FSP_Payload*) (&s_GPP_FSP_Packet.payload);		//for RX
+fsp_packet_t 		s_FSP_TX_Packet;
+fsp_packet_t 		s_FSP_RX_Packet;
+FSP_Payload 		*ps_FSP_TX = (FSP_Payload*) (&s_FSP_TX_Packet.payload);		//for TX
+FSP_Payload 		*ps_FSP_RX = (FSP_Payload*) (&s_FSP_RX_Packet.payload);		//for RX
 
 fsp_line_typedef 	FSP_line;
 char 				g_FSP_line_buffer[FSP_BUF_LEN];
@@ -76,7 +76,7 @@ void FSP_Line_Task(void*)
 		}
 		else if (FSP_line.RX_char == FSP_PKT_EOF)
 		{
-			FSP_return = frame_decode((uint8_t*) FSP_line.p_buffer, FSP_line.write_index, &s_GPP_FSP_Packet);
+			FSP_return = frame_decode((uint8_t*) FSP_line.p_buffer, FSP_line.write_index, &s_FSP_RX_Packet);
 			
 			UART_Printf(&RS232_UART, "%s> ", ErrorCode[FSP_return]);
 
