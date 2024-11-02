@@ -44,7 +44,8 @@ char 				g_FSP_line_buffer[FSP_BUF_LEN];
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
-void FSP_Line_Task_Init() {
+void FSP_Line_Task_Init()
+{
 	UART_Init(	&GPP_UART, GPP_UART_HANDLE, GPP_UART_IRQ, g_GPP_UART_TX_buffer,
 				g_GPP_UART_RX_buffer, GPP_TX_SIZE, GPP_RX_SIZE);
 

@@ -7,9 +7,31 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+static bool			is_h_bridge_enable;
+
+static uint16_t		pulse_delay_ms;
+
+static uint8_t		hv_pulse_pos_count;
+static uint8_t		hv_pulse_neg_count;
+static uint8_t		hv_delay_ms;
+static uint8_t		hv_on_time_ms;
+static uint8_t		hv_off_time_ms;
+
+static uint8_t		lv_pulse_pos_count;
+static uint8_t		lv_pulse_neg_count;
+static uint8_t		lv_delay_ms;
+static uint16_t		lv_on_time_ms;
+static uint16_t		lv_off_time_ms;
+
+static uint8_t		relay_state;
+static uint8_t		hs_relay_pole;
+static uint8_t		ls_relay_pole;
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern uart_stdio_typedef *CMD_line_handle;
+
 tCmdLineEntry g_psCmdTable[] = {
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Cap Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "SET_CAP_VOLT",			CMD_SET_CAP_VOLT, 			" : Set cap voltage" },
@@ -170,9 +192,7 @@ int CMD_GET_CAP_VOLT(int argc, char *argv[])
 	hv_cap_set_voltage = PID_300V_set_voltage / hv_calib_coefficient.average_value;
 	lv_cap_set_voltage = PID_50V_set_voltage / lv_calib_coefficient.average_value;
 
-	UART_Printf(&RS232_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
-
-	UART_Printf(&RF_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
+	UART_Printf(CMD_line_handle, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
 
 	return CMDLINE_OK;
 }
@@ -186,24 +206,20 @@ int CMD_GET_CAP_CONTROL(int argc, char *argv[])
 
 	if (PID_is_300V_on == true)
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS CHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS CHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS NOT CHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS NOT CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS NOT CHARGING\n");
 	}
 
 	if (PID_is_50V_on == true)
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS CHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS CHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS NOT CHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS NOT CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS NOT CHARGING\n");
 	}
 	
 	return CMDLINE_OK;
@@ -218,24 +234,20 @@ int CMD_GET_CAP_RELEASE(int argc, char *argv[])
 
 	if (g_is_Discharge_300V_On == true)
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS DISCHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS NOT DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS NOT DISCHARGING\n");
 	}
 
 	if (g_is_Discharge_50V_On == true)
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS DISCHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS NOT DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS NOT DISCHARGING\n");
 	}
 
 	return CMDLINE_OK;
@@ -252,52 +264,42 @@ int CMD_GET_CAP_ALL(int argc, char *argv[])
 	hv_cap_set_voltage = PID_300V_set_voltage / hv_calib_coefficient.average_value;
 	lv_cap_set_voltage = PID_50V_set_voltage / lv_calib_coefficient.average_value;
 
-	UART_Printf(&RS232_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
-
-	UART_Printf(&RF_UART, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
+	UART_Printf(CMD_line_handle, "> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV\n", hv_cap_set_voltage, lv_cap_set_voltage);
 
 	if (PID_is_300V_on == true)
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS CHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS CHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS NOT CHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS NOT CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS NOT CHARGING\n");
 	}
 
 	if (PID_is_50V_on == true)
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS CHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS CHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS NOT CHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS NOT CHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS NOT CHARGING\n");
 	}
 
 	if (g_is_Discharge_300V_On == true)
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS DISCHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> HV CAP IS NOT DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> HV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> HV CAP IS NOT DISCHARGING\n");
 	}
 
 	if (g_is_Discharge_50V_On == true)
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS DISCHARGING\n");
 	}
 	else
 	{
-		UART_Send_String(&RS232_UART, "> LV CAP IS NOT DISCHARGING\n");
-		UART_Send_String(&RF_UART, "> LV CAP IS NOT DISCHARGING\n");
+		UART_Send_String(CMD_line_handle, "> LV CAP IS NOT DISCHARGING\n");
 	}
 
 	return CMDLINE_OK;
@@ -325,7 +327,13 @@ int CMD_SET_PULSE_COUNT(int argc, char *argv[])
 	if ((receive_argm[0] > 20) || (receive_argm[1] > 20) || (receive_argm[2] > 20) || (receive_argm[3] > 20))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->set_pulse_count.Cmd 			= FSP_CMD_SET_PULSE_COUNT;
+	hv_pulse_pos_count = receive_argm[0];
+	hv_pulse_neg_count = receive_argm[1];
+
+	lv_pulse_pos_count = receive_argm[2];
+	lv_pulse_neg_count = receive_argm[3];
+
+	pu_GPC_FSP_Payload->set_pulse_count.Cmd 		 = FSP_CMD_SET_PULSE_COUNT;
 	pu_GPC_FSP_Payload->set_pulse_count.HV_pos_count = receive_argm[0];
 	pu_GPC_FSP_Payload->set_pulse_count.HV_neg_count = receive_argm[1];
 
@@ -360,12 +368,17 @@ int CMD_SET_PULSE_DELAY(int argc, char *argv[])
 	else if ((receive_argm[2] > 1000) || (receive_argm[2] < 0))
 		return CMDLINE_INVALID_ARG;
 
+	hv_delay_ms = receive_argm[0];
+	lv_delay_ms = receive_argm[1];
+
+	pulse_delay_ms = receive_argm[2];
+
 	pu_GPC_FSP_Payload->set_pulse_delay.Cmd 			= FSP_CMD_SET_PULSE_DELAY;
 	pu_GPC_FSP_Payload->set_pulse_delay.HV_delay		= receive_argm[0];
 	pu_GPC_FSP_Payload->set_pulse_delay.LV_delay		= receive_argm[1];
 
 	pu_GPC_FSP_Payload->set_pulse_delay.Delay_low 	= receive_argm[2];
-	pu_GPC_FSP_Payload->set_pulse_delay.Delay_high 	= (receive_argm[2]  >> 8);
+	pu_GPC_FSP_Payload->set_pulse_delay.Delay_high 	= (receive_argm[2] >> 8);
 
 	fsp_print(5);
 	return CMDLINE_OK;
@@ -392,8 +405,11 @@ int CMD_SET_PULSE_HV(int argc, char *argv[])
 	else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->set_pulse_HV.Cmd 	= FSP_CMD_SET_PULSE_HV;
-	pu_GPC_FSP_Payload->set_pulse_HV.OnTime 	= receive_argm[0];
+	hv_on_time_ms  = receive_argm[0];
+	hv_off_time_ms = receive_argm[1];
+
+	pu_GPC_FSP_Payload->set_pulse_HV.Cmd 	 = FSP_CMD_SET_PULSE_HV;
+	pu_GPC_FSP_Payload->set_pulse_HV.OnTime	 = receive_argm[0];
 	pu_GPC_FSP_Payload->set_pulse_HV.OffTime = receive_argm[1];
 
 	fsp_print(3);
@@ -421,8 +437,11 @@ int CMD_SET_PULSE_LV(int argc, char *argv[])
 	else if ((receive_argm[1] > 1000) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	pu_GPC_FSP_Payload->set_pulse_LV.Cmd = FSP_CMD_SET_PULSE_LV;
-	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_low 		= receive_argm[0];
+	lv_on_time_ms  = receive_argm[0];
+	lv_off_time_ms = receive_argm[1];
+
+	pu_GPC_FSP_Payload->set_pulse_LV.Cmd 			= FSP_CMD_SET_PULSE_LV;
+	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_low 	= receive_argm[0];
 	pu_GPC_FSP_Payload->set_pulse_LV.OnTime_high 	= (receive_argm[0] >> 8);
 	pu_GPC_FSP_Payload->set_pulse_LV.OffTime_low 	= receive_argm[1];
 	pu_GPC_FSP_Payload->set_pulse_LV.OffTime_high 	= (receive_argm[1] >> 8);
@@ -447,6 +466,8 @@ int CMD_SET_PULSE_CONTROL(int argc, char *argv[])
 	if ((receive_argm > 1) || (receive_argm < 0))
 		return CMDLINE_INVALID_ARG;
 
+	is_h_bridge_enable = receive_argm;
+
 	pu_GPC_FSP_Payload->set_pulse_control.Cmd = FSP_CMD_SET_PULSE_CONTROL;
 	pu_GPC_FSP_Payload->set_pulse_control.State = receive_argm;
 
@@ -461,9 +482,12 @@ int CMD_GET_PULSE_COUNT(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_COUNT;
+	UART_Printf(CMD_line_handle, "> POS HV PULSE COUNT: %d; NEG HV PULSE COUNT: %d\n", 
+    hv_pulse_pos_count, hv_pulse_neg_count);
 
-	fsp_print(1);
+    UART_Printf(CMD_line_handle, "> POS LV PULSE COUNT: %d; NEG LV PULSE COUNT: %d\n", 
+    lv_pulse_pos_count, lv_pulse_neg_count);
+
 	return CMDLINE_OK;
 }
 
@@ -474,9 +498,15 @@ int CMD_GET_PULSE_DELAY(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_DELAY;
+	UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV POS AND NEG PULSE: %dms\n", 
+    hv_delay_ms);
 
-	fsp_print(1);
+    UART_Printf(CMD_line_handle, "> DELAY BETWEEN LV POS AND NEG PULSE: %dms\n", 
+    lv_delay_ms);
+
+    UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV PULSE AND LV PULSE: %dms\n",
+	pulse_delay_ms);
+
 	return CMDLINE_OK;		
 }
 
@@ -487,9 +517,9 @@ int CMD_GET_PULSE_HV(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_HV;
+	UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n", 
+    hv_on_time_ms, hv_off_time_ms);
 
-	fsp_print(1);
 	return CMDLINE_OK;
 }
 
@@ -500,9 +530,9 @@ int CMD_GET_PULSE_LV(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_LV;
-
-	fsp_print(1);
+	UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
+	lv_on_time_ms, lv_off_time_ms);
+	
 	return CMDLINE_OK;
 }
 
@@ -513,9 +543,15 @@ int CMD_GET_PULSE_CONTROL(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_CONTROL;
+	if (is_h_bridge_enable == 1)
+    {
+        UART_Send_String(CMD_line_handle, "> H BRIDGE IS PULSING\n");
+    }
+    else
+    {
+        UART_Send_String(CMD_line_handle, "> H BRIDGE IS NOT PULSING\n");
+    }
 
-	fsp_print(1);
 	return CMDLINE_OK;
 }
 
@@ -526,9 +562,36 @@ int CMD_GET_PULSE_ALL(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_PULSE_ALL;
+	UART_Printf(CMD_line_handle, "> POS HV PULSE COUNT: %d; NEG HV PULSE COUNT: %d\n", 
+    hv_pulse_pos_count, hv_pulse_neg_count);
 
-	fsp_print(1);
+    UART_Printf(CMD_line_handle, "> POS LV PULSE COUNT: %d; NEG LV PULSE COUNT: %d\n", 
+    lv_pulse_pos_count, lv_pulse_neg_count);
+
+	UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV POS AND NEG PULSE: %dms\n", 
+    hv_delay_ms);
+
+    UART_Printf(CMD_line_handle, "> DELAY BETWEEN LV POS AND NEG PULSE: %dms\n", 
+    lv_delay_ms);
+
+    UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV PULSE AND LV PULSE: %dms\n",
+	pulse_delay_ms);
+
+	UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n", 
+    hv_on_time_ms, hv_off_time_ms);
+
+	UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
+	lv_on_time_ms, lv_off_time_ms);
+
+	if (is_h_bridge_enable == 1)
+    {
+        UART_Send_String(CMD_line_handle, "> H BRIDGE IS PULSING\n");
+    }
+    else
+    {
+        UART_Send_String(CMD_line_handle, "> H BRIDGE IS NOT PULSING\n");
+    }
+
 	return CMDLINE_OK;
 }
 
@@ -556,6 +619,9 @@ int CMD_SET_RELAY_POLE(int argc, char *argv[])
 	else if ((receive_argm[1] > 9) || (receive_argm[1] < 1) || (receive_argm[1] == 5))
 		return CMDLINE_INVALID_ARG;
 
+	hs_relay_pole = receive_argm[0];
+	ls_relay_pole = receive_argm[1];
+
 	pu_GPC_FSP_Payload->set_relay_pole.Cmd = FSP_CMD_SET_RELAY_POLE;
 	pu_GPC_FSP_Payload->set_relay_pole.HvRelay = receive_argm[0];
 	pu_GPC_FSP_Payload->set_relay_pole.LvRelay = receive_argm[1];
@@ -582,6 +648,8 @@ int CMD_SET_RELAY_CONTROL(int argc, char *argv[])
 	if ((receive_argm > 1) || (receive_argm < 0))
 		return CMDLINE_INVALID_ARG;
 
+	relay_state = receive_argm;
+
 	pu_GPC_FSP_Payload->set_relay_control.Cmd = FSP_CMD_SET_RELAY_CONTROL;
 	pu_GPC_FSP_Payload->set_relay_control.State = receive_argm;
 
@@ -596,9 +664,9 @@ int CMD_GET_RELAY_POLE(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_RELAY_POLE;
+	UART_Printf(CMD_line_handle, "> RELAY POS POLE: %d; RELAY NEG POLE: %d\n", 
+    hs_relay_pole, ls_relay_pole);
 
-	fsp_print(1);
 	return CMDLINE_OK;
 }
 
@@ -609,9 +677,15 @@ int CMD_GET_RELAY_CONTROL(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_RELAY_CONTROL;
+	if (relay_state == 1)
+    {
+        UART_Send_String(CMD_line_handle, "> RELAY IS ON\n");
+    }
+    else
+    {
+        UART_Send_String(CMD_line_handle, "> RELAY IS OFF\n");
+    }
 
-	fsp_print(1);
 	return CMDLINE_OK;
 }
 
@@ -622,9 +696,18 @@ int CMD_GET_RELAY_ALL(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	pu_GPC_FSP_Payload->commonFrame.Cmd = FSP_CMD_GET_RELAY_ALL;
+	UART_Printf(CMD_line_handle, "> RELAY POS POLE: %d; RELAY NEG POLE: %d\n", 
+    hs_relay_pole, ls_relay_pole);
 
-	fsp_print(1);
+	if (relay_state == 1)
+    {
+        UART_Send_String(CMD_line_handle, "> RELAY IS ON\n");
+    }
+    else
+    {
+        UART_Send_String(CMD_line_handle, "> RELAY IS OFF\n");
+    }
+
 	return CMDLINE_OK;
 }
 

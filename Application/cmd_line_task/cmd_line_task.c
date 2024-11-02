@@ -25,6 +25,8 @@ struct _cmd_line_typedef
 };
 typedef struct _cmd_line_typedef cmd_line_typedef;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+uart_stdio_typedef  *CMD_line_handle;
+
 uart_stdio_typedef  RS232_UART;
 char                g_RS232_UART_TX_buffer[256];
 char                g_RS232_UART_RX_buffer[64];
@@ -145,6 +147,7 @@ void RS232_CMD_Line_Task(void*)
                 RS232_CMD_line.p_buffer[RS232_CMD_line.write_index] = 0;
                 RS232_CMD_line.write_index++;
 
+                CMD_line_handle = &RS232_UART;
                 cmd_return = CmdLineProcess(RS232_CMD_line.p_buffer);
                 //RS232_CMD_line.read_index = RS232_CMD_line.write_index;
                 RS232_CMD_line.write_index    = 0;
@@ -204,6 +207,7 @@ void RF_CMD_Line_Task(void*)
                 RF_CMD_line.p_buffer[RF_CMD_line.write_index] = 0;
                 RF_CMD_line.write_index++;
 
+                CMD_line_handle = &RF_UART;
                 cmd_return = CmdLineProcess(RF_CMD_line.p_buffer);
                 //RF_CMD_line.read_index = RF_CMD_line.write_index;
                 RF_CMD_line.write_index    = 0;
