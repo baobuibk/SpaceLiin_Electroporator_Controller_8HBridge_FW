@@ -26,7 +26,7 @@ typedef enum
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uart_stdio_typedef  	GPP_UART;
 static PID_State_typedef 	PID_State = PID_CAP_CHARGE_STATE;
-extern uint8_t 				Impedance_Period;
+extern uint16_t 			Impedance_Period;
 
 PWM_TypeDef 	Flyback_300V_Switching_PWM =
 {
@@ -150,12 +150,13 @@ void Impedance_Task(void*)
 {
 	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
 	{
-		ps_FSP_TX->CMD 								= FSP_CMD_MEASURE_IMPEDANCE;
-		ps_FSP_TX->Payload.measure_impedance.Period   	= Impedance_Period;
+		ps_FSP_TX->CMD 									 = FSP_CMD_MEASURE_IMPEDANCE;
+		ps_FSP_TX->Payload.measure_impedance.Period_low  = Impedance_Period;
+		ps_FSP_TX->Payload.measure_impedance.Period_high = (Impedance_Period >> 8);
 		s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
 		s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
 		s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
-		s_FSP_TX_Packet.length 	= 2;
+		s_FSP_TX_Packet.length 		= 3;
 		s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
 		s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
 		s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);

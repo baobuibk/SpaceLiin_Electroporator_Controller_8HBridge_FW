@@ -320,7 +320,7 @@ int CMD_SET_PULSE_POLE(int argc, char *argv[])
 	HB_pos_pole_index = receive_argm[0];
 	HB_neg_pole_index = receive_argm[1];
 
-	ps_FSP_TX->CMD	   						 	= FSP_CMD_SET_PULSE_POLE;
+	ps_FSP_TX->CMD	   						   = FSP_CMD_SET_PULSE_POLE;
 	ps_FSP_TX->Payload.set_pulse_pole.pos_pole = receive_argm[0];
 	ps_FSP_TX->Payload.set_pulse_pole.neg_pole = receive_argm[1];
 
@@ -665,7 +665,7 @@ int CMD_MEASURE_CURRENT(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
-uint8_t Impedance_Period = 0;
+uint16_t Impedance_Period = 0;
 int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 {
 	if (argc < 3)
@@ -675,7 +675,7 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 
 	int receive_argm[2];
 
-	receive_argm[0] = atoi(argv[1]);
+	receive_argm[0]  = atoi(argv[1]);
 	Impedance_Period = atoi(argv[2]);
 
 	g_is_Discharge_300V_On = 0;

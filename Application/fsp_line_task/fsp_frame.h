@@ -26,23 +26,9 @@ typedef enum _FSP_CMD_typedef_
 	
 } FSP_CMD_typedef;
 
-//typedef struct _COMMON_FRAME_
-//{
-	//uint8_t 	Cmd;
-	
-//}COMMON_FRAME;
-
-//typedef struct _COMMON_RESPONSE_FRAME_
-//{
-	//uint8_t 	Cmd;         /* The command class */
-
-//} COMMON_RESPONSE_FRAME;
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Pulse Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 typedef struct _FSP_SET_PULSE_POLE_FRAME_
 {
-	//uint8_t 	Cmd;        /* The command class */
-
 	uint8_t 	pos_pole;		/* hv pulse count */
 	uint8_t 	neg_pole;		/* hv pulse count */
 
@@ -50,8 +36,6 @@ typedef struct _FSP_SET_PULSE_POLE_FRAME_
 
 typedef struct _FSP_SET_PULSE_COUNT_FRAME_
 {
-	//uint8_t 	Cmd;        /* The command class */
-
 	uint8_t 	HV_pos_count;		/* hv pulse count */
 	uint8_t 	HV_neg_count;		/* hv pulse count */
 	uint8_t 	LV_pos_count;		/* lv pulse count */
@@ -61,8 +45,6 @@ typedef struct _FSP_SET_PULSE_COUNT_FRAME_
 
 typedef struct _FSP_SET_PULSE_DELAY_FRAME_
 {
-	//uint8_t 	Cmd;         /* The command class */
-
 	uint8_t 	HV_delay;
 	uint8_t 	LV_delay;
 	uint8_t 	Delay_high;		  	/* Delay time */
@@ -72,8 +54,6 @@ typedef struct _FSP_SET_PULSE_DELAY_FRAME_
 
 typedef struct _FSP_SET_PULSE_HV_FRAME_
 {
-	//uint8_t 	Cmd;    /* The command class */
-
 	uint8_t 	OnTime;      	/* HV On time */
 	uint8_t 	OffTime;      	/* HV Off time */
 
@@ -81,8 +61,6 @@ typedef struct _FSP_SET_PULSE_HV_FRAME_
 
 typedef struct _FSP_SET_PULSE_LV_FRAME_
 {
-	//uint8_t 	Cmd;        /* The command class */
-
 	uint8_t 	OnTime_high;      	/* LV On time */
 	uint8_t 	OnTime_low;      	/* LV On time */
 	uint8_t 	OffTime_high;      	/* LV Off time */
@@ -92,8 +70,6 @@ typedef struct _FSP_SET_PULSE_LV_FRAME_
 
 typedef struct _FSP_SET_PULSE_CONTROL_FRAME_
 {
-	//uint8_t 	Cmd;    /* The command class */
-
 	uint8_t 	State;      	/* 0: OFF, 1: ON */
 
 } FSP_SET_PULSE_CONTROL_FRAME;
@@ -101,8 +77,6 @@ typedef struct _FSP_SET_PULSE_CONTROL_FRAME_
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ VOM Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 typedef struct _MEASURE_CURRENT_FRAME_
 {
-	//uint8_t 	Cmd;
-
 	uint8_t 	Value_high;
 	uint8_t 	Value_low;
 
@@ -110,9 +84,8 @@ typedef struct _MEASURE_CURRENT_FRAME_
 
 typedef struct _MEASURE_IMPEDANCE_FRAME_
 {
-	//uint8_t 	Cmd;
-
-	uint8_t		Period;
+	uint8_t		Period_high;
+	uint8_t		Period_low;
 	uint8_t 	Value_high;
 	uint8_t 	Value_low;
 
@@ -121,8 +94,6 @@ typedef struct _MEASURE_IMPEDANCE_FRAME_
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ I2C Sensor Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 typedef struct _GET_BMP390_
 {
-	//uint8_t 	Cmd;
-
 	uint8_t 	temp[5];
 	uint8_t 	pressure[6];
 
@@ -130,8 +101,6 @@ typedef struct _GET_BMP390_
 
 typedef struct _GET_LSMDOX_
 {
-	//uint8_t 	Cmd;
-
 	uint8_t 	accel_x[4];
 	uint8_t 	accel_y[4];
 	uint8_t 	accel_z[4];
@@ -144,7 +113,6 @@ typedef struct _GET_LSMDOX_
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 typedef struct _FSP_HANDSAKE_
 {
-	//uint8_t 	Cmd;
 	uint8_t 	Check;
 
 } FSP_HANDSAKE;
