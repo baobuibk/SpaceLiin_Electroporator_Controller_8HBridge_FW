@@ -62,13 +62,20 @@ tCmdLineEntry g_psCmdTable[] = {
 		{ "MEASURE_CURRENT",		CMD_MEASURE_CURRENT,		" : Measure cuvette current"},
 		{ "MEASURE_IMPEDANCE", 		CMD_MEASURE_IMPEDANCE,		" : Measure cuvette impedance"},
 
+		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ I2C Sensor Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+		{ "GET_SENSOR_GYRO", 		CMD_GET_SENSOR_GYRO, 		" : Get gyro" },
+		{ "GET_SENSOR_ACCEL", 		CMD_GET_SENSOR_ACCEL, 		" : Get accel" },
+		{ "GET_SENSOR_LSM6DSOX", 	CMD_GET_SENSOR_LSM6DSOX, 	" : Get accel and gyro" },
+
+		{ "GET_SENSOR_TEMP", 		CMD_GET_SENSOR_TEMP, 		" : Get temp" },
+		{ "GET_SENSOR_PRESSURE", 	CMD_GET_SENSOR_PRESSURE, 	" : Get pressure" },
+		{ "GET_SENSOR_BMP390", 		CMD_GET_SENSOR_BMP390, 		" : Get temp, pressure and altitude" },
+
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "HELP", 					CMD_HELP,					" : Display list of commands" },
 		{ "CALIB_RUN", 				CMD_CALIB_RUN, 				" : Start cap calib process" },
 		{ "CALIB_MEASURE",			CMD_CALIB_MEASURE, 			" : Command to input VOM value" },
 		{ "CALL_GPP", 				CMD_CALL_GPP,	    		" : Test communicate to GPP" },
-		{ "GET_BMP390", 			CMD_GET_BMP390,	    		" : Get temperature and pressure" },
-		{ "GET_LMSDOX", 			CMD_GET_LMSDOX,	   			 " : Get accel and gyro" },
 		{ 0, 0, 0 }
 };
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -693,6 +700,85 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
+/* :::::::::: I2C Sensor Command :::::::: */
+int CMD_GET_SENSOR_GYRO(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_SENSOR_GET_GYRO;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_ACCEL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_SENSOR_GET_ACCEL;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_LSM6DSOX(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_SENSOR_GET_LSM6DSOX;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_TEMP(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_SENSOR_GET_TEMP;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_PRESSURE(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_SENSOR_GET_PRESSURE;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_BMP390(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_SENSOR_GET_BMP390;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
 /* :::::::::: Ultility Command :::::::: */
 int CMD_HELP(int argc, char *argv[])
 {
@@ -779,32 +865,6 @@ int CMD_CALL_GPP(int argc, char *argv[])
 	ps_FSP_TX->Payload.handshake.Check = 0xAB;
 
 	fsp_print(2);
-	return CMDLINE_OK;
-}
-
-int CMD_GET_BMP390(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	ps_FSP_TX->CMD = FSP_CMD_GET_BMP390;
-
-	fsp_print(1);
-	return CMDLINE_OK;
-}
-
-int CMD_GET_LMSDOX(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	ps_FSP_TX->CMD = FSP_CMD_GET_LMSDOX;
-
-	fsp_print(1);
 	return CMDLINE_OK;
 }
 
