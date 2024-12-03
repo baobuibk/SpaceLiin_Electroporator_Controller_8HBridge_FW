@@ -25,6 +25,8 @@ static uint8_t		lv_delay_ms;
 static uint16_t		lv_on_time_ms;
 static uint16_t		lv_off_time_ms;
 
+/*****************************************/
+uint8_t ChannelMapping[8] = {3, 5, 8, 7, 6, 4, 1, 2};
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -317,12 +319,13 @@ int CMD_SET_PULSE_POLE(int argc, char *argv[])
 	else if ((receive_argm[0] < 1) || (receive_argm[1] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	HB_pos_pole_index = receive_argm[0];
-	HB_neg_pole_index = receive_argm[1];
-
+	HB_pos_pole_index = ChannelMapping[receive_argm[0]-1];
+	HB_neg_pole_index = ChannelMapping[receive_argm[1]-1];
+//	HB_pos_pole_index = receive_argm[0];
+//	HB_neg_pole_index = receive_argm[1];
 	ps_FSP_TX->CMD	   						   = FSP_CMD_SET_PULSE_POLE;
-	ps_FSP_TX->Payload.set_pulse_pole.pos_pole = receive_argm[0];
-	ps_FSP_TX->Payload.set_pulse_pole.neg_pole = receive_argm[1];
+	ps_FSP_TX->Payload.set_pulse_pole.pos_pole = HB_pos_pole_index;
+	ps_FSP_TX->Payload.set_pulse_pole.neg_pole = HB_neg_pole_index;
 
 	fsp_print(3);
 	return CMDLINE_OK;
