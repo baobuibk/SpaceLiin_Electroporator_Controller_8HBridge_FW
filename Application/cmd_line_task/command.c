@@ -86,7 +86,30 @@ tCmdLineEntry g_psCmdTable[] = {
 };
 
 bool					is_h_bridge_enable;
-H_Bridge_task_typedef  	HB_sequence_array[10] = {0};
+H_Bridge_task_typedef  HB_sequence_default =
+{
+	.is_setted = 0,
+
+	.sequence_delay_ms = 1,
+
+	.pos_pole_index = 0,
+	.neg_pole_index = 5,
+
+	.pulse_delay_ms = 15,
+
+	.hv_pos_count = 5,
+	.hv_neg_count = 6,
+	.hv_delay_ms = 5,
+	.hv_on_ms = 5,
+	.hv_off_ms = 15,
+
+	.lv_pos_count = 7,
+	.lv_neg_count = 8,
+	.lv_delay_ms = 10,
+	.lv_on_ms = 50,
+	.lv_off_ms = 90,
+};
+H_Bridge_task_typedef  	HB_sequence_array[10];
 
 uint8_t CMD_sequence_index = 0;
 uint8_t CMD_total_sequence_index = 0;
@@ -334,51 +357,51 @@ int CMD_SET_SEQUENCE_INDEX(int argc, char *argv[])
 
 	if ((receive_argm - 1) > CMD_total_sequence_index + 1)
 	{
-		UART_Printf(&RS232_UART, "> ERROR YOUR NEXT SEQUENCE INDEX IS: %d, NOT %d\n", CMD_total_sequence_index + 2, receive_argm);
+		UART_Printf(CMD_line_handle, "> ERROR YOUR NEXT SEQUENCE INDEX IS: %d, NOT %d\n", CMD_total_sequence_index + 2, receive_argm);
 
-		UART_Printf(&RS232_UART, "> CURRENT SEQUENCE INDEX: %d\n", CMD_sequence_index + 1);
+		UART_Printf(CMD_line_handle, "> CURRENT SEQUENCE INDEX: %d\n", CMD_sequence_index + 1);
 		return CMDLINE_OK;
 	}
 
 	if (((HB_sequence_array[CMD_sequence_index].is_setted & (1 << 7)) == 0) && ((receive_argm - 1) != CMD_sequence_index))
 	{
-		UART_Printf(&RS232_UART, "> ERROR CURRENT SEQUENCE INDEX: %d IS NOT CONFIRMED\n", CMD_sequence_index + 1);
+		UART_Printf(CMD_line_handle, "> ERROR CURRENT SEQUENCE INDEX: %d IS NOT CONFIRMED\n", CMD_sequence_index + 1);
 
-		UART_Send_String(&RS232_UART, "> EITHER CONFIRM IT OR DELETE IT\n");
+		UART_Send_String(CMD_line_handle, "> EITHER CONFIRM IT OR DELETE IT\n");
 
-		UART_Send_String(&RS232_UART, "> \n");
+		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(&RS232_UART, "> DELAY BETWEEN SEQUENCE: %dms\n", HB_sequence_array[CMD_sequence_index].sequence_delay_ms);
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN SEQUENCE: %dms\n", HB_sequence_array[CMD_sequence_index].sequence_delay_ms);
 
-		UART_Send_String(&RS232_UART, "> \n");
+		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(&RS232_UART, "> POS HV PULSE COUNT: %d; NEG HV PULSE COUNT: %d\n",
+		UART_Printf(CMD_line_handle, "> POS HV PULSE COUNT: %d; NEG HV PULSE COUNT: %d\n",
 		HB_sequence_array[CMD_sequence_index].hv_pos_count, HB_sequence_array[CMD_sequence_index].hv_neg_count);
-		UART_Printf(&RS232_UART, "> POS LV PULSE COUNT: %d; NEG LV PULSE COUNT: %d\n",
+		UART_Printf(CMD_line_handle, "> POS LV PULSE COUNT: %d; NEG LV PULSE COUNT: %d\n",
 		HB_sequence_array[CMD_sequence_index].lv_pos_count, HB_sequence_array[CMD_sequence_index].lv_neg_count);
 
-		UART_Send_String(&RS232_UART, "> \n");
+		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(&RS232_UART, "> DELAY BETWEEN HV POS AND NEG PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].hv_delay_ms);
-		UART_Printf(&RS232_UART, "> DELAY BETWEEN LV POS AND NEG PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].lv_delay_ms);
-		UART_Printf(&RS232_UART, "> DELAY BETWEEN HV PULSE AND LV PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].pulse_delay_ms);
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV POS AND NEG PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].hv_delay_ms);
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN LV POS AND NEG PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].lv_delay_ms);
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV PULSE AND LV PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].pulse_delay_ms);
 
-		UART_Send_String(&RS232_UART, "> \n");
+		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(&RS232_UART, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
+		UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
 		HB_sequence_array[CMD_sequence_index].hv_on_ms, HB_sequence_array[CMD_sequence_index].hv_off_ms);
-		UART_Printf(&RS232_UART, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
+		UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
 		HB_sequence_array[CMD_sequence_index].lv_on_ms, HB_sequence_array[CMD_sequence_index].lv_off_ms);
 
-		UART_Send_String(&RS232_UART, "> \n");
+		UART_Send_String(CMD_line_handle, "> \n");
 		return CMDLINE_OK;
 	}
 
-	UART_Send_String(&RS232_UART, "> \n");
+	UART_Send_String(CMD_line_handle, "> \n");
 
-	UART_Printf(&RS232_UART, "> CURRENT SEQUENCE INDEX: %d\n", receive_argm);
+	UART_Printf(CMD_line_handle, "> CURRENT SEQUENCE INDEX: %d\n", receive_argm);
 
-	UART_Send_String(&RS232_UART, "> \n");
+	UART_Send_String(CMD_line_handle, "> \n");
 
 	CMD_sequence_index = receive_argm - 1;
 
@@ -404,24 +427,24 @@ int CMD_SET_SEQUENCE_DELETE(int argc, char *argv[])
 
 	if (CMD_sequence_index < CMD_total_sequence_index)
 	{
-		UART_Send_String(&RS232_UART, "> ERROR CANNOT DELETE IN-BETWEEN SEQUENCE\n");
+		UART_Send_String(CMD_line_handle, "> ERROR CANNOT DELETE IN-BETWEEN SEQUENCE\n");
 		return CMDLINE_OK;
 	}
 
 	if (CMD_sequence_index == 0)
 	{
-		UART_Send_String(&RS232_UART, "> ERROR CANNOT DELETE ANYMORE\n");
+		UART_Send_String(CMD_line_handle, "> ERROR CANNOT DELETE ANYMORE\n");
 
-		UART_Printf(&RS232_UART, "> TOTAL SEQUENCE: %d\n", CMD_total_sequence_index + 1);
+		UART_Printf(CMD_line_handle, "> TOTAL SEQUENCE: %d\n", CMD_total_sequence_index + 1);
 		return CMDLINE_OK;
 	}
 
 	HB_sequence_array[(CMD_sequence_index)].is_setted &= ~(1 << 7);
 	CMD_total_sequence_index -= 1;
 	CMD_sequence_index = CMD_total_sequence_index;
-	UART_Printf(&RS232_UART, "> CURRENT SEQUENCE INDEX: %d\n", CMD_sequence_index + 1);
+	UART_Printf(CMD_line_handle, "> CURRENT SEQUENCE INDEX: %d\n", CMD_sequence_index + 1);
 
-	ps_FSP_RX->CMD = FSP_CMD_SET_SEQUENCE_DELETE;
+	ps_FSP_TX->CMD = FSP_CMD_SET_SEQUENCE_DELETE;
 	fsp_print(1);
 
 	return CMDLINE_OK;
@@ -445,7 +468,7 @@ int CMD_SET_SEQUENCE_CONFIRM(int argc, char *argv[])
 
 	HB_sequence_array[CMD_sequence_index].is_setted |= (1 << 7);
 
-	ps_FSP_RX->CMD = FSP_CMD_SET_SEQUENCE_CONFIRM;
+	ps_FSP_TX->CMD = FSP_CMD_SET_SEQUENCE_CONFIRM;
 	fsp_print(1);
 
 	return CMDLINE_OK;
@@ -474,9 +497,9 @@ int CMD_SET_SEQUENCE_DELAY(int argc, char *argv[])
 
 	HB_sequence_array[CMD_sequence_index].sequence_delay_ms = receive_argm;
 
-	ps_FSP_RX->CMD = FSP_CMD_SET_SEQUENCE_DELAY;
-	ps_FSP_RX->Payload.set_sequence_delay.Delay_low  = receive_argm;
-	ps_FSP_RX->Payload.set_sequence_delay.Delay_high = (receive_argm >> 8);
+	ps_FSP_TX->CMD = FSP_CMD_SET_SEQUENCE_DELAY;
+	ps_FSP_TX->Payload.set_sequence_delay.Delay_low  =  receive_argm;
+	ps_FSP_TX->Payload.set_sequence_delay.Delay_high = (receive_argm >> 8);
 	fsp_print(3);
 
 	return CMDLINE_OK;
@@ -701,6 +724,14 @@ int CMD_SET_PULSE_CONTROL(int argc, char *argv[])
 
 	if ((receive_argm > 1) || (receive_argm < 0))
 		return CMDLINE_INVALID_ARG;
+
+	if (HB_sequence_array[CMD_sequence_index].pos_pole_index == HB_sequence_array[CMD_sequence_index].neg_pole_index)
+	{
+		UART_Send_String(CMD_line_handle, "> ERROR CURRENT SEQUENCE PULSE POLE IS THE SAME\n");
+		UART_Printf(CMD_line_handle, "> PULSE POS POLE: %d; PULSE NEG POLE: %d\n",
+		User_Channel_Mapping[HB_sequence_array[CMD_sequence_index].pos_pole_index], User_Channel_Mapping[HB_sequence_array[CMD_sequence_index].neg_pole_index]);
+		return CMDLINE_OK;
+	}
 
 	is_h_bridge_enable = receive_argm;
 
@@ -939,8 +970,7 @@ int CMD_MEASURE_VOLT(int argc, char *argv[])
 
 	data_tmp[0] /= 10;
 	data_tmp[1] /= 10;
-	UART_Printf(&RS232_UART, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
-	UART_Printf(&RF_UART, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
+	UART_Printf(CMD_line_handle, "> HV cap: %d.%dV, LV cap: %d.%dV\r\n", data_tmp[0], data1_tmp[0], data_tmp[1], data1_tmp[1]);
 
 	return CMDLINE_OK;
 }

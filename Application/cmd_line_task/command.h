@@ -40,6 +40,7 @@ typedef struct _H_Bridge_task_typedef_
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern bool						is_h_bridge_enable;
+extern H_Bridge_task_typedef    HB_sequence_default;
 extern H_Bridge_task_typedef    HB_sequence_array[10];
 
 extern uint8_t CMD_sequence_index;

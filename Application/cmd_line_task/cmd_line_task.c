@@ -28,7 +28,7 @@ typedef struct _cmd_line_typedef cmd_line_typedef;
 uart_stdio_typedef  *CMD_line_handle;
 
 uart_stdio_typedef  RS232_UART;
-char                g_RS232_UART_TX_buffer[256];
+char                g_RS232_UART_TX_buffer[2048];
 char                g_RS232_UART_RX_buffer[64];
 
 uart_stdio_typedef  RF_UART;
@@ -116,6 +116,11 @@ void CMD_Line_Task_Init()
     //CMD_send_splash(&RS232_UART);
 
     UART_Send_Char(&RF_UART, 'B');
+
+    for (uint8_t i = 0; i < 10; i++)
+    {
+        HB_sequence_array[i] = HB_sequence_default;
+    }
 }
 
 /* :::::::::: CMD Line Task ::::::::::::: */
