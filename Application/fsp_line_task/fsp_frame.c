@@ -33,7 +33,12 @@ uint16_t FSP_lv_on_time_ms, FSP_lv_off_time_ms;
 void FSP_Line_Process()
 {
 switch (ps_FSP_RX->CMD)
-{   
+{
+
+case FSP_CMD_SET_PULSE_CONTROL:
+{
+	is_h_bridge_enable = ps_FSP_RX->Payload.set_pulse_control.State;
+}
 
 case FSP_CMD_MEASURE_CURRENT:
 {
