@@ -733,6 +733,40 @@ int CMD_SET_PULSE_CONTROL(int argc, char *argv[])
 		return CMDLINE_OK;
 	}
 
+	if (((HB_sequence_array[CMD_sequence_index].is_setted & (1 << 7)) == 0) && ((receive_argm - 1) != CMD_sequence_index))
+	{
+		UART_Printf(CMD_line_handle, "> ERROR CURRENT SEQUENCE INDEX: %d IS NOT CONFIRMED\n", CMD_sequence_index + 1);
+
+		UART_Send_String(CMD_line_handle, "> EITHER CONFIRM IT OR DELETE IT\n");
+
+		UART_Send_String(CMD_line_handle, "> \n");
+
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN SEQUENCE: %dms\n", HB_sequence_array[CMD_sequence_index].sequence_delay_ms);
+
+		UART_Send_String(CMD_line_handle, "> \n");
+
+		UART_Printf(CMD_line_handle, "> POS HV PULSE COUNT: %d; NEG HV PULSE COUNT: %d\n",
+		HB_sequence_array[CMD_sequence_index].hv_pos_count, HB_sequence_array[CMD_sequence_index].hv_neg_count);
+		UART_Printf(CMD_line_handle, "> POS LV PULSE COUNT: %d; NEG LV PULSE COUNT: %d\n",
+		HB_sequence_array[CMD_sequence_index].lv_pos_count, HB_sequence_array[CMD_sequence_index].lv_neg_count);
+
+		UART_Send_String(CMD_line_handle, "> \n");
+
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV POS AND NEG PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].hv_delay_ms);
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN LV POS AND NEG PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].lv_delay_ms);
+		UART_Printf(CMD_line_handle, "> DELAY BETWEEN HV PULSE AND LV PULSE: %dms\n", HB_sequence_array[CMD_sequence_index].pulse_delay_ms);
+
+		UART_Send_String(CMD_line_handle, "> \n");
+
+		UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_on_ms, HB_sequence_array[CMD_sequence_index].hv_off_ms);
+		UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_on_ms, HB_sequence_array[CMD_sequence_index].lv_off_ms);
+
+		UART_Send_String(CMD_line_handle, "> \n");
+		return CMDLINE_OK;
+	}
+
 	is_h_bridge_enable = receive_argm;
 
 	ps_FSP_TX->CMD = FSP_CMD_SET_PULSE_CONTROL;
