@@ -87,13 +87,20 @@ int CMD_MEASURE_VOLT(int argc, char *argv[]);
 int CMD_MEASURE_CURRENT(int argc, char *argv[]);
 int CMD_MEASURE_IMPEDANCE(int argc, char *argv[]);
 
+/* :::::::::: I2C Sensor Command :::::::: */
+int CMD_GET_SENSOR_GYRO(int argc, char *argv[]);
+int CMD_GET_SENSOR_ACCEL(int argc, char *argv[]);
+int CMD_GET_SENSOR_LSM6DSOX(int argc, char *argv[]);
+
+int CMD_GET_SENSOR_TEMP(int argc, char *argv[]);
+int CMD_GET_SENSOR_PRESSURE(int argc, char *argv[]);
+int CMD_GET_SENSOR_BMP390(int argc, char *argv[]);
+
 /* :::::::::: Ultility Command :::::::: */
 int CMD_HELP(int argc, char *argv[]);
 int CMD_CALIB_RUN(int argc, char *argv[]);
 int CMD_CALIB_MEASURE(int argc, char *argv[]);
 int CMD_CALL_GPP(int argc, char *argv[]);
-int CMD_GET_BMP390(int argc, char *argv[]);
-int CMD_GET_LMSDOX(int argc, char *argv[]) ;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #endif /* COMMAND_H_ */

@@ -7,25 +7,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-//static bool			is_h_bridge_enable;
-
-//static uint16_t		pulse_delay_ms;
-//static uint8_t		HB_pos_pole_index;
-//static uint8_t		HB_neg_pole_index;
-//
-//static uint8_t		hv_pulse_pos_count;
-//static uint8_t		hv_pulse_neg_count;
-//static uint8_t		hv_delay_ms;
-//static uint8_t		hv_on_time_ms;
-//static uint8_t		hv_off_time_ms;
-//
-//static uint8_t		lv_pulse_pos_count;
-//static uint8_t		lv_pulse_neg_count;
-//static uint8_t		lv_delay_ms;
-//static uint16_t		lv_on_time_ms;
-//static uint16_t		lv_off_time_ms;
-
-/*****************************************/
 uint8_t ChannelMapping[8] = {2, 4, 7, 6, 5, 3, 0, 1};
 uint8_t User_Channel_Mapping[8] = {7, 8, 1, 6, 2, 5, 4, 3};
 
@@ -75,18 +56,25 @@ tCmdLineEntry g_psCmdTable[] = {
 		{ "MEASURE_CURRENT",		CMD_MEASURE_CURRENT,		" : Measure cuvette current"},
 		{ "MEASURE_IMPEDANCE", 		CMD_MEASURE_IMPEDANCE,		" : Measure cuvette impedance"},
 
+		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ I2C Sensor Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+		{ "GET_SENSOR_GYRO", 		CMD_GET_SENSOR_GYRO, 		" : Get gyro" },
+		{ "GET_SENSOR_ACCEL", 		CMD_GET_SENSOR_ACCEL, 		" : Get accel" },
+		{ "GET_SENSOR_LSM6DSOX", 	CMD_GET_SENSOR_LSM6DSOX, 	" : Get accel and gyro" },
+
+		{ "GET_SENSOR_TEMP", 		CMD_GET_SENSOR_TEMP, 		" : Get temp" },
+		{ "GET_SENSOR_PRESSURE", 	CMD_GET_SENSOR_PRESSURE, 	" : Get pressure" },
+		{ "GET_SENSOR_BMP390", 		CMD_GET_SENSOR_BMP390, 		" : Get temp, pressure and altitude" },
+
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "HELP", 					CMD_HELP,					" : Display list of commands" },
 		{ "CALIB_RUN", 				CMD_CALIB_RUN, 				" : Start cap calib process" },
 		{ "CALIB_MEASURE",			CMD_CALIB_MEASURE, 			" : Command to input VOM value" },
 		{ "CALL_GPP", 				CMD_CALL_GPP,	    		" : Test communicate to GPP" },
-		{ "GET_BMP390", 			CMD_GET_BMP390,	    		" : Get temperature and pressure" },
-		{ "GET_LMSDOX", 			CMD_GET_LMSDOX,	   			 " : Get accel and gyro" },
 		{ 0, 0, 0 }
 };
 
-bool					is_h_bridge_enable;
-H_Bridge_task_typedef  HB_sequence_default =
+bool				  is_h_bridge_enable;
+H_Bridge_task_typedef HB_sequence_default =
 {
 	.is_setted = 0,
 
@@ -109,7 +97,8 @@ H_Bridge_task_typedef  HB_sequence_default =
 	.lv_on_ms = 50,
 	.lv_off_ms = 90,
 };
-H_Bridge_task_typedef  	HB_sequence_array[10];
+
+H_Bridge_task_typedef HB_sequence_array[10];
 
 uint8_t CMD_sequence_index = 0;
 uint8_t CMD_total_sequence_index = 0;
@@ -456,15 +445,6 @@ int CMD_SET_SEQUENCE_CONFIRM(int argc, char *argv[])
 		return CMDLINE_TOO_FEW_ARGS;
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
-
-//	int receive_argm;
-//
-//	receive_argm = atoi(argv[1]);
-//
-//	if (receive_argm > 1)
-//		return CMDLINE_INVALID_ARG;
-//	if (receive_argm < 1)
-//		return CMDLINE_INVALID_ARG;
 
 	HB_sequence_array[CMD_sequence_index].is_setted |= (1 << 7);
 
@@ -1047,6 +1027,85 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
+/* :::::::::: I2C Sensor Command :::::::: */
+int CMD_GET_SENSOR_GYRO(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_GYRO;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_ACCEL(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_ACCEL;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_LSM6DSOX(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_LSM6DSOX;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_TEMP(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_TEMP;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_PRESSURE(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_PRESSURE;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_BMP390(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_BMP390;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
 /* :::::::::: Ultility Command :::::::: */
 int CMD_HELP(int argc, char *argv[])
 {
@@ -1133,32 +1192,6 @@ int CMD_CALL_GPP(int argc, char *argv[])
 	ps_FSP_TX->Payload.handshake.Check = 0xAB;
 
 	fsp_print(2);
-	return CMDLINE_OK;
-}
-
-int CMD_GET_BMP390(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	ps_FSP_TX->CMD = FSP_CMD_GET_BMP390;
-
-	fsp_print(1);
-	return CMDLINE_OK;
-}
-
-int CMD_GET_LMSDOX(int argc, char *argv[])
-{
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	ps_FSP_TX->CMD = FSP_CMD_GET_LMSDOX;
-
-	fsp_print(1);
 	return CMDLINE_OK;
 }
 
