@@ -13,6 +13,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uart_stdio_typedef RS232_UART;
 extern uart_stdio_typedef RF_UART;
+extern uart_stdio_typedef *CMD_line_handle;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: CMD Line Task Init :::::::: */
 void CMD_Line_Task_Init();

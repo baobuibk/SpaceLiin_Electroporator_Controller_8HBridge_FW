@@ -21,6 +21,8 @@
 static void convertArrayToInteger(uint8_t arr[], uint16_t *p);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern uint8_t is_cap_release_after_measure;
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uart_stdio_typedef *CMD_line_handle;
 
@@ -65,10 +67,15 @@ case FSP_CMD_MEASURE_IMPEDANCE:
 {
     Voltage = g_Feedback_Voltage[0] * 1000 / hv_calib_coefficient.average_value;
 
-    PID_is_300V_on = 0;
-    PID_is_50V_on = 0;
-    g_is_Discharge_300V_On = 1;
-    g_is_Discharge_50V_On = 1;	
+    if (is_cap_release_after_measure == true)
+    {
+        PID_is_300V_on = 0;
+        PID_is_50V_on = 0;
+        g_is_Discharge_300V_On = 1;
+        g_is_Discharge_50V_On = 1;
+
+        is_cap_release_after_measure = false;
+    }	
 
     Avr_Current =   ps_FSP_RX->Payload.measure_impedance.Value_high;
     Avr_Current =   Avr_Current << 8;
