@@ -102,7 +102,8 @@ H_Bridge_task_typedef HB_sequence_array[10];
 uint8_t CMD_sequence_index = 0;
 uint8_t CMD_total_sequence_index = 0;
 
-bool	is_cap_release_after_measure = false;
+bool is_measure_impedance_enable = false;
+bool is_cap_release_after_measure = false;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Control Command :::::::: */
@@ -129,6 +130,9 @@ int CMD_SET_CAP_VOLT(int argc, char *argv[])
 		return CMDLINE_INVALID_ARG;
 
 	Calib_Calculate(receive_argm[0], receive_argm[1]);
+
+	is_300V_notified_enable = true;
+	is_50V_notified_enable  = true;
 
 	return CMDLINE_OK;
 }
@@ -166,6 +170,9 @@ int CMD_SET_CAP_CONTROL(int argc, char *argv[])
 	PID_is_300V_on = receive_argm[0];
 	PID_is_50V_on = receive_argm[1];
 
+	is_300V_notified_enable = true;
+	is_50V_notified_enable  = true;
+
 	return CMDLINE_OK;
 }
 
@@ -200,6 +207,9 @@ int CMD_SET_CAP_RELEASE(int argc, char *argv[])
 
 	g_is_Discharge_300V_On = receive_argm[0];
 	g_is_Discharge_50V_On = receive_argm[1];
+
+	is_300V_notified_enable = true;
+	is_50V_notified_enable  = true;
 
 	return CMDLINE_OK;
 }
@@ -1030,11 +1040,11 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 	g_is_Discharge_50V_On = 0;
 
 	PID_is_300V_on = 0;
-	PID_is_50V_on = 0;
-
-	Calib_Calculate(receive_argm[0], 0);
-	UART_Printf(&RF_UART, "> CHARGING HV TO %dV\r\n", receive_argm[0]);
+	Calib_Calculate_HV(receive_argm[0]);
+	UART_Printf(&RF_UART, "> CHARGING HV CAP TO %dV\r\n", receive_argm[0]);
 	PID_is_300V_on = 1;
+
+	is_measure_impedance_enable = true;
 
 	SchedulerTaskEnable(7, 1);
 
