@@ -157,7 +157,7 @@ void Notify_Charge_Cap_Task(void*)
 	{
 		if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
 		{
-			uint16_t _300V_set_volt = PID_300V_set_voltage / hv_calib_coefficient.average_value;
+			uint16_t _300V_set_volt = (PID_300V_set_voltage / hv_calib_coefficient.average_value) + 1;
 			UART_Printf(CMD_line_handle, "HV CAP FINISHED CHARGING TO %dV\n", _300V_set_volt);
 			UART_Send_String(CMD_line_handle, "> ");
 			is_300V_notified_enable = false;
