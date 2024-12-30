@@ -32,21 +32,21 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                     {
                             &RS232_CMD_Line_Task,
                             (void *) 0,
-                            50,                         //call every 500us
+                            20,                         //call every 500us
                             0,                          //count from start
                             true                        //is active
                     },
                     {
                             &RF_CMD_Line_Task,
                             (void *) 0,
-                            50,                         //call every 500us
+                            20,                         //call every 500us
                             0,                          //count from start
                             true                        //is active
                     },
                     {
                             &FSP_Line_Task,
                             (void *) 0,
-                            100,                        //call every 500us
+                            20,                        //call every 500us
                             0,                          //count from start
                             true                        //is active
                     },

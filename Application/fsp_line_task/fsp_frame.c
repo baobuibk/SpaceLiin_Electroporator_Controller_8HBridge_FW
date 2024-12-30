@@ -16,7 +16,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 //extern Accel_Gyro_DataTypedef _gyro, _accel;
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void convertArrayToInteger(uint8_t arr[], uint16_t *p);
 
@@ -30,163 +29,200 @@ uint32_t Voltage;
 uint16_t delay_ms = 0;
 uint16_t FSP_lv_on_time_ms, FSP_lv_off_time_ms;
 
-void FSP_Line_Process()
-{
-switch (ps_FSP_RX->CMD)
-{
+void FSP_Line_Process() {
+	int16_t x,y,z;
+	switch (ps_FSP_RX->CMD) {
 
-case FSP_CMD_SET_PULSE_CONTROL:
-{
-	is_h_bridge_enable = ps_FSP_RX->Payload.set_pulse_control.State;
-	break;
-}
+	case FSP_CMD_SET_PULSE_CONTROL: {
+		is_h_bridge_enable = ps_FSP_RX->Payload.set_pulse_control.State;
+		break;
+	}
 
-case FSP_CMD_MEASURE_CURRENT:
-{
-    Avr_Current =   ps_FSP_RX->Payload.measure_current.Value_high;
-    Avr_Current =   Avr_Current << 8;
-    Avr_Current |=  ps_FSP_RX->Payload.measure_current.Value_low;
+	case FSP_CMD_MEASURE_CURRENT: {
+		Avr_Current = ps_FSP_RX->Payload.measure_current.Value_high;
+		Avr_Current = Avr_Current << 8;
+		Avr_Current |= ps_FSP_RX->Payload.measure_current.Value_low;
 
-    if (Avr_Current < 1000)
-    {
-        UART_Printf(CMD_line_handle, "CURRENT IS %dmA\n", Avr_Current);
-    }
-    else
-    {
-        UART_Printf(CMD_line_handle, "CURRENT IS %d.%dA\n", Avr_Current / 1000, Avr_Current % 1000);
-    }
-    
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
-    
+		if (Avr_Current < 1000) {
+			UART_Printf(CMD_line_handle, "CURRENT IS %dmA\n", Avr_Current);
+		} else {
+			UART_Printf(CMD_line_handle, "CURRENT IS %d.%dA\n",
+					Avr_Current / 1000, Avr_Current % 1000);
+		}
 
-case FSP_CMD_MEASURE_IMPEDANCE:
-{
-    Voltage = g_Feedback_Voltage[0] * 1000 / hv_calib_coefficient.average_value;
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
-    PID_is_300V_on = 0;
-    PID_is_50V_on = 0;
-    g_is_Discharge_300V_On = 1;
-    g_is_Discharge_50V_On = 1;	
+	case FSP_CMD_MEASURE_IMPEDANCE: {
+		Voltage = g_Feedback_Voltage[0] * 1000
+				/ hv_calib_coefficient.average_value;
 
-    Avr_Current =   ps_FSP_RX->Payload.measure_impedance.Value_high;
-    Avr_Current =   Avr_Current << 8;
-    Avr_Current |=  ps_FSP_RX->Payload.measure_impedance.Value_low;
+		PID_is_300V_on = 0;
+		PID_is_50V_on = 0;
+		g_is_Discharge_300V_On = 1;
+		g_is_Discharge_50V_On = 1;
 
-    Impedance = Voltage / Avr_Current;
+		Avr_Current = ps_FSP_RX->Payload.measure_impedance.Value_high;
+		Avr_Current = Avr_Current << 8;
+		Avr_Current |= ps_FSP_RX->Payload.measure_impedance.Value_low;
 
-    UART_Send_String(CMD_line_handle, "MEASURING...OK\n");
-    
-    UART_Printf(CMD_line_handle, "> CURRENT IS %dmA\n", Avr_Current);
+		Impedance = Voltage / Avr_Current;
 
-    UART_Printf(CMD_line_handle, "> IMPEDANCE IS %d Ohm\n", Impedance);
+		UART_Send_String(CMD_line_handle, "MEASURING...OK\n");
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
+		UART_Printf(CMD_line_handle, "> CURRENT IS %dmA\n", Avr_Current);
 
-/* :::::::::: I2C Sensor Command :::::::: */
-case FSP_CMD_GET_SENSOR_GYRO:
-{
-    UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_SENSOR_GYRO\n");
+		UART_Printf(CMD_line_handle, "> IMPEDANCE IS %d Ohm\n", Impedance);
 
-    uint16_t gyro_x=0, gyro_y=0, gyro_z=0;
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_x,  &gyro_x);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_y,  &gyro_y);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_z,  &gyro_z);
+		/* :::::::::: I2C Sensor Command :::::::: */
+	case FSP_CMD_GET_SENSOR_GYRO: {
+		UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_SENSOR_GYRO\n");
 
-    UART_Printf(CMD_line_handle, "> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x, gyro_y, gyro_z);
+		uint16_t gyro_x = 0, gyro_y = 0, gyro_z = 0;
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_x,
+				&gyro_x);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_y,
+				&gyro_y);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_z,
+				&gyro_z);
 
+		UART_Printf(CMD_line_handle,
+				"> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x,
+				gyro_y, gyro_z);
 
-case FSP_CMD_GET_SENSOR_ACCEL:
-{
-    UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_SENSOR_ACCEL\n");
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
-    uint16_t accel_x=0, accel_y=0, accel_z=0;
+	case FSP_CMD_GET_SENSOR_ACCEL: {
+		UART_Send_String(CMD_line_handle,
+				"Received FSP_CMD_GET_SENSOR_ACCEL\n");
 
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_x, &accel_x);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_y, &accel_y);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_z, &accel_z);
+		uint16_t accel_x = 0, accel_y = 0, accel_z = 0;
 
-    UART_Printf(CMD_line_handle, "> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n", accel_x, accel_y, accel_z);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_x,
+				&accel_x);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_y,
+				&accel_y);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_z,
+				&accel_z);
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
+		UART_Printf(CMD_line_handle,
+				"> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n",
+				accel_x, accel_y, accel_z);
 
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
-case FSP_CMD_GET_SENSOR_LSM6DSOX:
-{
-    UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_LSM6DSOX\n");
+	case FSP_CMD_GET_SENSOR_LSM6DSOX: {
+		UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_LSM6DSOX\n");
 
-    uint16_t gyro_x=0, gyro_y=0, gyro_z=0, accel_x=0, accel_y=0, accel_z=0;
+		uint16_t gyro_x = 0, gyro_y = 0, gyro_z = 0, accel_x = 0, accel_y = 0,
+				accel_z = 0;
 
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_x,  &gyro_x);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_y,  &gyro_y);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_z,  &gyro_z);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_x,
+				&gyro_x);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_y,
+				&gyro_y);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_z,
+				&gyro_z);
 
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_x, &accel_x);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_y, &accel_y);
-    convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_z, &accel_z);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_x,
+				&accel_x);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_y,
+				&accel_y);
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_z,
+				&accel_z);
 
-    UART_Printf(CMD_line_handle, "> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x, gyro_y, gyro_z);
+		UART_Printf(CMD_line_handle,
+				"> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x,
+				gyro_y, gyro_z);
 
-    UART_Printf(CMD_line_handle, "> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n", accel_x, accel_y, accel_z);
+		UART_Printf(CMD_line_handle,
+				"> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n",
+				accel_x, accel_y, accel_z);
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
+	case FSP_CMD_GET_SENSOR_TEMP: {
+		UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_SENSOR_TEMP\n");
 
-case FSP_CMD_GET_SENSOR_TEMP:
-{
-    UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_SENSOR_TEMP\n");
+		UART_Printf(CMD_line_handle, "> TEMPERATURE: %s Celsius\n",
+				ps_FSP_RX->Payload.get_sensor_temp.temp);
 
-    UART_Printf(CMD_line_handle, "> TEMPERATURE: %s Celsius\n", ps_FSP_RX->Payload.get_sensor_temp.temp);
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
+	case FSP_CMD_GET_SENSOR_PRESSURE: {
+		UART_Send_String(CMD_line_handle,
+				"Received FSP_CMD_GET_SENSOR_PRESSURE\n");
 
+		UART_Printf(CMD_line_handle, "> PRESSURE: %s Pa\n",
+				ps_FSP_RX->Payload.get_sensor_pressure.pressure);
 
-case FSP_CMD_GET_SENSOR_PRESSURE:
-{
-    UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_SENSOR_PRESSURE\n");
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
 
-    UART_Printf(CMD_line_handle, "> PRESSURE: %s Pa\n", ps_FSP_RX->Payload.get_sensor_pressure.pressure);
+	case FSP_CMD_GET_SENSOR_BMP390: {
+		UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_BMP390\n");
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
+		UART_Printf(CMD_line_handle, "> TEMPERATURE: %s Celsius\n",
+				ps_FSP_RX->Payload.get_sensor_BMP390.temp);
 
+		UART_Printf(CMD_line_handle, "> PRESSURE: %s Pa\n",
+				ps_FSP_RX->Payload.get_sensor_BMP390.pressure);
 
-case FSP_CMD_GET_SENSOR_BMP390	:
-{
-    UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_BMP390\n");
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
+		/* :::::::::: Auto Accel Command :::::::: */
+	case FSP_CMD_GET_THRESHOLD_ACCEL:
+		// Đọc giá trị kiểu int16_t từ byte thấp và byte cao
+		x = (int16_t)((ps_FSP_RX->Payload.get_threshold_accel.XH << 8) |
+		                      ps_FSP_RX->Payload.get_threshold_accel.XL);
+		y = (int16_t)((ps_FSP_RX->Payload.get_threshold_accel.YH << 8) |
+		                      ps_FSP_RX->Payload.get_threshold_accel.YL);
+		z = (int16_t)((ps_FSP_RX->Payload.get_threshold_accel.ZH << 8) |
+		                      ps_FSP_RX->Payload.get_threshold_accel.ZL);
 
-    UART_Printf(CMD_line_handle, "> TEMPERATURE: %s Celsius\n", ps_FSP_RX->Payload.get_sensor_BMP390.temp);
+		// In giá trị ra
+		UART_Printf(CMD_line_handle, "> Threshold Accel is: %d %d %d\n", x, y, z);
 
-    UART_Printf(CMD_line_handle, "> PRESSURE: %s Pa\n", ps_FSP_RX->Payload.get_sensor_BMP390.pressure);
+		break;
+	case FSP_CMD_STREAM_ACCEL:
+		x = (int16_t)((ps_FSP_RX->Payload.stream_accel.XH << 8) |
+		                      ps_FSP_RX->Payload.stream_accel.XL);
+		y = (int16_t)((ps_FSP_RX->Payload.stream_accel.YH << 8) |
+		                      ps_FSP_RX->Payload.stream_accel.YL);
+		z = (int16_t)((ps_FSP_RX->Payload.stream_accel.ZH << 8) |
+		                      ps_FSP_RX->Payload.stream_accel.ZL);
 
-    UART_Send_String(CMD_line_handle, "> ");
-    break;
-}
-    
-default:
-    break;
-}
+		uint8_t tmp = ps_FSP_RX->Payload.stream_accel.count;
+		if (!tmp) {
+		    UART_Send_String(CMD_line_handle, "\e[?25l\rAccel is: X:       Y:       Z:       ");
+		}
+
+		UART_Printf(CMD_line_handle, "\033[13G%5d\033[22G%5d\033[31G%5d  %d  ", x, y, z, tmp);
+		break;
+	default:
+		break;
+	}
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-static void convertArrayToInteger(uint8_t arr[], uint16_t *p)
-{
-	*p = (uint16_t)(arr[1]<<8 | arr[0]);
+static void convertArrayToInteger(uint8_t arr[], uint16_t *p) {
+	*p = (uint16_t) (arr[1] << 8 | arr[0]);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

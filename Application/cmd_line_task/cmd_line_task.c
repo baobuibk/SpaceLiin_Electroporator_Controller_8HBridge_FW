@@ -217,8 +217,12 @@ void RF_CMD_Line_Task(void*)
                 //RF_CMD_line.read_index = RF_CMD_line.write_index;
                 RF_CMD_line.write_index    = 0;
 
-                UART_Send_String(&RF_UART, "> ");
-                UART_Printf(&RF_UART, ErrorCode[cmd_return]);
+				if (cmd_return == CMDLINE_NO_RESPONSE) {
+					UART_Send_String(&RF_UART, "\033[1;1H");
+				} else {
+					UART_Send_String(&RF_UART, "> ");
+					UART_Printf(&RF_UART, ErrorCode[cmd_return]);
+				}
                 UART_Send_String(&RF_UART, "> ");
             }
             else

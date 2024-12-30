@@ -96,11 +96,17 @@ int CMD_GET_SENSOR_TEMP(int argc, char *argv[]);
 int CMD_GET_SENSOR_PRESSURE(int argc, char *argv[]);
 int CMD_GET_SENSOR_BMP390(int argc, char *argv[]);
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Auto Pulsing Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]);
+int CMD_GET_THRESHOLD_ACCEL(int argc, char *argv[]);
+int CMD_SET_AUTO_ACCEL(int argc, char *argv[]);
+
 /* :::::::::: Ultility Command :::::::: */
 int CMD_HELP(int argc, char *argv[]);
 int CMD_CALIB_RUN(int argc, char *argv[]);
 int CMD_CALIB_MEASURE(int argc, char *argv[]);
 int CMD_CALL_GPP(int argc, char *argv[]);
+int CMD_CLEAR_SCREEN(int argc, char *argv[]);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #endif /* COMMAND_H_ */
