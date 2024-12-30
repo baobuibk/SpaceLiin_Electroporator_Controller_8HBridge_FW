@@ -226,6 +226,16 @@ void Calib_Calculate(uint16_t hv_set_voltage, uint16_t lv_set_voltage)
     PID_50V_set_voltage     = lv_set_voltage * lv_calib_coefficient.average_value;
 }
 
+void Calib_Calculate_HV(uint16_t hv_set_voltage)
+{
+    PID_300V_set_voltage    = hv_set_voltage * hv_calib_coefficient.average_value;
+}
+
+void Calib_Calculate_LV(uint16_t lv_set_voltage)
+{
+    PID_50V_set_voltage     = lv_set_voltage * lv_calib_coefficient.average_value;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static inline void charge_cap_procedure(uint16_t hv_set_volt, uint16_t lv_set_volt)
 {

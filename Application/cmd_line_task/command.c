@@ -13,9 +13,8 @@ uint8_t User_Channel_Mapping[8] = {7, 8, 1, 6, 2, 5, 4, 3};
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern uart_stdio_typedef *CMD_line_handle;
-
-tCmdLineEntry g_psCmdTable[] = {
+tCmdLineEntry g_psCmdTable[] =
+{
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Cap Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "SET_CAP_VOLT",			CMD_SET_CAP_VOLT, 			" : Set cap voltage" },
 		{ "SET_CAP_CONTROL",		CMD_SET_CAP_CONTROL, 		" : Control charger on/off" },
@@ -112,6 +111,9 @@ H_Bridge_task_typedef HB_sequence_array[10];
 uint8_t CMD_sequence_index = 0;
 uint8_t CMD_total_sequence_index = 0;
 
+bool is_measure_impedance_enable = false;
+bool is_cap_release_after_measure = false;
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Control Command :::::::: */
 int CMD_SET_CAP_VOLT(int argc, char *argv[])
@@ -137,6 +139,9 @@ int CMD_SET_CAP_VOLT(int argc, char *argv[])
 		return CMDLINE_INVALID_ARG;
 
 	Calib_Calculate(receive_argm[0], receive_argm[1]);
+
+	is_300V_notified_enable = true;
+	is_50V_notified_enable  = true;
 
 	return CMDLINE_OK;
 }
@@ -174,6 +179,9 @@ int CMD_SET_CAP_CONTROL(int argc, char *argv[])
 	PID_is_300V_on = receive_argm[0];
 	PID_is_50V_on = receive_argm[1];
 
+	is_300V_notified_enable = true;
+	is_50V_notified_enable  = true;
+
 	return CMDLINE_OK;
 }
 
@@ -208,6 +216,9 @@ int CMD_SET_CAP_RELEASE(int argc, char *argv[])
 
 	g_is_Discharge_300V_On = receive_argm[0];
 	g_is_Discharge_50V_On = receive_argm[1];
+
+	is_300V_notified_enable = true;
+	is_50V_notified_enable  = true;
 
 	return CMDLINE_OK;
 }
@@ -1011,25 +1022,38 @@ int CMD_MEASURE_CURRENT(int argc, char *argv[])
 uint16_t Impedance_Period = 0;
 int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 {
-	if (argc < 3)
+	if (argc < 4)
 		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 3)
+	else if (argc > 4)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	int receive_argm[2];
+	int receive_argm[3];
 
 	receive_argm[0]  = atoi(argv[1]);
-	Impedance_Period = atoi(argv[2]);
+	receive_argm[1]  = atoi(argv[2]);
+	receive_argm[2]  = atoi(argv[3]);
+
+	if ((receive_argm[0] > 300) || (receive_argm[0] < 0))
+		return CMDLINE_INVALID_ARG;
+
+	if ((receive_argm[1] > 2000) || (receive_argm[1] < 0))
+		return CMDLINE_INVALID_ARG;
+	
+	if ((receive_argm[2] > 1) || (receive_argm[2] < 0))
+		return CMDLINE_INVALID_ARG;
+	
+	Impedance_Period = receive_argm[1];
+	is_cap_release_after_measure = receive_argm[2];
 
 	g_is_Discharge_300V_On = 0;
 	g_is_Discharge_50V_On = 0;
 
 	PID_is_300V_on = 0;
-	PID_is_50V_on = 0;
-
-	Calib_Calculate(receive_argm[0], 0);
-	UART_Printf(&RF_UART, "> CHARGING HV TO %dV\r\n", receive_argm[0]);
+	Calib_Calculate_HV(receive_argm[0]);
+	UART_Printf(&RF_UART, "> CHARGING HV CAP TO %dV\r\n", receive_argm[0]);
 	PID_is_300V_on = 1;
+
+	is_measure_impedance_enable = true;
 
 	SchedulerTaskEnable(7, 1);
 

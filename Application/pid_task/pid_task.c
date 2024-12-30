@@ -24,6 +24,11 @@ typedef enum
 } PID_State_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+bool is_300V_notified_enable = false;
+bool is_50V_notified_enable = false;
+
+extern bool is_measure_impedance_enable;
+
 extern uart_stdio_typedef  	GPP_UART;
 static PID_State_typedef 	PID_State = PID_CAP_CHARGE_STATE;
 extern uint16_t 			Impedance_Period;
@@ -146,7 +151,74 @@ void PID_Task(void*)
 	}
 }
 
-void Impedance_Task(void*)
+void Notify_Charge_Cap_Task(void*)
+{
+	if ((PID_is_300V_on == true) && (is_300V_notified_enable == true))
+	{
+		if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
+		{
+			uint16_t _300V_set_volt = (PID_300V_set_voltage / hv_calib_coefficient.average_value) + 1;
+			UART_Printf(CMD_line_handle, "HV CAP FINISHED CHARGING TO %dV\n", _300V_set_volt);
+			UART_Send_String(CMD_line_handle, "> ");
+			is_300V_notified_enable = false;
+		}
+		
+		if (is_measure_impedance_enable == true)
+		{
+			ps_FSP_TX->CMD 									 = FSP_CMD_MEASURE_IMPEDANCE;
+			ps_FSP_TX->Payload.measure_impedance.Period_low  = Impedance_Period;
+			ps_FSP_TX->Payload.measure_impedance.Period_high = (Impedance_Period >> 8);
+			s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+			s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+			s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+			s_FSP_TX_Packet.length 		= 3;
+			s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+			s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+			s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
+
+			uint8_t encoded_frame[20] = { 0 };
+			uint8_t frame_len;
+			fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
+			UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
+
+			is_measure_impedance_enable = false;
+		}
+	}
+	else if ((g_is_Discharge_300V_On == true) && (is_300V_notified_enable == true))
+	{
+		if (g_Feedback_Voltage[0] <= 10)
+		{
+			UART_Send_String(CMD_line_handle, "HV CAP FINISHED RELEASING TO 0V\n");
+			UART_Send_String(CMD_line_handle, "> ");
+			g_is_Discharge_300V_On  = false;
+			is_300V_notified_enable = false;
+		}
+	}
+	
+
+	if ((PID_is_50V_on == true) && (is_50V_notified_enable == true))
+	{
+		if (g_Feedback_Voltage[1] >= (PID_50V_set_voltage * 0.99))
+		{
+			uint16_t _50V_set_volt = PID_50V_set_voltage / lv_calib_coefficient.average_value;
+			UART_Printf(CMD_line_handle, "LV CAP FINISHED CHARGING TO %dV\n", _50V_set_volt);
+			UART_Send_String(CMD_line_handle, "> ");
+			is_50V_notified_enable = false;
+		}
+	}
+	else if ((g_is_Discharge_50V_On == true) && (is_50V_notified_enable == true))
+	{
+		if (g_Feedback_Voltage[1] <= 10)
+		{
+			UART_Send_String(CMD_line_handle, "LV CAP FINISHED RELEASING TO 0V\n");
+			UART_Send_String(CMD_line_handle, "> ");
+			g_is_Discharge_50V_On  = false;
+			is_50V_notified_enable = false;
+		}
+	}
+}
+
+/* void Impedance_Task(void*)
 {
 	if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
 	{
@@ -168,7 +240,7 @@ void Impedance_Task(void*)
 
 		SchedulerTaskDisable(7);
 	}
-}
+} */
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static inline void FlyBack_Set_Duty(PWM_TypeDef *PWMx, uint32_t _Duty)
