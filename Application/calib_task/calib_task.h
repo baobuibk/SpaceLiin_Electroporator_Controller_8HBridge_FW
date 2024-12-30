@@ -49,6 +49,8 @@ void Calib_Task_Init(void);
 /* :::::::::: Calib Task ::::::::::::: */
 void Calib_Task(void*);
 void Calib_Calculate(uint16_t hv_set_voltage, uint16_t lv_set_voltage);
+void Calib_Calculate_HV(uint16_t hv_set_voltage);
+void Calib_Calculate_LV(uint16_t lv_set_voltage);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

@@ -58,11 +58,11 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                             false                       //is active
                     },
                     {
-                            &Impedance_Task,
+                            &Notify_Charge_Cap_Task,
                             (void *) 0,
-                            30000,                         //call every 500us
+                            250,                         //call every 250ms
                             0,                          //count from start
-                            false                       //is active
+                            true                       //is active
                     },
                     {
                             &Status_Led,
