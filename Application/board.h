@@ -61,9 +61,9 @@
 #define GPP_UART_HANDLE         USART3
 #define GPP_UART_IRQ            USART3_6_IRQn
 
-#define GPP_TX_SIZE			    128
-#define	GPP_RX_SIZE			    128
-#define FSP_BUF_LEN				128
+#define GPP_TX_SIZE			    64
+#define	GPP_RX_SIZE			    64
+#define FSP_BUF_LEN				64
 
 /**********************SPI**********************/
 #define FRAM_SPI_HANDLE         SPI1

@@ -46,7 +46,7 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                     {
                             &FSP_Line_Task,
                             (void *) 0,
-                            5,                          //call every 500us
+                            20,                          //call every 500us
                             0,                          //count from start
                             true                        //is active
                     },
