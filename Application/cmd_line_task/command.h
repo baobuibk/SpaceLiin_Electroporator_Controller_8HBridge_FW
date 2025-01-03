@@ -46,6 +46,8 @@ extern H_Bridge_task_typedef    HB_sequence_array[10];
 extern uint8_t CMD_sequence_index;
 extern uint8_t CMD_total_sequence_index;
 
+extern bool is_streaming_enable;
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Control Command :::::::: */
 int CMD_SET_CAP_VOLT(int argc, char *argv[]);

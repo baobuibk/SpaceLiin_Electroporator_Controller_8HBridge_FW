@@ -204,6 +204,26 @@ void RF_CMD_Line_Task(void*)
 
         UART_Send_Char(&RF_UART, RF_CMD_line.RX_char);
 
+        if (is_streaming_enable == true)
+        {
+            char buffer_temp[] = "SET_AUTO_ACCEL 0";
+            CMD_line_handle = &RF_UART;
+            cmd_return = CmdLineProcess(buffer_temp);
+
+            if (cmd_return == CMDLINE_NO_RESPONSE)
+            {
+                UART_Send_String(&RF_UART, "\033[1;1H");
+            }
+            else
+            {
+                UART_Send_String(&RF_UART, "> ");
+                UART_Printf(&RF_UART, ErrorCode[cmd_return]);
+            }
+
+            UART_Send_String(&RF_UART, "> ");
+            return;
+        }
+
         if((RF_CMD_line.RX_char == '\r') || (RF_CMD_line.RX_char == '\n'))
         {
             if(RF_CMD_line.write_index > 0)
@@ -217,12 +237,16 @@ void RF_CMD_Line_Task(void*)
                 //RF_CMD_line.read_index = RF_CMD_line.write_index;
                 RF_CMD_line.write_index    = 0;
 
-				if (cmd_return == CMDLINE_NO_RESPONSE) {
+				if (cmd_return == CMDLINE_NO_RESPONSE)
+                {
 					UART_Send_String(&RF_UART, "\033[1;1H");
-				} else {
+				}
+                else
+                {
 					UART_Send_String(&RF_UART, "> ");
 					UART_Printf(&RF_UART, ErrorCode[cmd_return]);
 				}
+
                 UART_Send_String(&RF_UART, "> ");
             }
             else

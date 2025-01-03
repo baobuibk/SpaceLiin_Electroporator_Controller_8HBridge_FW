@@ -114,6 +114,8 @@ uint8_t CMD_total_sequence_index = 0;
 bool is_measure_impedance_enable = false;
 bool is_cap_release_after_measure = false;
 
+bool                is_streaming_enable = false;
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Control Command :::::::: */
 int CMD_SET_CAP_VOLT(int argc, char *argv[])
@@ -1276,6 +1278,15 @@ int CMD_SET_AUTO_ACCEL(int argc, char *argv[]) {
 
 	if ((receive_argm > 1) || (receive_argm < 0))
 		return CMDLINE_INVALID_ARG;
+
+	if (receive_argm == 1)
+	{
+		is_streaming_enable = true;
+	}
+	else
+	{
+		is_streaming_enable = false;
+	}
 
 	ps_FSP_TX->CMD 			= FSP_CMD_SET_AUTO_ACCEL;
 	ps_FSP_TX->Payload.set_auto_accel.State = receive_argm;

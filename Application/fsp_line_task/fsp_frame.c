@@ -21,6 +21,7 @@ static void convertArrayToInteger(uint8_t arr[], uint16_t *p);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uint8_t is_cap_release_after_measure;
+extern bool    is_streaming_enable;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uart_stdio_typedef *CMD_line_handle;
@@ -217,9 +218,14 @@ void FSP_Line_Process() {
 
 		uint8_t tmp = ps_FSP_RX->Payload.stream_accel.count;
 		if (!tmp) {
-		    UART_Send_String(CMD_line_handle, "\e[?25l\rAccel is: X:       Y:       Z:       ");
+		    UART_Send_String(CMD_line_handle, "\e[?25l\r> Accel is: X:       Y:       Z:       ");
 		}
 
+		if (is_streaming_enable == false)
+		{
+			break;
+		}
+		
 		UART_Printf(CMD_line_handle, "\033[13G%5d\033[22G%5d\033[31G%5d  %d  ", x, y, z, tmp);
 		break;
 	default:
