@@ -32,6 +32,7 @@ extern bool is_measure_impedance_enable;
 extern uart_stdio_typedef  	GPP_UART;
 static PID_State_typedef 	PID_State = PID_CAP_CHARGE_STATE;
 extern uint16_t 			Impedance_Period;
+extern uint8_t  			Impedance_pos_pole, Impedance_neg_pole;
 
 PWM_TypeDef 	Flyback_300V_Switching_PWM =
 {
@@ -165,9 +166,11 @@ void Notify_Charge_Cap_Task(void*)
 		
 		if (is_measure_impedance_enable == true)
 		{
-			ps_FSP_TX->CMD 									 = FSP_CMD_MEASURE_IMPEDANCE;
-			ps_FSP_TX->Payload.measure_impedance.Period_low  = Impedance_Period;
-			ps_FSP_TX->Payload.measure_impedance.Period_high = (Impedance_Period >> 8);
+			ps_FSP_TX->CMD 									 	= FSP_CMD_MEASURE_IMPEDANCE;
+			ps_FSP_TX->Payload.measure_impedance.Pos_pole_index = Impedance_pos_pole;
+			ps_FSP_TX->Payload.measure_impedance.Neg_pole_index = Impedance_neg_pole;
+			ps_FSP_TX->Payload.measure_impedance.Period_low  	= Impedance_Period;
+			ps_FSP_TX->Payload.measure_impedance.Period_high 	= (Impedance_Period >> 8);
 			s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
 			s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
 			s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
