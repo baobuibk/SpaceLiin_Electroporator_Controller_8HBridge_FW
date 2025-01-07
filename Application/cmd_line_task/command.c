@@ -1025,9 +1025,9 @@ uint16_t Impedance_Period = 0;
 uint8_t  Impedance_pos_pole, Impedance_neg_pole;
 int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 {
-	if (argc < 4)
+	if (argc < 6)
 		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 4)
+	else if (argc > 6)
 		return CMDLINE_TOO_MANY_ARGS;
 
 	int receive_argm[5];
@@ -1038,13 +1038,19 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 	receive_argm[3]  = atoi(argv[4]);
 	receive_argm[4]  = atoi(argv[5]);
 
-	if ((receive_argm[0] > 300) || (receive_argm[0] < 0))
+	if ((receive_argm[0] > 8) || (receive_argm[0] < 1))
 		return CMDLINE_INVALID_ARG;
 
-	if ((receive_argm[1] > 2000) || (receive_argm[1] < 0))
+	if ((receive_argm[1] > 8) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
+
+	if ((receive_argm[2] > 300) || (receive_argm[2] < 0))
+		return CMDLINE_INVALID_ARG;
+
+	if ((receive_argm[3] > 2000) || (receive_argm[3] < 0))
 		return CMDLINE_INVALID_ARG;
 	
-	if ((receive_argm[2] > 1) || (receive_argm[2] < 0))
+	if ((receive_argm[4] > 1) || (receive_argm[4] < 0))
 		return CMDLINE_INVALID_ARG;
 	
 	Impedance_pos_pole = ChannelMapping[receive_argm[0] - 1];
@@ -1062,8 +1068,9 @@ int CMD_MEASURE_IMPEDANCE(int argc, char *argv[])
 	PID_is_300V_on = 1;
 
 	is_measure_impedance_enable = true;
+	is_300V_notified_enable = true;
 
-	SchedulerTaskEnable(7, 1);
+	//SchedulerTaskEnable(7, 1);
 
 	return CMDLINE_OK;
 }
@@ -1306,7 +1313,7 @@ static void fsp_print(uint8_t packet_length)
 	s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
 	s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
 	s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
-	s_FSP_TX_Packet.length 	= packet_length;
+	s_FSP_TX_Packet.length 		= packet_length;
 	s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
 	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
 	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);

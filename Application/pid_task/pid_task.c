@@ -156,35 +156,35 @@ void Notify_Charge_Cap_Task(void*)
 {
 	if ((PID_is_300V_on == true) && (is_300V_notified_enable == true))
 	{
-		if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.99))
+		if (g_Feedback_Voltage[0] >= (PID_300V_set_voltage * 0.90))
 		{
 			uint16_t _300V_set_volt = (PID_300V_set_voltage / hv_calib_coefficient.average_value) + 1;
 			UART_Printf(CMD_line_handle, "HV CAP FINISHED CHARGING TO %dV\n", _300V_set_volt);
 			UART_Send_String(CMD_line_handle, "> ");
 			is_300V_notified_enable = false;
-		}
-		
-		if (is_measure_impedance_enable == true)
-		{
-			ps_FSP_TX->CMD 									 	= FSP_CMD_MEASURE_IMPEDANCE;
-			ps_FSP_TX->Payload.measure_impedance.Pos_pole_index = Impedance_pos_pole;
-			ps_FSP_TX->Payload.measure_impedance.Neg_pole_index = Impedance_neg_pole;
-			ps_FSP_TX->Payload.measure_impedance.Period_low  	= Impedance_Period;
-			ps_FSP_TX->Payload.measure_impedance.Period_high 	= (Impedance_Period >> 8);
-			s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
-			s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
-			s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
-			s_FSP_TX_Packet.length 		= 3;
-			s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
-			s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
-			s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
 
-			uint8_t encoded_frame[20] = { 0 };
-			uint8_t frame_len;
-			fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
-			UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
+			if (is_measure_impedance_enable == true)
+			{
+				ps_FSP_TX->CMD 									 	= FSP_CMD_MEASURE_IMPEDANCE;
+				ps_FSP_TX->Payload.measure_impedance.Pos_pole_index = Impedance_pos_pole;
+				ps_FSP_TX->Payload.measure_impedance.Neg_pole_index = Impedance_neg_pole;
+				ps_FSP_TX->Payload.measure_impedance.Period_low  	= Impedance_Period;
+				ps_FSP_TX->Payload.measure_impedance.Period_high 	= (Impedance_Period >> 8);
+				s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+				s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+				s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+				s_FSP_TX_Packet.length 		= 5;
+				s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+				s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+				s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
 
-			is_measure_impedance_enable = false;
+				uint8_t encoded_frame[20] = { 0 };
+				uint8_t frame_len;
+				fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
+				UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
+
+				is_measure_impedance_enable = false;
+			}
 		}
 	}
 	else if ((g_is_Discharge_300V_On == true) && (is_300V_notified_enable == true))

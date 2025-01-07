@@ -17,6 +17,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 //extern Accel_Gyro_DataTypedef _gyro, _accel;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+static void fsp_print(uint8_t packet_length);
 static void convertArrayToInteger(uint8_t arr[], uint16_t *p);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -41,6 +42,20 @@ void FSP_Line_Process() {
 		break;
 	}
 
+	case FSP_CMD_MEASURE_VOLT: {
+		ps_FSP_TX->CMD = FSP_CMD_MEASURE_VOLT;
+
+		Voltage = g_Feedback_Voltage[0] * 1000 / hv_calib_coefficient.average_value;
+
+		ps_FSP_TX->Payload.measure_volt.HV_volt[0] =  Voltage;
+		ps_FSP_TX->Payload.measure_volt.HV_volt[1] = (Voltage >> 8);
+		ps_FSP_TX->Payload.measure_volt.HV_volt[2] = (Voltage >> 16);
+		ps_FSP_TX->Payload.measure_volt.HV_volt[3] = (Voltage >> 24);
+
+		fsp_print(5);
+		break;
+	}
+
 	case FSP_CMD_MEASURE_CURRENT: {
 		Avr_Current = ps_FSP_RX->Payload.measure_current.Value_high;
 		Avr_Current = Avr_Current << 8;
@@ -58,8 +73,9 @@ void FSP_Line_Process() {
 	}
 
 	case FSP_CMD_MEASURE_IMPEDANCE: {
-		Voltage = g_Feedback_Voltage[0] * 1000
-				/ hv_calib_coefficient.average_value;
+	
+	// Voltage = g_Feedback_Voltage[0] * 1000
+	// 		/ hv_calib_coefficient.average_value;
 
     if (is_cap_release_after_measure == true)
     {
@@ -69,17 +85,18 @@ void FSP_Line_Process() {
         g_is_Discharge_50V_On = 1;
 
         is_cap_release_after_measure = false;
+		is_300V_notified_enable = true;
     }	
 
-		Avr_Current = ps_FSP_RX->Payload.measure_impedance.Value_high;
-		Avr_Current = Avr_Current << 8;
-		Avr_Current |= ps_FSP_RX->Payload.measure_impedance.Value_low;
+		Impedance = ps_FSP_RX->Payload.measure_impedance.Value_high;
+		Impedance = Avr_Current << 8;
+		Impedance |= ps_FSP_RX->Payload.measure_impedance.Value_low;
 
-		Impedance = Voltage / Avr_Current;
+		//Impedance = Voltage / Avr_Current;
 
 		UART_Send_String(CMD_line_handle, "MEASURING...OK\n");
 
-		UART_Printf(CMD_line_handle, "> CURRENT IS %dmA\n", Avr_Current);
+		//UART_Printf(CMD_line_handle, "> CURRENT IS %dmA\n", Avr_Current);
 
 		UART_Printf(CMD_line_handle, "> IMPEDANCE IS %d Ohm\n", Impedance);
 
@@ -234,6 +251,23 @@ void FSP_Line_Process() {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+static void fsp_print(uint8_t packet_length)
+{
+	s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+	s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+	s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+	s_FSP_TX_Packet.length 		= packet_length;
+	s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
+
+	uint8_t encoded_frame[25] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
+
+	UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
+}
+
 static void convertArrayToInteger(uint8_t arr[], uint16_t *p) {
 	*p = (uint16_t) (arr[1] << 8 | arr[0]);
 }
