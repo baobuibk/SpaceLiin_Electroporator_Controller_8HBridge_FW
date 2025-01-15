@@ -56,6 +56,14 @@ tCmdLineEntry g_psCmdTable[] =
 		{ "GET_PULSE_CONTROL", 		CMD_GET_PULSE_CONTROL, 		" : Get info whether pulse starting pulsing" },
 		{ "GET_PULSE_ALL", 			CMD_GET_PULSE_ALL, 			" : Get all info about pulse" },
 
+		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Auto Pulsing Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+		{ "SET_THRESHOLD_ACCEL",	CMD_SET_THRESHOLD_ACCEL,	" : Set high threshold accel for auto pulsing" },
+		{ "GET_THRESHOLD_ACCEL",	CMD_GET_THRESHOLD_ACCEL, 	" : Get high threshold accel for auto pulsing" },
+		{ "SET_AUTO_ACCEL",			CMD_SET_AUTO_ACCEL,			" : Enable auto pulsing" },
+
+		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Manual Pulse Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+		{ "SET_PULSE_MANUAL", 		CMD_SET_PULSE_MANUAL, 		" : Turn on, off pulse manually" },
+
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ VOM Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "MEASURE_VOLT", 			CMD_MEASURE_VOLT,			" : Measure cap voltage"},
 		{ "MEASURE_CURRENT",		CMD_MEASURE_CURRENT,		" : Measure cuvette current"},
@@ -79,11 +87,6 @@ tCmdLineEntry g_psCmdTable[] =
 		{ "CALIB_MEASURE",			CMD_CALIB_MEASURE, 			" : Command to input VOM value" },
 		{ "CALL_GPP", 				CMD_CALL_GPP,	    		" : Test communicate to GPP" },
 		{ "CLC",           			CMD_CLEAR_SCREEN,              " " },
-
-		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Auto Pulsing Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-		{ "SET_THRESHOLD_ACCEL",	CMD_SET_THRESHOLD_ACCEL,	" : Set high threshold accel for auto pulsing" },
-		{ "GET_THRESHOLD_ACCEL",	CMD_GET_THRESHOLD_ACCEL, 	" : Get high threshold accel for auto pulsing" },
-		{ "SET_AUTO_ACCEL",			CMD_SET_AUTO_ACCEL,			" : Enable auto pulsing" },
 
 		{ 0, 0, 0 }
 
@@ -1168,6 +1171,107 @@ int CMD_GET_PULSE_ALL(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
+/* :::::::::: Auto Pulsing Command :::::::::: */
+int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]) {
+	if (argc < 4)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 4)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	int16_t x = (int16_t)atoi(argv[1]);
+	int16_t y = (int16_t)atoi(argv[2]);
+	int16_t z = (int16_t)atoi(argv[3]);
+
+	// Ghi giá trị vào cấu trúc bằng cách chia byte
+	ps_FSP_TX->CMD 			= FSP_CMD_SET_THRESHOLD_ACCEL;
+	ps_FSP_TX->Payload.set_threshold_accel.XL = x & 0xFF;       // Byte thấp của X
+	ps_FSP_TX->Payload.set_threshold_accel.XH = (x >> 8) & 0xFF; // Byte cao của X
+	ps_FSP_TX->Payload.set_threshold_accel.YL = y & 0xFF;       // Byte thấp của Y
+	ps_FSP_TX->Payload.set_threshold_accel.YH = (y >> 8) & 0xFF; // Byte cao của Y
+	ps_FSP_TX->Payload.set_threshold_accel.ZL = z & 0xFF;       // Byte thấp của Z
+	ps_FSP_TX->Payload.set_threshold_accel.ZH = (z >> 8) & 0xFF; // Byte cao của Z
+	fsp_print(7);
+	return CMDLINE_OK;
+}
+
+int CMD_GET_THRESHOLD_ACCEL(int argc, char *argv[]) {
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+	ps_FSP_TX->CMD 			= FSP_CMD_GET_THRESHOLD_ACCEL;
+	fsp_print(1);
+	return CMDLINE_OK;
+}
+
+int CMD_SET_AUTO_ACCEL(int argc, char *argv[]) {
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
+	int8_t receive_argm = atoi(argv[1]);
+
+	if ((receive_argm > 1) || (receive_argm < 0))
+		return CMDLINE_INVALID_ARG;
+
+	if (receive_argm == 1)
+	{
+		is_streaming_enable = true;
+	}
+	else
+	{
+		is_streaming_enable = false;
+	}
+
+	ps_FSP_TX->CMD 			= FSP_CMD_SET_AUTO_ACCEL;
+	ps_FSP_TX->Payload.set_auto_accel.State = receive_argm;
+	fsp_print(2);
+	return CMDLINE_OK;
+}
+
+/* :::::::::: Manual Pulse Command :::::::::: */
+int CMD_SET_PULSE_MANUAL(int argc, char *argv[])
+{
+	if (argc < 2)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 2)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	uint8_t receive_argm[2];
+
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
+
+	if ((receive_argm[0] > 1) || (receive_argm[0] < 0))
+		return CMDLINE_INVALID_ARG;
+
+	if ((receive_argm[1] > 2) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
+
+	if (receive_argm[0] == true)
+	{
+		if (receive_argm[1] == 1)
+		{
+			V_Switch_Set_Mode(V_SWITCH_MODE_HV_ON);
+		}
+		else
+		{
+			V_Switch_Set_Mode(V_SWITCH_MODE_LV_ON);
+		}
+		
+    	H_Bridge_Set_Mode(&HB_neg_pole, H_BRIDGE_MODE_LS_ON);
+    	H_Bridge_Set_Mode(&HB_pos_pole, H_BRIDGE_MODE_HS_ON);
+
+		return CMDLINE_OK;
+	}
+	
+	V_Switch_Set_Mode(V_SWITCH_MODE_ALL_OFF);
+    H_Bridge_Set_Mode(&HB_neg_pole, H_BRIDGE_MODE_FLOAT);
+    H_Bridge_Set_Mode(&HB_pos_pole, H_BRIDGE_MODE_FLOAT);
+
+	return CMDLINE_OK;
+}
+
 /* :::::::::: VOM Command :::::::: */
 int CMD_MEASURE_VOLT(int argc, char *argv[])
 {
@@ -1453,64 +1557,6 @@ int CMD_CLEAR_SCREEN(int argc, char *argv[])
 {
     UART_Send_String(&RF_UART, "\033[2J");
     return CMDLINE_NO_RESPONSE;
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Auto Pulsing Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]) {
-	if (argc < 4)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 4)
-		return CMDLINE_TOO_MANY_ARGS;
-
-	int16_t x = (int16_t)atoi(argv[1]);
-	int16_t y = (int16_t)atoi(argv[2]);
-	int16_t z = (int16_t)atoi(argv[3]);
-
-	// Ghi giá trị vào cấu trúc bằng cách chia byte
-	ps_FSP_TX->CMD 			= FSP_CMD_SET_THRESHOLD_ACCEL;
-	ps_FSP_TX->Payload.set_threshold_accel.XL = x & 0xFF;       // Byte thấp của X
-	ps_FSP_TX->Payload.set_threshold_accel.XH = (x >> 8) & 0xFF; // Byte cao của X
-	ps_FSP_TX->Payload.set_threshold_accel.YL = y & 0xFF;       // Byte thấp của Y
-	ps_FSP_TX->Payload.set_threshold_accel.YH = (y >> 8) & 0xFF; // Byte cao của Y
-	ps_FSP_TX->Payload.set_threshold_accel.ZL = z & 0xFF;       // Byte thấp của Z
-	ps_FSP_TX->Payload.set_threshold_accel.ZH = (z >> 8) & 0xFF; // Byte cao của Z
-	fsp_print(7);
-	return CMDLINE_OK;
-}
-
-int CMD_GET_THRESHOLD_ACCEL(int argc, char *argv[]) {
-	if (argc < 1)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 1)
-		return CMDLINE_TOO_MANY_ARGS;
-	ps_FSP_TX->CMD 			= FSP_CMD_GET_THRESHOLD_ACCEL;
-	fsp_print(1);
-	return CMDLINE_OK;
-}
-
-int CMD_SET_AUTO_ACCEL(int argc, char *argv[]) {
-	if (argc < 2)
-		return CMDLINE_TOO_FEW_ARGS;
-	else if (argc > 2)
-		return CMDLINE_TOO_MANY_ARGS;
-	int8_t receive_argm = atoi(argv[1]);
-
-	if ((receive_argm > 1) || (receive_argm < 0))
-		return CMDLINE_INVALID_ARG;
-
-	if (receive_argm == 1)
-	{
-		is_streaming_enable = true;
-	}
-	else
-	{
-		is_streaming_enable = false;
-	}
-
-	ps_FSP_TX->CMD 			= FSP_CMD_SET_AUTO_ACCEL;
-	ps_FSP_TX->Payload.set_auto_accel.State = receive_argm;
-	fsp_print(2);
-	return CMDLINE_OK;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

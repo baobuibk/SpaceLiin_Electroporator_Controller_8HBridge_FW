@@ -98,6 +98,11 @@ int CMD_GET_PULSE_LV(int argc, char *argv[]);
 int CMD_GET_PULSE_CONTROL(int argc, char *argv[]);
 int CMD_GET_PULSE_ALL(int argc, char *argv[]);
 
+/* :::::::::: Auto Pulsing Command :::::::::: */
+int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]);
+int CMD_GET_THRESHOLD_ACCEL(int argc, char *argv[]);
+int CMD_SET_AUTO_ACCEL(int argc, char *argv[]);
+
 /* :::::::::: VOM Command :::::::: */
 int CMD_MEASURE_VOLT(int argc, char *argv[]);
 int CMD_MEASURE_CURRENT(int argc, char *argv[]);
@@ -114,11 +119,6 @@ int CMD_GET_SENSOR_ALTITUDE(int argc, char *argv[]);
 int CMD_GET_SENSOR_BMP390(int argc, char *argv[]);
 
 int CMD_GET_SENSOR_H3LIS(int argc, char *argv[]);
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Auto Pulsing Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]);
-int CMD_GET_THRESHOLD_ACCEL(int argc, char *argv[]);
-int CMD_SET_AUTO_ACCEL(int argc, char *argv[]);
 
 /* :::::::::: Ultility Command :::::::: */
 int CMD_HELP(int argc, char *argv[]);
