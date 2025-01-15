@@ -34,8 +34,10 @@ tCmdLineEntry g_psCmdTable[] =
 		{ "SET_PULSE_POLE",			CMD_SET_PULSE_POLE,			" : Set pos and neg pole of a pulse" },
 		{ "SET_PULSE_COUNT",		CMD_SET_PULSE_COUNT, 		" : Set number of pulse" },
 		{ "SET_PULSE_DELAY",		CMD_SET_PULSE_DELAY, 		" : Set delay between pulse hv and lv" },
-		{ "SET_PULSE_HV", 			CMD_SET_PULSE_HV, 			" : Set hs pulse on time and off time" },
-		{ "SET_PULSE_LV", 			CMD_SET_PULSE_LV, 			" : Set ls pulse on time and off time" },
+		{ "SET_PULSE_HV_POS", 		CMD_SET_PULSE_HV_POS, 		" : Set hs pulse on time and off time" },
+		{ "SET_PULSE_HV_NEG", 		CMD_SET_PULSE_HV_NEG, 		" : Set hs pulse on time and off time" },
+		{ "SET_PULSE_LV_POS", 		CMD_SET_PULSE_LV_POS, 		" : Set ls pulse on time and off time" },
+		{ "SET_PULSE_LV_NEG", 		CMD_SET_PULSE_LV_NEG, 		" : Set ls pulse on time and off time" },
 		{ "SET_PULSE_CONTROL", 		CMD_SET_PULSE_CONTROL, 		" : Start pulsing" },
 
 		{ "GET_SEQUENCE_INDEX",		CMD_GET_SEQUENCE_INDEX, 	" : Get current sequence index" },
@@ -45,7 +47,11 @@ tCmdLineEntry g_psCmdTable[] =
 		{ "GET_PULSE_POLE",			CMD_GET_PULSE_POLE,			" : Get the pos and neg pole of a pulse" },
 		{ "GET_PULSE_COUNT",		CMD_GET_PULSE_COUNT, 		" : Get number of pulse" },
 		{ "GET_PULSE_DELAY",		CMD_GET_PULSE_DELAY, 		" : Get delay between pulse hv and lv" },
+		{ "GET_PULSE_HV_POS", 		CMD_GET_PULSE_HV_POS, 		" : Get hs pulse on time and off time" },
+		{ "GET_PULSE_HV_NEG", 		CMD_GET_PULSE_HV_NEG, 		" : Get hs pulse on time and off time" },
 		{ "GET_PULSE_HV", 			CMD_GET_PULSE_HV, 			" : Get hs pulse on time and off time" },
+		{ "GET_PULSE_LV_POS", 		CMD_GET_PULSE_LV_POS, 		" : Get ls pulse on time and off time" },
+		{ "GET_PULSE_LV_NEG", 		CMD_GET_PULSE_LV_NEG, 		" : Get ls pulse on time and off time" },
 		{ "GET_PULSE_LV", 			CMD_GET_PULSE_LV, 			" : Get ls pulse on time and off time" },
 		{ "GET_PULSE_CONTROL", 		CMD_GET_PULSE_CONTROL, 		" : Get info whether pulse starting pulsing" },
 		{ "GET_PULSE_ALL", 			CMD_GET_PULSE_ALL, 			" : Get all info about pulse" },
@@ -62,7 +68,10 @@ tCmdLineEntry g_psCmdTable[] =
 
 		{ "GET_SENSOR_TEMP", 		CMD_GET_SENSOR_TEMP, 		" : Get temp" },
 		{ "GET_SENSOR_PRESSURE", 	CMD_GET_SENSOR_PRESSURE, 	" : Get pressure" },
+		{ "GET_SENSOR_ALTITUDE", 	CMD_GET_SENSOR_ALTITUDE, 	" : Get altitude" },
 		{ "GET_SENSOR_BMP390", 		CMD_GET_SENSOR_BMP390, 		" : Get temp, pressure and altitude" },
+
+		{ "GET_SENSOR_H3LIS", 		CMD_GET_SENSOR_H3LIS, 		" : Get accel from sensor H3LIS331DL" },
 
 		/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 		{ "HELP", 					CMD_HELP,					" : Display list of commands" },
@@ -95,15 +104,23 @@ H_Bridge_task_typedef HB_sequence_default =
 
 	.hv_pos_count = 5,
 	.hv_neg_count = 6,
+
 	.hv_delay_ms = 5,
-	.hv_on_ms = 5,
-	.hv_off_ms = 15,
+
+	.hv_pos_on_ms = 5,
+	.hv_pos_off_ms = 15,
+    .hv_neg_on_ms = 5,
+	.hv_neg_off_ms = 15,
 
 	.lv_pos_count = 7,
 	.lv_neg_count = 8,
+
 	.lv_delay_ms = 10,
-	.lv_on_ms = 50,
-	.lv_off_ms = 90,
+    
+	.lv_pos_on_ms = 50,
+	.lv_pos_off_ms = 90,
+    .lv_neg_on_ms = 50,
+	.lv_neg_off_ms = 90,
 };
 
 H_Bridge_task_typedef HB_sequence_array[10];
@@ -399,10 +416,17 @@ int CMD_SET_SEQUENCE_INDEX(int argc, char *argv[])
 
 		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
-		HB_sequence_array[CMD_sequence_index].hv_on_ms, HB_sequence_array[CMD_sequence_index].hv_off_ms);
-		UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
-		HB_sequence_array[CMD_sequence_index].lv_on_ms, HB_sequence_array[CMD_sequence_index].lv_off_ms);
+		UART_Printf(CMD_line_handle, "> HV PULSE POS ON TIME: %dms; HV PULSE POS OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_pos_on_ms, HB_sequence_array[CMD_sequence_index].hv_pos_off_ms);
+
+		UART_Printf(CMD_line_handle, "> HV PULSE NEG ON TIME: %dms; HV PULSE NEG OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_neg_on_ms, HB_sequence_array[CMD_sequence_index].hv_neg_off_ms);
+
+		UART_Printf(CMD_line_handle, "> LV PULSE POS ON TIME: %dms; LV PULSE POS OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_pos_on_ms, HB_sequence_array[CMD_sequence_index].lv_pos_off_ms);
+		
+		UART_Printf(CMD_line_handle, "> LV PULSE NEG ON TIME: %dms; LV PULSE NEG OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_neg_on_ms, HB_sequence_array[CMD_sequence_index].lv_neg_off_ms);
 
 		UART_Send_String(CMD_line_handle, "> \n");
 		return CMDLINE_OK;
@@ -634,7 +658,7 @@ int CMD_SET_PULSE_DELAY(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
-int CMD_SET_PULSE_HV(int argc, char *argv[])
+int CMD_SET_PULSE_HV_POS(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -660,18 +684,55 @@ int CMD_SET_PULSE_HV(int argc, char *argv[])
 		HB_sequence_array[CMD_sequence_index].is_setted |= (1 << 4);
 	}
 
-	HB_sequence_array[CMD_sequence_index].hv_on_ms   = receive_argm[0];
-	HB_sequence_array[CMD_sequence_index].hv_off_ms  = receive_argm[1];
+	HB_sequence_array[CMD_sequence_index].hv_pos_on_ms   = receive_argm[0];
+	HB_sequence_array[CMD_sequence_index].hv_pos_off_ms  = receive_argm[1];
 
-	ps_FSP_TX->CMD 	 			 		 	= FSP_CMD_SET_PULSE_HV;
-	ps_FSP_TX->Payload.set_pulse_HV.OnTime	= receive_argm[0];
-	ps_FSP_TX->Payload.set_pulse_HV.OffTime = receive_argm[1];
+	ps_FSP_TX->CMD 	 			 		 	    = FSP_CMD_SET_PULSE_HV_POS;
+	ps_FSP_TX->Payload.set_pulse_HV_pos.OnTime	= receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_HV_pos.OffTime = receive_argm[1];
 
 	fsp_print(3);
 	return CMDLINE_OK;
 }
 
-int CMD_SET_PULSE_LV(int argc, char *argv[])
+int CMD_SET_PULSE_HV_NEG(int argc, char *argv[])
+{
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
+
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	int receive_argm[2];
+
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
+
+	if ((receive_argm[0] > 20) || (receive_argm[0] < 1))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 20) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
+
+	if ((HB_sequence_array[CMD_sequence_index].is_setted & (1 << 4)) == false)
+	{
+		HB_sequence_array[CMD_sequence_index].is_setted |= (1 << 4);
+	}
+
+	HB_sequence_array[CMD_sequence_index].hv_neg_on_ms   = receive_argm[0];
+	HB_sequence_array[CMD_sequence_index].hv_neg_off_ms  = receive_argm[1];
+
+	ps_FSP_TX->CMD 	 			 		 	    = FSP_CMD_SET_PULSE_HV_NEG;
+	ps_FSP_TX->Payload.set_pulse_HV_neg.OnTime	= receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_HV_neg.OffTime = receive_argm[1];
+
+	fsp_print(3);
+	return CMDLINE_OK;
+}
+
+int CMD_SET_PULSE_LV_POS(int argc, char *argv[])
 {
 	if (g_is_calib_running == true) {
 		return CMDLINE_CALIB_IS_RUNNING;
@@ -697,15 +758,55 @@ int CMD_SET_PULSE_LV(int argc, char *argv[])
 		HB_sequence_array[CMD_sequence_index].is_setted |= (1 << 5);
 	}
 
-	HB_sequence_array[CMD_sequence_index].lv_on_ms 	= receive_argm[0];
-    HB_sequence_array[CMD_sequence_index].lv_off_ms	= receive_argm[1];
+	HB_sequence_array[CMD_sequence_index].lv_pos_on_ms 	= receive_argm[0];
+    HB_sequence_array[CMD_sequence_index].lv_pos_off_ms	= receive_argm[1];
 
-	ps_FSP_TX->CMD 								= FSP_CMD_SET_PULSE_LV;
-	ps_FSP_TX->Payload.set_pulse_LV.OnTime_low 	= receive_argm[0];
-	ps_FSP_TX->Payload.set_pulse_LV.OnTime_high = (receive_argm[0] >> 8);
+	ps_FSP_TX->CMD 								     = FSP_CMD_SET_PULSE_LV_POS;
+	ps_FSP_TX->Payload.set_pulse_LV_pos.OnTime_low 	 = receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_LV_pos.OnTime_high  = (receive_argm[0] >> 8);
 
-	ps_FSP_TX->Payload.set_pulse_LV.OffTime_low  = receive_argm[1];
-	ps_FSP_TX->Payload.set_pulse_LV.OffTime_high = (receive_argm[1] >> 8);
+	ps_FSP_TX->Payload.set_pulse_LV_pos.OffTime_low  = receive_argm[1];
+	ps_FSP_TX->Payload.set_pulse_LV_pos.OffTime_high = (receive_argm[1] >> 8);
+
+	fsp_print(5);
+	return CMDLINE_OK;
+}
+
+int CMD_SET_PULSE_LV_NEG(int argc, char *argv[])
+{
+	if (g_is_calib_running == true) {
+		return CMDLINE_CALIB_IS_RUNNING;
+	}
+
+	if (argc < 3)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 3)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	int receive_argm[2];
+
+	receive_argm[0] = atoi(argv[1]);
+	receive_argm[1] = atoi(argv[2]);
+
+	if ((receive_argm[0] > 1000) || (receive_argm[0] < 1))
+		return CMDLINE_INVALID_ARG;
+	else if ((receive_argm[1] > 1000) || (receive_argm[1] < 1))
+		return CMDLINE_INVALID_ARG;
+
+	if ((HB_sequence_array[CMD_sequence_index].is_setted & (1 << 5)) == false)
+	{
+		HB_sequence_array[CMD_sequence_index].is_setted |= (1 << 5);
+	}
+
+	HB_sequence_array[CMD_sequence_index].lv_neg_on_ms 	= receive_argm[0];
+    HB_sequence_array[CMD_sequence_index].lv_neg_on_ms	= receive_argm[1];
+
+	ps_FSP_TX->CMD 								     = FSP_CMD_SET_PULSE_LV_NEG;
+	ps_FSP_TX->Payload.set_pulse_LV_neg.OnTime_low 	 = receive_argm[0];
+	ps_FSP_TX->Payload.set_pulse_LV_neg.OnTime_high  = (receive_argm[0] >> 8);
+
+	ps_FSP_TX->Payload.set_pulse_LV_neg.OffTime_low  = receive_argm[1];
+	ps_FSP_TX->Payload.set_pulse_LV_neg.OffTime_high = (receive_argm[1] >> 8);
 
 	fsp_print(5);
 	return CMDLINE_OK;
@@ -760,10 +861,17 @@ int CMD_SET_PULSE_CONTROL(int argc, char *argv[])
 
 		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
-		HB_sequence_array[CMD_sequence_index].hv_on_ms, HB_sequence_array[CMD_sequence_index].hv_off_ms);
-		UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
-		HB_sequence_array[CMD_sequence_index].lv_on_ms, HB_sequence_array[CMD_sequence_index].lv_off_ms);
+		UART_Printf(CMD_line_handle, "> HV PULSE POS ON TIME: %dms; HV PULSE POS OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_pos_on_ms, HB_sequence_array[CMD_sequence_index].hv_pos_off_ms);
+
+		UART_Printf(CMD_line_handle, "> HV PULSE NEG ON TIME: %dms; HV PULSE NEG OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_neg_on_ms, HB_sequence_array[CMD_sequence_index].hv_neg_off_ms);
+
+		UART_Printf(CMD_line_handle, "> LV PULSE POS ON TIME: %dms; LV PULSE POS OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_pos_on_ms, HB_sequence_array[CMD_sequence_index].lv_pos_off_ms);
+		
+		UART_Printf(CMD_line_handle, "> LV PULSE NEG ON TIME: %dms; LV PULSE NEG OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_neg_on_ms, HB_sequence_array[CMD_sequence_index].lv_neg_off_ms);
 
 		UART_Send_String(CMD_line_handle, "> \n");
 		return CMDLINE_OK;
@@ -837,10 +945,17 @@ int CMD_GET_SEQUENCE_ALL(int argc, char *argv[])
 
 		UART_Send_String(CMD_line_handle, "> \n");
 
-		UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
-		HB_sequence_array[i].hv_on_ms, HB_sequence_array[i].hv_off_ms);
-		UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
-		HB_sequence_array[i].lv_on_ms, HB_sequence_array[i].lv_off_ms);
+		UART_Printf(CMD_line_handle, "> HV PULSE POS ON TIME: %dms; HV PULSE POS OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_pos_on_ms, HB_sequence_array[CMD_sequence_index].hv_pos_off_ms);
+
+		UART_Printf(CMD_line_handle, "> HV PULSE NEG ON TIME: %dms; HV PULSE NEG OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].hv_neg_on_ms, HB_sequence_array[CMD_sequence_index].hv_neg_off_ms);
+
+		UART_Printf(CMD_line_handle, "> LV PULSE POS ON TIME: %dms; LV PULSE POS OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_pos_on_ms, HB_sequence_array[CMD_sequence_index].lv_pos_off_ms);
+		
+		UART_Printf(CMD_line_handle, "> LV PULSE NEG ON TIME: %dms; LV PULSE NEG OFF TIME: %dms\n",
+		HB_sequence_array[CMD_sequence_index].lv_neg_on_ms, HB_sequence_array[CMD_sequence_index].lv_neg_off_ms);
 
 		UART_Send_String(CMD_line_handle, "> \n");
 	}
@@ -893,6 +1008,32 @@ int CMD_GET_PULSE_DELAY(int argc, char *argv[])
 	return CMDLINE_OK;		
 }
 
+int CMD_GET_PULSE_HV_POS(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	UART_Printf(CMD_line_handle, "> HV PULSE POS ON TIME: %dms; HV PULSE POS OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].hv_pos_on_ms, HB_sequence_array[CMD_sequence_index].hv_pos_off_ms);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_HV_NEG(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	UART_Printf(CMD_line_handle, "> HV PULSE NEG ON TIME: %dms; HV PULSE NEG OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].hv_neg_on_ms, HB_sequence_array[CMD_sequence_index].hv_neg_off_ms);
+
+	return CMDLINE_OK;
+}
+
 int CMD_GET_PULSE_HV(int argc, char *argv[])
 {
 	if (argc < 1)
@@ -900,9 +1041,38 @@ int CMD_GET_PULSE_HV(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	UART_Printf(CMD_line_handle, "HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
-	HB_sequence_array[CMD_sequence_index].hv_on_ms, HB_sequence_array[CMD_sequence_index].hv_off_ms);
+	UART_Printf(CMD_line_handle, "> HV PULSE POS ON TIME: %dms; HV PULSE POS OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].hv_pos_on_ms, HB_sequence_array[CMD_sequence_index].hv_pos_off_ms);
 
+	UART_Printf(CMD_line_handle, "> HV PULSE NEG ON TIME: %dms; HV PULSE NEG OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].hv_neg_on_ms, HB_sequence_array[CMD_sequence_index].hv_neg_off_ms);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_LV_POS(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	UART_Printf(CMD_line_handle, "> LV PULSE POS ON TIME: %dms; LV PULSE POS OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].lv_pos_on_ms, HB_sequence_array[CMD_sequence_index].lv_pos_off_ms);
+	
+	return CMDLINE_OK;
+}
+
+int CMD_GET_PULSE_LV_NEG(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	UART_Printf(CMD_line_handle, "> LV PULSE NEG ON TIME: %dms; LV PULSE NEG OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].lv_neg_on_ms, HB_sequence_array[CMD_sequence_index].lv_neg_off_ms);
+	
 	return CMDLINE_OK;
 }
 
@@ -913,9 +1083,12 @@ int CMD_GET_PULSE_LV(int argc, char *argv[])
 	else if (argc > 1)
 		return CMDLINE_TOO_MANY_ARGS;
 
-	UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
-	HB_sequence_array[CMD_sequence_index].lv_on_ms, HB_sequence_array[CMD_sequence_index].lv_off_ms);
+	UART_Printf(CMD_line_handle, "> LV PULSE POS ON TIME: %dms; LV PULSE POS OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].lv_pos_on_ms, HB_sequence_array[CMD_sequence_index].lv_pos_off_ms);
 	
+	UART_Printf(CMD_line_handle, "> LV PULSE NEG ON TIME: %dms; LV PULSE NEG OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].lv_neg_on_ms, HB_sequence_array[CMD_sequence_index].lv_neg_off_ms);
+
 	return CMDLINE_OK;
 }
 
@@ -969,10 +1142,17 @@ int CMD_GET_PULSE_ALL(int argc, char *argv[])
 
 	UART_Send_String(CMD_line_handle, "> \n");
 
-	UART_Printf(CMD_line_handle, "> HV PULSE ON TIME: %dms; HV PULSE OFF TIME: %dms\n",
-	HB_sequence_array[CMD_sequence_index].hv_on_ms, HB_sequence_array[CMD_sequence_index].hv_off_ms);
-	UART_Printf(CMD_line_handle, "> LV PULSE ON TIME: %dms; LV PULSE OFF TIME: %dms\n",
-	HB_sequence_array[CMD_sequence_index].lv_on_ms, HB_sequence_array[CMD_sequence_index].lv_off_ms);
+	UART_Printf(CMD_line_handle, "> HV PULSE POS ON TIME: %dms; HV PULSE POS OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].hv_pos_on_ms, HB_sequence_array[CMD_sequence_index].hv_pos_off_ms);
+
+	UART_Printf(CMD_line_handle, "> HV PULSE NEG ON TIME: %dms; HV PULSE NEG OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].hv_neg_on_ms, HB_sequence_array[CMD_sequence_index].hv_neg_off_ms);
+
+	UART_Printf(CMD_line_handle, "> LV PULSE POS ON TIME: %dms; LV PULSE POS OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].lv_pos_on_ms, HB_sequence_array[CMD_sequence_index].lv_pos_off_ms);
+	
+	UART_Printf(CMD_line_handle, "> LV PULSE NEG ON TIME: %dms; LV PULSE NEG OFF TIME: %dms\n",
+	HB_sequence_array[CMD_sequence_index].lv_neg_on_ms, HB_sequence_array[CMD_sequence_index].lv_neg_off_ms);
 
 	UART_Send_String(CMD_line_handle, "> \n");
 
@@ -1141,6 +1321,19 @@ int CMD_GET_SENSOR_PRESSURE(int argc, char *argv[])
 	return CMDLINE_OK;
 }
 
+int CMD_GET_SENSOR_ALTITUDE(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_ALTITUDE;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
 int CMD_GET_SENSOR_BMP390(int argc, char *argv[])
 {
 	if (argc < 1)
@@ -1149,6 +1342,19 @@ int CMD_GET_SENSOR_BMP390(int argc, char *argv[])
 		return CMDLINE_TOO_MANY_ARGS;
 
 	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_BMP390;
+	fsp_print(1);
+
+	return CMDLINE_OK;
+}
+
+int CMD_GET_SENSOR_H3LIS(int argc, char *argv[])
+{
+	if (argc < 1)
+		return CMDLINE_TOO_FEW_ARGS;
+	else if (argc > 1)
+		return CMDLINE_TOO_MANY_ARGS;
+
+	ps_FSP_TX->CMD = FSP_CMD_GET_SENSOR_H3LIS331DL;
 	fsp_print(1);
 
 	return CMDLINE_OK;

@@ -14,8 +14,10 @@ typedef enum _FSP_CMD_typedef_
 	FSP_CMD_SET_PULSE_POLE,
 	FSP_CMD_SET_PULSE_COUNT,
 	FSP_CMD_SET_PULSE_DELAY,
-	FSP_CMD_SET_PULSE_HV,
-	FSP_CMD_SET_PULSE_LV,
+	FSP_CMD_SET_PULSE_HV_POS,
+	FSP_CMD_SET_PULSE_HV_NEG,
+	FSP_CMD_SET_PULSE_LV_POS,
+	FSP_CMD_SET_PULSE_LV_NEG,
 	FSP_CMD_SET_PULSE_CONTROL,
 
 	/* :::::::::: VOM Command :::::::: */
@@ -30,16 +32,20 @@ typedef enum _FSP_CMD_typedef_
 
 	FSP_CMD_GET_SENSOR_TEMP,
 	FSP_CMD_GET_SENSOR_PRESSURE,
+	FSP_CMD_GET_SENSOR_ALTITUDE,
 	FSP_CMD_GET_SENSOR_BMP390,
+
+	FSP_CMD_GET_SENSOR_H3LIS331DL,
 
 	/* :::::::::: Ultility Command :::::::: */
 	FSP_CMD_HANDSHAKE,
-	
+
 	/* :::::::::: Auto Accel Command :::::::: */
 	FSP_CMD_SET_AUTO_ACCEL,
 	FSP_CMD_SET_THRESHOLD_ACCEL,
 	FSP_CMD_GET_THRESHOLD_ACCEL,
 	FSP_CMD_STREAM_ACCEL,
+	
 } FSP_CMD_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Pulse Control Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -165,12 +171,27 @@ typedef struct _GET_SENSOR_PRESSURE_
 
 } GET_SENSOR_PRESSURE;
 
+typedef struct _GET_SENSOR_ALTITUDE_
+{
+	uint8_t 	altitude[4];
+
+} GET_SENSOR_ALTITUDE;
+
 typedef struct _GET_SENSOR_BMP390_
 {
 	uint8_t 	temp[6];
 	uint8_t 	pressure[7];
+	uint8_t 	altitude[4];
 
 } GET_SENSOR_BMP390;
+
+typedef struct _GET_SENSOR_H3LIS331DL_
+{
+	uint8_t 	accel_x[3];
+	uint8_t 	accel_y[3];
+	uint8_t 	accel_z[3];
+
+} GET_SENSOR_H3LIS331DL;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 typedef struct _FSP_HANDSAKE_
@@ -229,8 +250,10 @@ typedef union _FSP_Payload_Frame_typedef_
 	FSP_SET_PULSE_POLE_FRAME				set_pulse_pole;
 	FSP_SET_PULSE_COUNT_FRAME				set_pulse_count;
 	FSP_SET_PULSE_DELAY_FRAME				set_pulse_delay;
-	FSP_SET_PULSE_HV_FRAME					set_pulse_HV;
-	FSP_SET_PULSE_LV_FRAME					set_pulse_LV;
+	FSP_SET_PULSE_HV_FRAME					set_pulse_HV_pos;
+	FSP_SET_PULSE_HV_FRAME					set_pulse_HV_neg;
+	FSP_SET_PULSE_LV_FRAME					set_pulse_LV_pos;
+	FSP_SET_PULSE_LV_FRAME					set_pulse_LV_neg;
 	FSP_SET_PULSE_CONTROL_FRAME				set_pulse_control;
 
 	/* :::::::::: VOM Command :::::::: */
@@ -245,7 +268,10 @@ typedef union _FSP_Payload_Frame_typedef_
 	
 	GET_SENSOR_TEMP							get_sensor_temp;
 	GET_SENSOR_PRESSURE						get_sensor_pressure;
+	GET_SENSOR_ALTITUDE						get_sensor_altitude;
 	GET_SENSOR_BMP390						get_sensor_BMP390;
+
+	GET_SENSOR_H3LIS331DL					get_sensor_H3LIS331DL;
 
 	/* :::::::::: Ultility Command :::::::: */
 	FSP_HANDSAKE							handshake;

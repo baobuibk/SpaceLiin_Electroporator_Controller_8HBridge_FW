@@ -27,15 +27,23 @@ typedef struct _H_Bridge_task_typedef_
 
     uint8_t     hv_pos_count;
     uint8_t     hv_neg_count;
+
     uint8_t     hv_delay_ms;
-    uint8_t     hv_on_ms;
-    uint8_t     hv_off_ms;
+
+    uint8_t     hv_pos_on_ms;
+    uint8_t     hv_pos_off_ms;
+    uint8_t     hv_neg_on_ms;
+    uint8_t     hv_neg_off_ms;
 
     uint8_t     lv_pos_count;
     uint8_t     lv_neg_count;
+
     uint8_t     lv_delay_ms;
-    uint16_t    lv_on_ms;
-    uint16_t    lv_off_ms;
+
+    uint8_t     lv_pos_on_ms;
+    uint8_t     lv_pos_off_ms;
+    uint8_t     lv_neg_on_ms;
+    uint8_t     lv_neg_off_ms;
 } H_Bridge_task_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -68,8 +76,10 @@ int CMD_SET_SEQUENCE_DELAY(int argc, char *argv[]);
 int CMD_SET_PULSE_POLE(int argc, char *argv[]);
 int CMD_SET_PULSE_COUNT(int argc, char *argv[]);
 int CMD_SET_PULSE_DELAY(int argc, char *argv[]);
-int CMD_SET_PULSE_HV(int argc, char *argv[]);
-int CMD_SET_PULSE_LV(int argc, char *argv[]);
+int CMD_SET_PULSE_HV_POS(int argc, char *argv[]);
+int CMD_SET_PULSE_HV_NEG(int argc, char *argv[]);
+int CMD_SET_PULSE_LV_POS(int argc, char *argv[]);
+int CMD_SET_PULSE_LV_NEG(int argc, char *argv[]);
 int CMD_SET_PULSE_CONTROL(int argc, char *argv[]);
 
 int CMD_GET_SEQUENCE_INDEX(int argc, char *argv[]);
@@ -79,7 +89,11 @@ int CMD_GET_SEQUENCE_ALL(int argc, char *argv[]);
 int CMD_GET_PULSE_POLE(int argc, char *argv[]);
 int CMD_GET_PULSE_COUNT(int argc, char *argv[]);
 int CMD_GET_PULSE_DELAY(int argc, char *argv[]);
+int CMD_GET_PULSE_HV_POS(int argc, char *argv[]);
+int CMD_GET_PULSE_HV_NEG(int argc, char *argv[]);
 int CMD_GET_PULSE_HV(int argc, char *argv[]);
+int CMD_GET_PULSE_LV_POS(int argc, char *argv[]);
+int CMD_GET_PULSE_LV_NEG(int argc, char *argv[]);
 int CMD_GET_PULSE_LV(int argc, char *argv[]);
 int CMD_GET_PULSE_CONTROL(int argc, char *argv[]);
 int CMD_GET_PULSE_ALL(int argc, char *argv[]);
@@ -96,7 +110,10 @@ int CMD_GET_SENSOR_LSM6DSOX(int argc, char *argv[]);
 
 int CMD_GET_SENSOR_TEMP(int argc, char *argv[]);
 int CMD_GET_SENSOR_PRESSURE(int argc, char *argv[]);
+int CMD_GET_SENSOR_ALTITUDE(int argc, char *argv[]);
 int CMD_GET_SENSOR_BMP390(int argc, char *argv[]);
+
+int CMD_GET_SENSOR_H3LIS(int argc, char *argv[]);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Auto Pulsing Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]);

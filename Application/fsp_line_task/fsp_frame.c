@@ -18,7 +18,7 @@
 //extern Accel_Gyro_DataTypedef _gyro, _accel;
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void fsp_print(uint8_t packet_length);
-static void convertArrayToInteger(uint8_t arr[], uint16_t *p);
+static void convertArrayToInteger(uint8_t array[], void* p_output, uint8_t length, uint8_t output_size);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 extern uint8_t is_cap_release_after_measure;
@@ -111,11 +111,11 @@ void FSP_Line_Process() {
 		uint16_t gyro_x = 0, gyro_y = 0, gyro_z = 0;
 
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_x,
-				&gyro_x);
+				&gyro_x, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_y,
-				&gyro_y);
+				&gyro_y, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_gyro.gyro_z,
-				&gyro_z);
+				&gyro_z, 2, sizeof(uint16_t));
 
 		UART_Printf(CMD_line_handle,
 				"> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x,
@@ -132,14 +132,14 @@ void FSP_Line_Process() {
 		uint16_t accel_x = 0, accel_y = 0, accel_z = 0;
 
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_x,
-				&accel_x);
+				&accel_x, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_y,
-				&accel_y);
+				&accel_y, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_accel.accel_z,
-				&accel_z);
+				&accel_z, 2, sizeof(uint16_t));
 
 		UART_Printf(CMD_line_handle,
-				"> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n",
+				"> ACCEL x: %dmg; ACCEL y: %dmg; ACCEL z: %dmg\n",
 				accel_x, accel_y, accel_z);
 
 		UART_Send_String(CMD_line_handle, "> ");
@@ -153,25 +153,25 @@ void FSP_Line_Process() {
 				accel_z = 0;
 
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_x,
-				&gyro_x);
+				&gyro_x, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_y,
-				&gyro_y);
+				&gyro_y, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.gyro_z,
-				&gyro_z);
+				&gyro_z, 2, sizeof(uint16_t));
 
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_x,
-				&accel_x);
+				&accel_x, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_y,
-				&accel_y);
+				&accel_y, 2, sizeof(uint16_t));
 		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_LSM6DSOX.accel_z,
-				&accel_z);
+				&accel_z, 2, sizeof(uint16_t));
 
 		UART_Printf(CMD_line_handle,
 				"> GYRO x: %dmpds; GYRO y: %dmpds; GYRO z: %dmpds\n", gyro_x,
 				gyro_y, gyro_z);
 
 		UART_Printf(CMD_line_handle,
-				"> ACCEL x: %dmm/s2; ACCEL y: %dmm/s2; ACCEL z: %dmm/s2\n",
+				"> ACCEL x: %dmg; ACCEL y: %dmg; ACCEL z: %dmg\n",
 				accel_x, accel_y, accel_z);
 
 		UART_Send_String(CMD_line_handle, "> ");
@@ -199,6 +199,17 @@ void FSP_Line_Process() {
 		break;
 	}
 
+	case FSP_CMD_GET_SENSOR_ALTITUDE: {
+		UART_Send_String(CMD_line_handle,
+				"Received FSP_CMD_GET_SENSOR_ALTITUDE\n");
+
+		UART_Printf(CMD_line_handle, "> APPROX ALTIUDE: %s m\n",
+				ps_FSP_RX->Payload.get_sensor_altitude.altitude);
+
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
+
 	case FSP_CMD_GET_SENSOR_BMP390: {
 		UART_Send_String(CMD_line_handle, "Received FSP_CMD_GET_BMP390\n");
 
@@ -208,10 +219,36 @@ void FSP_Line_Process() {
 		UART_Printf(CMD_line_handle, "> PRESSURE: %s Pa\n",
 				ps_FSP_RX->Payload.get_sensor_BMP390.pressure);
 
+		UART_Printf(CMD_line_handle, "> APPROX ALTIUDE: %s m\n",
+				ps_FSP_RX->Payload.get_sensor_BMP390.altitude);
+
 		UART_Send_String(CMD_line_handle, "> ");
 		break;
 	}
-		/* :::::::::: Auto Accel Command :::::::: */
+
+	case FSP_CMD_GET_SENSOR_H3LIS331DL:
+	{
+		UART_Send_String(CMD_line_handle,
+				"Received FSP_CMD_GET_SENSOR_H3LIS331DL\n");
+
+		uint32_t H3LIS_x = 0, H3LIS_y = 0, H3LIS_z = 0;
+
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_H3LIS331DL.accel_x,
+				&H3LIS_x, 3, sizeof(uint32_t));
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_H3LIS331DL.accel_y,
+				&H3LIS_y, 3, sizeof(uint32_t));
+		convertArrayToInteger(ps_FSP_RX->Payload.get_sensor_H3LIS331DL.accel_z,
+				&H3LIS_z, 3, sizeof(uint32_t));
+
+		UART_Printf(CMD_line_handle,
+				"> H3LIS331DL ACCEL x: %dmg; H3LIS331DL ACCEL y: %dmg; H3LIS331DL ACCEL z: %dmg\n",
+				H3LIS_x, H3LIS_y, H3LIS_z);
+
+		UART_Send_String(CMD_line_handle, "> ");
+		break;
+	}
+	
+	/* :::::::::: Auto Accel Command :::::::: */
 	case FSP_CMD_GET_THRESHOLD_ACCEL:
 		// Đọc giá trị kiểu int16_t từ byte thấp và byte cao
 		x = (int16_t)((ps_FSP_RX->Payload.get_threshold_accel.XH << 8) |
@@ -222,7 +259,7 @@ void FSP_Line_Process() {
 		                      ps_FSP_RX->Payload.get_threshold_accel.ZL);
 
 		// In giá trị ra
-		UART_Printf(CMD_line_handle, "> Threshold Accel is: %d %d %d\n", x, y, z);
+		UART_Printf(CMD_line_handle, "Threshold Accel is: %d %d %d\n", x, y, z);
 
 		break;
 	case FSP_CMD_STREAM_ACCEL:
@@ -233,8 +270,9 @@ void FSP_Line_Process() {
 		z = (int16_t)((ps_FSP_RX->Payload.stream_accel.ZH << 8) |
 		                      ps_FSP_RX->Payload.stream_accel.ZL);
 
-		uint8_t tmp = ps_FSP_RX->Payload.stream_accel.count;
-		if (!tmp) {
+		uint8_t count = ps_FSP_RX->Payload.stream_accel.count;
+		if (count == 0)
+		{
 		    UART_Send_String(CMD_line_handle, "\e[?25l\r> Accel is: X:       Y:       Z:       ");
 		}
 
@@ -243,7 +281,7 @@ void FSP_Line_Process() {
 			break;
 		}
 		
-		UART_Printf(CMD_line_handle, "\033[13G%5d\033[22G%5d\033[31G%5d  %d  ", x, y, z, tmp);
+		UART_Printf(CMD_line_handle, "\033[13G%5d\033[22G%5d\033[31G%5d  %d  ", x, y, z, count);
 		break;
 	default:
 		break;
@@ -268,8 +306,33 @@ static void fsp_print(uint8_t packet_length)
 	UART_FSP(&GPP_UART, (char*)encoded_frame, frame_len);
 }
 
-static void convertArrayToInteger(uint8_t arr[], uint16_t *p) {
-	*p = (uint16_t) (arr[1] << 8 | arr[0]);
+static void convertArrayToInteger(uint8_t array[], void* p_output, uint8_t length, uint8_t output_size)
+{
+	uint32_t temp_output = 0;
+
+	for (int8_t i = (length - 1); i >= 0; i--)
+	{
+		temp_output <<= 8;
+		temp_output |=  array[i];
+	}
+
+	switch (output_size)
+	{
+	case sizeof(uint16_t):
+	{
+		*(uint16_t *)p_output = (uint16_t)temp_output;
+		break;
+	}
+
+	case sizeof(uint32_t):
+	{
+		*(uint32_t *)p_output = temp_output;
+		break;
+	}
+		
+	default:
+		break;
+	}
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
