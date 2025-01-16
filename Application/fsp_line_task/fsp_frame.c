@@ -42,6 +42,16 @@ void FSP_Line_Process() {
 		break;
 	}
 
+	case FSP_CMD_SET_MANUAL_PULSE:
+	{
+		is_manual_mode_enable = ps_FSP_RX->Payload.set_manual_pulse.State;
+
+		UART_Send_String(CMD_line_handle, "MANUAL PULSE MODE TURNED OFF\n");
+		UART_Send_String(CMD_line_handle, "> ");
+
+		break;
+	}
+
 	case FSP_CMD_MEASURE_VOLT: {
 		ps_FSP_TX->CMD = FSP_CMD_MEASURE_VOLT;
 
@@ -283,6 +293,7 @@ void FSP_Line_Process() {
 		
 		UART_Printf(CMD_line_handle, "\033[13G%5d\033[22G%5d\033[31G%5d  %d  ", x, y, z, count);
 		break;
+		
 	default:
 		break;
 	}

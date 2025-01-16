@@ -47,6 +47,7 @@ typedef struct _H_Bridge_task_typedef_
 } H_Bridge_task_typedef;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+extern bool                     is_manual_mode_enable;
 extern bool						is_h_bridge_enable;
 extern H_Bridge_task_typedef    HB_sequence_default;
 extern H_Bridge_task_typedef    HB_sequence_array[10];
@@ -102,6 +103,11 @@ int CMD_GET_PULSE_ALL(int argc, char *argv[]);
 int CMD_SET_THRESHOLD_ACCEL(int argc, char *argv[]);
 int CMD_GET_THRESHOLD_ACCEL(int argc, char *argv[]);
 int CMD_SET_AUTO_ACCEL(int argc, char *argv[]);
+
+/* :::::::::: Manual Pulse Command :::::::::: */
+int CMD_SET_MANUAL_POLE(int argc, char *argv[]);
+int CMD_SET_MANUAL_CAP(int argc, char *argv[]);
+int CMD_SET_MANUAL_PULSE(int argc, char *argv[]);
 
 /* :::::::::: VOM Command :::::::: */
 int CMD_MEASURE_VOLT(int argc, char *argv[]);
