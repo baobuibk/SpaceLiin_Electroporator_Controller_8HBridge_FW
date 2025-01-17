@@ -99,7 +99,7 @@ void FSP_Line_Process() {
     }	
 
 		Impedance = ps_FSP_RX->Payload.measure_impedance.Value_high;
-		Impedance = Avr_Current << 8;
+		Impedance = Impedance << 8;
 		Impedance |= ps_FSP_RX->Payload.measure_impedance.Value_low;
 
 		//Impedance = Voltage / Avr_Current;
