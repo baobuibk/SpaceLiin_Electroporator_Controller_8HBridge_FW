@@ -806,7 +806,7 @@ int CMD_SET_PULSE_LV_NEG(int argc, char *argv[])
 	}
 
 	HB_sequence_array[CMD_sequence_index].lv_neg_on_ms 	= receive_argm[0];
-    HB_sequence_array[CMD_sequence_index].lv_neg_on_ms	= receive_argm[1];
+    HB_sequence_array[CMD_sequence_index].lv_neg_off_ms	= receive_argm[1];
 
 	ps_FSP_TX->CMD 								     = FSP_CMD_SET_PULSE_LV_NEG;
 	ps_FSP_TX->Payload.set_pulse_LV_neg.OnTime_low 	 = receive_argm[0];
